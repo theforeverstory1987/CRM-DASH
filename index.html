@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Clients</h1>
+      <button id="addClientBtn" class="btn btn-primary btn-small">+ Add</button>
+    </div>
+    <input id="clientSearch" class="search-input" type="text" placeholder="Search clients...">
+    <nav id="clientList" class="client-list"></nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="tabs">
+        <button class="tab-btn active" data-view="dashboard">Dashboard</button>
+        <button class="tab-btn" data-view="client">Client</button>
+      </div>
+    </header>
+
+    <section id="dashboardView" class="view">
+      <div class="stat-cards">
+        <div class="stat-card">
+          <span class="stat-value" id="statClients">0</span>
+          <span class="stat-label">Clients</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="statUpcoming">0</span>
+          <span class="stat-label">Upcoming reminders (7d)</span>
+        </div>
+        <div class="stat-card stat-card-alert">
+          <span class="stat-value" id="statOverdue">0</span>
+          <span class="stat-label">Overdue reminders</span>
+        </div>
+      </div>
+
+      <h2 class="section-title">All Reminders</h2>
+      <div id="allReminders" class="reminder-list"></div>
+    </section>
+
+    <section id="clientView" class="view hidden">
+      <div id="noClientSelected" class="empty-state">
+        <p>Select a client from the sidebar, or add a new one.</p>
+      </div>
+
+      <div id="clientDetail" class="client-detail hidden">
+        <div class="client-detail-header">
+          <div>
+            <h2 id="clientName"></h2>
+            <p id="clientMeta" class="client-meta"></p>
+          </div>
+          <div class="client-detail-actions">
+            <button id="editClientBtn" class="btn btn-secondary btn-small">Edit</button>
+            <button id="deleteClientBtn" class="btn btn-danger btn-small">Delete</button>
+          </div>
+        </div>
+
+        <div class="detail-columns">
+          <div class="detail-column">
+            <div class="detail-column-header">
+              <h3>Notes</h3>
+              <button id="addNoteBtn" class="btn btn-primary btn-small">+ Note</button>
+            </div>
+            <div id="notesList" class="notes-list"></div>
+          </div>
+
+          <div class="detail-column">
+            <div class="detail-column-header">
+              <h3>Reminders</h3>
+              <button id="addReminderBtn" class="btn btn-primary btn-small">+ Reminder</button>
+            </div>
+            <div id="remindersList" class="reminders-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modalRoot" class="modal-root hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
