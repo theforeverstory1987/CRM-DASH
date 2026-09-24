@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke-linecap="round">
+  <!-- Stylized "G": a soft open ring plus a lighter inward stroke. -->
+  <path d="M74.6 32.8 A30 30 0 1 0 78.2 60.3" stroke="currentColor" stroke-width="17"/>
+  <path d="M59 56 L78 56" stroke="currentColor" stroke-width="15" opacity="0.7"/>
+</svg>

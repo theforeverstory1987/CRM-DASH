@@ -1,49 +1,75 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#15171c">
 <title>Sign in · Gustavo</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body class="login-page">
-<main class="login-card">
-  <div class="brand">
-    <div class="brand-mark">G</div>
-    <span class="brand-name">Gustavo</span>
-  </div>
-
-  <h1>Sign in</h1>
-  <p class="login-sub">Enter your username and password to continue.</p>
-
-  <div id="loginError" class="login-error hidden" role="alert"></div>
-
-  <form id="loginForm" novalidate>
-    <div class="form-field">
-      <label for="username">Username</label>
-      <input id="username" name="username" type="text" autocomplete="username" autofocus required>
+<div class="login-shell">
+  <!-- Brand panel -->
+  <section class="brand-panel" aria-hidden="true">
+    <div class="brand-grid"></div>
+    <svg class="brand-logo" viewBox="0 0 100 100" fill="none" stroke-linecap="round">
+      <path d="M74.6 32.8 A30 30 0 1 0 78.2 60.3" stroke="currentColor" stroke-width="17"/>
+      <path d="M59 56 L78 56" stroke="currentColor" stroke-width="15" opacity="0.7"/>
+    </svg>
+    <div class="brand-captions">
+      <p>Concierge<br>Clients &amp; Requests</p>
+      <p>Every call,<br>beautifully handled</p>
     </div>
+  </section>
 
-    <div class="form-field">
-      <label for="password">Password</label>
-      <div class="password-wrap">
-        <input id="password" name="password" type="password" autocomplete="current-password" required>
-        <button type="button" id="togglePassword" class="toggle-password" aria-label="Show password">Show</button>
+  <!-- Sign-in panel -->
+  <main class="signin-panel">
+    <div class="signin-inner">
+      <div class="signin-eyebrow">
+        <span>001</span>
+        <span>Sign in</span>
       </div>
+
+      <div class="signin-title">
+        <h1>Gustavo</h1>
+        <img class="app-icon" src="favicon.svg" alt="" width="64" height="64">
+      </div>
+
+      <p class="signin-lede">Welcome back. <strong>Sign in to manage your clients and their requests.</strong></p>
+
+      <div id="loginError" class="login-error hidden" role="alert"></div>
+
+      <form id="loginForm" class="signin-form" novalidate>
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" autofocus required>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <button type="button" id="togglePassword" class="toggle-password" aria-label="Show password">Show</button>
+          </div>
+        </div>
+
+        <label class="switch">
+          <input id="remember" type="checkbox">
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          <span>Remember me</span>
+        </label>
+
+        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+      </form>
+
+      <p class="signin-footer">Need access? Contact your administrator.</p>
     </div>
-
-    <div class="form-options">
-      <label class="checkbox">
-        <input id="remember" type="checkbox">
-        Remember me
-      </label>
-    </div>
-
-    <button type="submit" class="btn btn-primary btn-block">Sign in</button>
-  </form>
-
-  <p class="login-footer">Need access? Contact your account administrator.</p>
-</main>
+  </main>
+</div>
 
 <script src="auth.js"></script>
 <script src="login.js"></script>
