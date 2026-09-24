@@ -35,8 +35,8 @@ This spec describes what the product does today and the rules it follows. [Pract
 - Admins can assign cases to anyone. Staff can take cases from the open pool.
 - Sample team: Amit.R (admin), Daniel Reyes (head concierge, admin), Sofia Marín and Noa Adler (concierges).
 
-### Welcome page (`index.html`)
-- **Left side:** "Gustavo", "The concierge team's CRM", and an **Enter Gustavo** button (no form).
+### Sign-in page (`index.html`)
+- **Left side:** "Gustavo", a short welcome, username and password (already filled in), Remember me, and **Sign in**.
 - **Right side:** the blue brand panel with the logo and the line **"Gustavo – Concierge Services"** under it
 - **Log out** returns to this page.
 
