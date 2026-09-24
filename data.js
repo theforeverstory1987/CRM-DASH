@@ -48,6 +48,20 @@ const SAMPLE_REQUESTERS = {
   c40: { name: 'Roni Cohen', phone: '+972 52 555 0199', email: 'roni.cohen@example.com' },
 };
 
+// Where a sample case happens (country code) and its budget; other cases start without them.
+const SAMPLE_CASE_EXTRAS = {
+  c1: { location: 'IL', budget: { amount: 1200, currency: '₪' } },
+  c2: { location: 'GB', budget: { amount: 18000, currency: '€' } },
+  c3: { location: 'US', budget: { amount: 3600, currency: '$' } },
+  c4: { location: 'FR', budget: { amount: 150, currency: '€' } },
+  c10: { location: 'IL', budget: { amount: 4400, currency: '₪' } },
+  c18: { location: 'FR', budget: { amount: 900, currency: '€' } },
+  c39: { location: 'GB', budget: { amount: 500, currency: '$' } },
+  c40: { location: 'IL', budget: { amount: 8000, currency: '₪' } },
+};
+
+const SAMPLE_GENDERS = { emma: 'female', james: 'male', aiko: 'female', marco: 'male', olivia: 'female', noah: 'male' };
+
 // Sample cases whose request changed: id → [old title, new title, new request type].
 const RETITLED_SAMPLES = {
   c4: ['Suite upgrade for the Tokyo stay', 'Transfer from Paris airport to the hotel', 'Transfers'],
@@ -57,9 +71,17 @@ const RETITLED_SAMPLES = {
 // Batches added to the sample data after the first release, with the flag that marks a save as having them.
 const SAMPLE_BATCHES = [['moreSamples', extraSampleRows], ['pastSamples', pastSampleRows], ['supplierSamples', supplierSampleRows]];
 
+// Transfers get a black car drawn inline (car emoji only come in colours).
+const CAR_PIC = '<svg class="car-pic" viewBox="0 0 64 32" aria-hidden="true">'
+  + '<path fill="currentColor" d="M3 21.5c0-2.2 1.6-4 3.8-4.4L15 15.6l6.4-6.4a6 6 0 0 1 4.2-1.7h11.8a6 6 0 0 1 4.4 1.9l5.7 6.1 8.2 1.3a5 5 0 0 1 4.3 4.9V25a1.5 1.5 0 0 1-1.5 1.5H55a6 6 0 0 0-12 0H21a6 6 0 0 0-12 0H4.5A1.5 1.5 0 0 1 3 25z"/>'
+  + '<path fill="#cfd8e3" d="M22.5 15.5l4-4.4a2.5 2.5 0 0 1 1.8-.8H32v5.2zM34.5 10.3h3.4a2.5 2.5 0 0 1 1.8.8l4 4.4h-9.2z"/>'
+  + '<circle cx="15" cy="26.5" r="4.5" fill="currentColor"/><circle cx="15" cy="26.5" r="1.8" fill="#cfd8e3"/>'
+  + '<circle cx="49" cy="26.5" r="4.5" fill="currentColor"/><circle cx="49" cy="26.5" r="1.8" fill="#cfd8e3"/>'
+  + '</svg>';
+
 // Supplier categories, in the Suppliers menu's order. `qty` and `date` name the booking's columns.
 const SUPPLIER_GROUPS = [
-  { id: 'transfers', label: 'Transfers', icon: '🚗', qty: 'Passengers', date: 'Pickup' },
+  { id: 'transfers', label: 'Transfers', icon: CAR_PIC, qty: 'Passengers', date: 'Pickup' },
   { id: 'shows', label: 'Shows', icon: '🎤', qty: 'Tickets', date: 'Show date' },
   { id: 'sports', label: 'Sports', icon: '🏀', qty: 'Tickets', date: 'Game date' },
   { id: 'airport', label: 'Airport VIP', icon: '✈️', qty: 'Passengers', date: 'Flight' },
@@ -169,6 +191,19 @@ function migrate(data) {
       k.requester = (data.demo && SAMPLE_REQUESTERS[k.id]) || null;
       data.migrated = true;
     }
+    // Cases from before location and budget.
+    if (k.location === undefined) {
+      const extras = (data.demo && SAMPLE_CASE_EXTRAS[k.id]) || {};
+      k.location = extras.location || '';
+      k.budget = extras.budget || null;
+      data.migrated = true;
+    }
+  }
+  for (const c of data.clients) {
+    if (c.gender === undefined) {
+      c.gender = (data.demo && SAMPLE_GENDERS[c.id]) || '';
+      data.migrated = true;
+    }
   }
   if (!data.suppliers) {
     data.suppliers = DEFAULT_SUPPLIERS.map(s => ({ ...s }));
@@ -227,6 +262,7 @@ function addClient(input, by) {
     phone: (input.phone || '').trim(),
     email: (input.email || '').trim(),
     country: input.country || '',
+    gender: input.gender || '',
     tier: input.tier || 'Standard',
     notes: (input.notes || '').trim(),
     createdAt: new Date().toISOString(),
@@ -245,6 +281,8 @@ function createCase(input, by) {
     clientId: input.clientId,
     // null when the client opened it; otherwise { name, phone, email } of whoever did.
     requester: input.requester || null,
+    location: input.location || '',
+    budget: input.budget || null,
     category: input.category,
     channel: input.channel,
     priority: input.priority,
@@ -287,6 +325,14 @@ function setCaseStatus(caseId, status, by) {
   saveData();
 }
 
+// Changes what a case is (request, date, location, budget, description) from the case window.
+function updateCaseInfo(caseId, patch) {
+  const kase = findCase(caseId);
+  if (!kase) return;
+  Object.assign(kase, patch);
+  saveData();
+}
+
 function setCaseDetails(caseId, text) {
   const kase = findCase(caseId);
   if (!kase) return;
@@ -317,9 +363,9 @@ function updateMember(id, patch) {
   saveData();
 }
 
-// Personal reminders and sticky notes, kept per team member (`by`).
-function addReminder(text, at, by) {
-  db.reminders.push({ id: uid(), text: text.trim(), at, by, done: false });
+// Personal reminders and sticky notes, kept per team member (`by`). A reminder can belong to a case.
+function addReminder(text, at, by, caseId = null) {
+  db.reminders.push({ id: uid(), text: text.trim(), at, by, done: false, caseId });
   saveData();
 }
 
@@ -430,6 +476,8 @@ function sampleCases(rows) {
   return rows.map(([id, title, clientId, category, channel, priority, status, assignee, assignedBy, createdBy, hoursAgo, dueAt, doneHoursAgo]) => ({
     id, title, clientId, category, channel, priority, status, assignee, assignedBy, createdBy, dueAt,
     requester: SAMPLE_REQUESTERS[id] || null,
+    location: (SAMPLE_CASE_EXTRAS[id] || {}).location || '',
+    budget: (SAMPLE_CASE_EXTRAS[id] || {}).budget || null,
     details: '',
     createdAt: iso(now - hoursAgo * HOUR),
     completedAt: doneHoursAgo ? iso(now - doneHoursAgo * HOUR) : null,
@@ -543,7 +591,7 @@ function buildSeed() {
   ];
 
   const clients = SAMPLE_CLIENTS.map(([id, name, phone, email, tier, country, notes, daysAgo]) => ({
-    id, name, phone, email, tier, country, notes, createdAt: iso(now - daysAgo * DAY),
+    id, name, phone, email, tier, country, notes, gender: SAMPLE_GENDERS[id] || '', createdAt: iso(now - daysAgo * DAY),
   }));
   clients.forEach((c, i) => { c.number = 2001 + i; });
 
