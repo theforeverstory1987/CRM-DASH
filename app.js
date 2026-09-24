@@ -689,36 +689,36 @@ function dotDate(iso) {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(-2)}`;
 }
 
-// A case on the dashboard, top to bottom: file ID (with the request's picture in the corner), client and flag,
-// the headline, the date, then Follow-up (with how many so far) and Email, and the status (changeable there).
+// A case on the dashboard, kept light: file ID (the request's picture in the corner), client and flag,
+// the headline and the date; along the bottom, the status (a coloured dot, changeable there) and two
+// round buttons: + for a follow-up (with how many so far) and ✉ to email the client.
 // Clicking anywhere else on the square opens the case.
 function caseTile(kase, key) {
   const client = findClient(kase.clientId);
   const cls = [`st-${kase.status}`, !isOpen(kase) && 'is-done'].filter(Boolean).join(' ');
   const n = kase.updates.length;
   const late = isOpen(kase) && kase.dueAt && new Date(kase.dueAt) < new Date();
+  const firstNameOf = client ? firstName(client.name) : 'the client';
   return `
     <div class="case-tile ${cls}" data-bar="${kase.id}" data-list-key="${key}" data-case="${kase.id}">
       <div class="tile-body" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case #${caseNo(kase)}">
-        <span class="tile-top">
-          <span class="tile-no">#${caseNo(kase)}</span>
-          <span class="tile-pic" aria-hidden="true">${emojiPic(requestKind(kase).icon)}</span>
-        </span>
+        <span class="tile-no">#${caseNo(kase)}</span>
+        <span class="tile-pic" aria-hidden="true">${emojiPic(requestKind(kase).icon)}</span>
         <span class="tile-client"><span class="tile-name">${esc(client ? client.name : 'Unknown client')}</span>${client ? flag(client.country) : ''}</span>
         <span class="tile-title">${esc(kase.title)}</span>
         <span class="tile-date${late ? ' overdue' : ''}">${icon('calendar')}${kase.dueAt ? dotDate(kase.dueAt) : 'No date'}</span>
       </div>
-      <div class="tile-actions">
-        <button type="button" class="tile-btn primary" data-action="toggle-followup" aria-label="Add a follow-up (${n} so far)">${icon('plus')}Follow-up${n ? `<span class="tile-btn-count">${n}</span>` : ''}</button>
+      <div class="tile-foot">
+        <span class="tile-status" data-stop>
+          <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
+            ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
+          </select>
+        </span>
+        <button type="button" class="tile-icon add" data-action="toggle-followup" title="Add a follow-up" aria-label="Add a follow-up (${n} so far)">${icon('plus')}${n ? `<span class="tile-icon-count">${n}</span>` : ''}</button>
         ${client && client.email
-          ? `<a class="tile-btn" href="${esc(caseMailto(kase, client.email))}" title="Send email to ${esc(client.email)}" data-stop>${icon('mail')}Email</a>`
-          : `<span class="tile-btn is-off" data-stop>${icon('mail')}No email</span>`}
+          ? `<a class="tile-icon" href="${esc(caseMailto(kase, client.email))}" title="Email ${esc(firstNameOf)}" aria-label="Email ${esc(firstNameOf)}" data-stop>${icon('mail')}</a>`
+          : `<span class="tile-icon is-off" title="No email for this client" aria-label="No email for this client" data-stop>${icon('mail')}</span>`}
       </div>
-      <span class="tile-status" data-stop>
-        <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
-          ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
-        </select>
-      </span>
       <form class="quick-followup" data-followup-form="${kase.id}" data-list-key="${key}" data-stop hidden>
         <input type="text" placeholder="Write a follow-up…" aria-label="New follow-up for #${caseNo(kase)}">
         <span class="quick-followup-actions">

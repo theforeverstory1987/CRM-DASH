@@ -8,6 +8,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 - **Where it runs:** locally (`serve.ps1`), and as a published page: https://claude.ai/artifact/X6p9N9xU3AnTKEJHcpQ6Xy
 - **Code:** https://github.com/theforeverstory1987/CRM-DASH
 - **Interface language:** English. Sample client names are Israeli.
+- **Fonts:** headings (page titles like *My cases*, section and window titles) use **Playfair Display**, a classic luxury serif (a grey first word, then black); everything else, numbers included, uses Inter.
 
 ---
 
@@ -50,7 +51,7 @@ This spec describes what the product does today and the rules it follows. [Pract
   3. Search, Activity, **Suppliers**, Advanced search, Settings. The round buttons are spaced 16px apart (closer on short windows) with bigger icons.
   4. At the bottom: dark mode and log out.
 - **Tab bar** (phones): Me, Search, **+**, Activity, Suppliers, Settings.
-- **One background, thin lines:** every page sits on one plain background (white, or the tint picked in Settings) with no frame, floating boxes or shadows. Thin lines divide the rail from the page, the side menus from the main area, stacked sections from each other, and the case squares into one grid.
+- **Light boxes:** every page sits on one soft off-white background (or the tint picked in Settings) with no frame around it. Side menus, sections and the cases area are white rounded boxes with a gentle shadow; inside the cases box, thin lines split the squares into one grid.
 - **Side windows** (notes, reminders, search, your icon, add client…) always open on the **left**, next to the menu. On phones they come up from the bottom.
 - **Keyboard:** `/` search, `N` new case, `Esc` closes a panel or window.
 - **Refresh keeps you in place:** after a refresh you're back where you were (My cases or All files, the view and filters, the supplier, and any open case or calendar day). This is kept per browser tab.
@@ -111,14 +112,13 @@ Side menu, in this order:
 
 Top to bottom:
 
-1. **#File ID**, with the request's picture (§8) small in the top-right corner.
-2. **Client name + flag.**
-3. **Headline** (the case title, up to 2 lines).
+1. **#File ID**, small and light, with the request's picture (§8) in the top-right corner.
+2. **Client name + flag** (the only bold line).
+3. **Headline** (the case title, grey, up to 2 lines).
 4. **Date** as 25.09.26 (red when overdue).
-5. **Follow-up** (blue, with how many follow-ups so far) opens a box over the square: *Add* or Enter saves, *Cancel* closes. **Email** opens an email with the subject pre-filled (§9); "No email" when the client has none.
-6. **Status**, changeable right there.
+5. **Along the bottom:** the **status** as a softly tinted pill with a coloured dot, still a menu to change it; a round blue **+** for a follow-up (with a small count of follow-ups so far) that opens a box over the square (*Add* or Enter saves, *Cancel* closes); and a round grey **✉** that emails the client with the subject pre-filled (§9), greyed out when the client has no email.
 
-- **Look:** a clean white card with rounded corners; done cases are dimmed. At least 240px wide, as many across as fit.
+- **Look:** inside the white cases box, split from each other by thin lines; the request picture sits on a soft rounded tile; done cases are dimmed. At least 240px wide, as many across as fit.
 - **Clicking anywhere else on the square** opens the case in the full-screen window (§6).
 
 **Bars** (My cases' List, Activity): **compact one-line bars**:
