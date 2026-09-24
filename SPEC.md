@@ -37,7 +37,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 
 ### Welcome page (`index.html`)
 - **Left side:** "Gustavo", "The concierge team's CRM", and an **Enter Gustavo** button (no form).
-- **Right side:** the blue brand panel with the logo and one line under it saying what the dashboard is for: *"Every client request, from the first call to done: cases, follow-ups, suppliers and reminders in one place for the whole team."*
+- **Right side:** the blue brand panel with the logo and the line **"Gustavo – Concierge Services"** under it
 - **Log out** returns to this page.
 
 ---
