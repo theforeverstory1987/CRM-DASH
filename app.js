@@ -103,6 +103,12 @@ function avatar(name, seed, size = '') {
   return `<span class="avatar tone-${hashTone(seed)} ${size}" aria-hidden="true">${esc(initials(name))}</span>`;
 }
 
+// A team member's own initials if they set them, otherwise from their name.
+function memberInitials(member) {
+  if (!member) return '?';
+  return member.initials || initials(member.name);
+}
+
 function toneOf(member, seed) {
   return member && Number.isInteger(member.tone) ? member.tone : hashTone(seed);
 }
@@ -110,9 +116,13 @@ function toneOf(member, seed) {
 function memberAvatar(id, size = '') {
   const member = findMember(id);
   const tone = toneOf(member, id);
-  if (member && member.photo) return `<span class="avatar ${size}" aria-hidden="true"><img src="${esc(member.photo)}" alt=""></span>`;
-  if (member && member.emoji) return `<span class="avatar emoji tone-${tone} ${size}" aria-hidden="true">${esc(member.emoji)}</span>`;
-  return `<span class="avatar tone-${tone} ${size}" aria-hidden="true">${esc(initials(member ? member.name : '?'))}</span>`;
+  let face;
+  if (member && member.photo) face = `<span class="avatar ${size}"><img src="${esc(member.photo)}" alt=""></span>`;
+  else if (member && member.emoji) face = `<span class="avatar emoji tone-${tone} ${size}">${esc(member.emoji)}</span>`;
+  else return `<span class="avatar tone-${tone} ${size}" aria-hidden="true">${esc(memberInitials(member))}</span>`;
+  // With a photo or icon, keep the initials in a small bubble so people stay recognisable.
+  if (size === 'xs' || size === 'sm') return face.replace('<span class="avatar', '<span aria-hidden="true" class="avatar');
+  return `<span class="avatar-wrap ${size}" aria-hidden="true">${face}<span class="avatar-badge tone-${tone}">${esc(memberInitials(member))}</span></span>`;
 }
 
 function caseNo(kase) {
@@ -968,7 +978,7 @@ function renderSettings() {
       <section class="panel">
         <div class="panel-head"><h2>Workspace</h2></div>
         <div class="setting-row">
-          <div><b>Your icon</b><p>Upload a photo, pick an icon, or use your initials (${esc(initials(me.name))}).</p></div>
+          <div><b>Your icon</b><p>Upload a photo, pick an icon, or use your initials (${esc(memberInitials(me))}).</p></div>
           <button type="button" class="btn btn-secondary btn-md" data-action="edit-avatar">${icon('pencil')}Change</button>
         </div>
         <div class="setting-row">
@@ -1002,9 +1012,22 @@ function openAvatarSheet() {
         <span class="fld-label">Photo</span>
         <div class="filter-row">
           <label class="btn btn-secondary btn-md upload-btn">${icon('upload')}Upload a photo<input type="file" accept="image/*" id="photoInput"></label>
-          <button type="button" class="btn btn-secondary btn-md" data-avatar-reset>Use my initials (${esc(initials(me.name))})</button>
+          <button type="button" class="btn btn-secondary btn-md" data-avatar-reset>Use my initials (${esc(memberInitials(me))})</button>
         </div>
       </div>
+      <form class="fld" id="nameForm" novalidate>
+        <div class="fld-grid">
+          <div class="fld">
+            <label class="fld-label" for="pName">Your name</label>
+            <input id="pName" class="control" autocomplete="name" value="${esc(me.name)}">
+          </div>
+          <div class="fld">
+            <label class="fld-label" for="pInitials">Initials</label>
+            <input id="pInitials" class="control" maxlength="2" autocomplete="off" value="${esc(memberInitials(me))}" style="text-transform:uppercase">
+          </div>
+        </div>
+        <div><button type="submit" class="btn btn-secondary btn-md">${icon('check')}Save name &amp; initials</button></div>
+      </form>
       <div class="fld">
         <span class="fld-label">Or pick an icon</span>
         <div class="emoji-grid">
@@ -1035,6 +1058,13 @@ function openAvatarSheet() {
         if (b.dataset.emoji) apply({ emoji: b.dataset.emoji, photo: null });
         else if (b.dataset.tone) apply({ tone: Number(b.dataset.tone) });
         else apply({ emoji: null, photo: null });
+      });
+      sheet.querySelector('#nameForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const name = sheet.querySelector('#pName').value.trim() || me.name;
+        const typed = sheet.querySelector('#pInitials').value.replace(/[^\p{L}\p{N}]/gu, '').toUpperCase().slice(0, 2);
+        apply({ name, initials: typed || null });
+        toast('Name and initials saved');
       });
       sheet.querySelector('#photoInput').addEventListener('change', async e => {
         const file = e.target.files[0];

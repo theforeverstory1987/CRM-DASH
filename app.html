@@ -9,9 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=10">
-<link rel="stylesheet" href="app.css?v=10">
-<script src="auth.js?v=10"></script>
+<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="app.css?v=14">
+<script src="auth.js?v=14"></script>
 <script>
   // Send signed-out visitors back to the login page before anything renders.
   if (!getSession()) window.location.replace('index.html');
@@ -20,9 +20,8 @@
 <body class="app-body">
 <div class="shell">
   <nav class="rail" aria-label="Main">
-    <a class="rail-logo" href="#/home" aria-label="Gustavo"><img src="favicon.svg" alt=""></a>
-    <div class="rail-sep"></div>
     <a class="rail-btn rail-me" data-route="home" href="#/home" data-label="My dashboard" aria-label="My dashboard"><span data-me-avatar></span></a>
+    <div class="rail-sep"></div>
     <button class="rail-btn rail-new" data-action="new-file" data-label="New file · opens in a new tab  (N)" aria-label="New file (opens in a new tab)"><span data-icon="plus"></span></button>
     <button class="rail-btn" data-action="search" data-label="Search a client or case  (/)" aria-label="Search a client or case"><span data-icon="search"></span></button>
     <a class="rail-btn" data-route="activity" href="#/activity" data-label="Activity · all open cases" aria-label="Activity: all open cases"><span data-icon="activity"></span></a>
@@ -48,7 +47,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="tooltip" class="tooltip hidden" role="tooltip"></div>
 
-<script src="data.js?v=10"></script>
-<script src="app.js?v=10"></script>
+<script src="data.js?v=14"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>

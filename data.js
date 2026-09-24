@@ -42,12 +42,14 @@ function loadData() {
   return seeded;
 }
 
-// Older saves predate client IDs.
+// Older saves predate client IDs and custom initials.
 function migrate(data) {
   if (!data.nextClientNumber) {
     data.nextClientNumber = 2001;
     for (const c of data.clients) if (!c.number) c.number = data.nextClientNumber++;
   }
+  const admin = data.team.find(m => m.id === 'admin');
+  if (admin && admin.initials === undefined) admin.initials = 'AR';
   return data;
 }
 
@@ -160,9 +162,9 @@ function clearSampleData() {
   saveData();
 }
 
-// Brings the sample data back, keeping everyone's chosen icon.
+// Brings the sample data back, keeping everyone's chosen name and icon.
 function restoreSampleData() {
-  const icons = Object.fromEntries(db.team.map(m => [m.id, { photo: m.photo, emoji: m.emoji, tone: m.tone }]));
+  const icons = Object.fromEntries(db.team.map(m => [m.id, { name: m.name, initials: m.initials, photo: m.photo, emoji: m.emoji, tone: m.tone }]));
   const extra = db.team.filter(m => !['admin', 'daniel', 'sofia', 'noa'].includes(m.id));
   db = buildSeed();
   db.team.push(...extra);
@@ -182,7 +184,7 @@ function buildSeed() {
   };
 
   const team = [
-    { id: 'admin', name: 'Admin', title: 'Administrator', role: 'admin' },
+    { id: 'admin', name: 'Admin', initials: 'AR', title: 'Administrator', role: 'admin' },
     { id: 'daniel', name: 'Daniel Reyes', title: 'Head concierge', role: 'admin' },
     { id: 'sofia', name: 'Sofia Marín', title: 'Concierge', role: 'staff' },
     { id: 'noa', name: 'Noa Adler', title: 'Concierge', role: 'staff' },

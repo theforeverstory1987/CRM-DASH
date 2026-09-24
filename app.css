@@ -70,13 +70,6 @@
   padding: 20px 0;
 }
 
-.rail-logo img {
-  display: block;
-  width: 48px;
-  height: 48px;
-  border-radius: 15px;
-}
-
 .rail-sep {
   width: 28px;
   height: 1px;
@@ -118,8 +111,8 @@
 .rail-new:hover { box-shadow: 0 14px 28px rgba(0, 103, 255, 0.42); }
 .rail-new .ico { width: 26px; height: 26px; stroke-width: 2.2; }
 
-.rail-me { overflow: hidden; border: none; }
-.rail-me .avatar { width: 100%; height: 100%; font-size: 17px; }
+.rail-me { width: 60px; height: 60px; overflow: hidden; border: none; }
+.rail-me .avatar { width: 100%; height: 100%; font-size: 19px; }
 
 .rail-bottom {
   margin-top: auto;
@@ -2059,3 +2052,38 @@ button.stat:focus-visible { outline: 2px solid var(--primary); outline-offset: 2
 
   .dash-item.active { border-color: var(--primary); }
 }
+
+/* A photo or icon keeps the person's initials in a small corner bubble. */
+.avatar-wrap {
+  position: relative;
+  display: inline-grid;
+  flex-shrink: 0;
+}
+
+.avatar-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.avatar-wrap.lg .avatar-badge { min-width: 30px; height: 30px; font-size: 13px; }
+.avatar-wrap.xl .avatar-badge { right: -4px; bottom: -4px; min-width: 44px; height: 44px; font-size: 17px; border-width: 3px; }
+
+.rail-me { overflow: visible; }
+.rail-me [data-me-avatar] { display: grid; width: 100%; height: 100%; }
+.rail-me .avatar-wrap,
+.rail-me .avatar-wrap .avatar { width: 100%; height: 100%; }
+.rail-me .avatar-badge { right: -6px; bottom: -6px; min-width: 32px; height: 32px; font-size: 13px; border-width: 3px; border-color: var(--frame); }
+
+.tab .avatar-badge { display: none; }
