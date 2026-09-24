@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gustavo</title>
+<link rel="stylesheet" href="styles.css">
+<script src="auth.js"></script>
+<script>
+  // Send signed-out visitors back to the login page before anything renders.
+  if (!getSession()) window.location.replace('index.html');
+</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">G</div>
+    <span class="brand-name">Gustavo</span>
+  </div>
+  <div class="topbar-user">
+    <span id="userName"></span>
+    <button id="logoutBtn" class="btn btn-secondary">Sign out</button>
+  </div>
+</header>
+
+<main class="main">
+  <section class="welcome">
+    <h1 id="welcomeTitle">Welcome</h1>
+    <p>You're signed in. The CRM screens will go here next.</p>
+  </section>
+</main>
+
+<script>
+  const session = getSession();
+  if (session) {
+    document.getElementById('userName').textContent = `${session.name} (${session.role})`;
+    document.getElementById('welcomeTitle').textContent = `Welcome, ${session.name}`;
+  }
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    endSession();
+    window.location.replace('index.html');
+  });
+</script>
+</body>
+</html>

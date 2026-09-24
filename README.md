@@ -1,10 +1,10 @@
-# Gitbub
+﻿# Gustavo
 
-A client dashboard for tracking clients, notes, and reminders. Plain HTML/CSS/JS, no build step, no dependencies. Data is stored in the browser's localStorage.
+A CRM for our clients. Plain HTML/CSS/JS, no build step.
 
 ## Running it
 
-Open [index.html](index.html) directly in a browser, or serve it locally:
+Open [index.html](index.html) in a browser, or serve it locally:
 
 ```bash
 powershell -ExecutionPolicy Bypass -File serve.ps1
@@ -12,9 +12,9 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 Then visit http://localhost:8080.
 
-## Features
+## Sign in
 
-- Add/edit/delete clients (name, company, email, phone)
-- Per-client notes
-- Per-client reminders with due dates, overdue/due-soon highlighting, and completion tracking
-- Dashboard overview with client count and upcoming/overdue reminders across all clients
+- Username: `admin`
+- Password: `12345`
+
+The login is a front-end prototype: users are defined in [auth.js](auth.js) and checked in the browser. It needs a real backend before clients use it.
