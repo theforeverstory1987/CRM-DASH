@@ -59,7 +59,7 @@ const ICONS = {
   layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
 };
 
-const STATUS_ICONS = { new: 'plus', in_progress: 'refresh', waiting: 'clock', done: 'check' };
+const STATUS_ICONS = { new: 'plus', in_progress: 'refresh', waiting_provider: 'briefcase', waiting_client: 'clock', done: 'check' };
 
 function icon(name, cls = '') {
   return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
@@ -239,6 +239,17 @@ function stat({ label, value, sub = '', ic, featured = false, shortcut = '' }) {
     </${tag}>`;
 }
 
+function miniStat({ label, value, ic, tone = '', shortcut = '' }) {
+  const tag = shortcut ? 'button' : 'div';
+  const attrs = shortcut ? ` type="button" data-shortcut="${shortcut}" aria-label="${esc(label)}: ${value}. Show these cases"` : '';
+  return `
+    <${tag} class="mini-stat${tone ? ` mini-stat-${tone}` : ''}"${attrs}>
+      <span class="mini-stat-icon">${icon(ic)}</span>
+      <span class="mini-stat-value">${value}</span>
+      <span class="mini-stat-label">${label}</span>
+    </${tag}>`;
+}
+
 function pillButtons(attr, opts, active) {
   return opts.map(([value, label, count]) => `
     <button type="button" class="${String(value) === String(active) ? 'active' : ''}" data-${attr}="${value}">
@@ -267,7 +278,7 @@ function selectWrap(id, optionsHtml) {
 }
 
 // ---------- Case lists with filters ----------
-const STATUS_FILTERS = [['all', 'All open'], ['new', 'Open'], ['in_progress', 'Ongoing'], ['waiting', 'Waiting'], ['done', 'Done']];
+const STATUS_FILTERS = [['all', 'All open'], ['new', 'Open'], ['in_progress', 'Ongoing'], ['waiting_provider', 'Wait: provider'], ['waiting_client', 'Wait: client'], ['done', 'Done']];
 const PRIORITY_FILTERS = [['', 'Any priority'], ['hot', 'Urgent & high'], ['urgent', 'Urgent'], ['high', 'High'], ['normal', 'Normal'], ['low', 'Low']];
 const DATE_FILTERS = [['', 'Any date'], ['overdue', 'Overdue'], ['today', 'Due today'], ['week', 'Due this week'], ['later', 'Due later'], ['none', 'No due date']];
 const SORTS = [['due', 'Sort: due date'], ['priority', 'Sort: priority'], ['newest', 'Sort: newest']];
@@ -280,7 +291,8 @@ const HOME_VIEWS = [
       { id: 'all', label: 'All open', icon: 'briefcase', hint: 'Assigned to you, or taken yourself', empty: 'Nothing on your plate. Take a case from the open pool, or open a new file with +.' },
       { id: 'new', label: 'Open', icon: 'plus', hint: 'Not started yet', empty: 'No cases waiting to be started.' },
       { id: 'in_progress', label: 'Ongoing', icon: 'refresh', hint: 'You’re working on these', empty: 'Nothing in progress right now.' },
-      { id: 'waiting', label: 'Waiting on client', icon: 'clock', hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.' },
+      { id: 'waiting_provider', label: 'Waiting on provider', icon: 'briefcase', hint: 'Waiting for the vendor to reply', empty: 'No cases waiting on a provider.' },
+      { id: 'waiting_client', label: 'Waiting on client', icon: 'clock', hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.' },
       { id: 'done', label: 'Done', icon: 'check', hint: 'Cases you finished', empty: 'Nothing finished yet.' },
     ],
   },
@@ -318,7 +330,8 @@ function homeViewCases(view) {
   switch (view) {
     case 'new':
     case 'in_progress':
-    case 'waiting':
+    case 'waiting_provider':
+    case 'waiting_client':
     case 'done':
       return mine.filter(k => k.status === view);
     case 'assigned': return mine.filter(k => isOpen(k) && k.assignedBy !== ME);
@@ -439,6 +452,10 @@ function renderList(key) {
     : `<div class="empty">${emptyText}</div>`;
 }
 
+function lastUpdateOf(kase) {
+  return kase.updates.length ? kase.updates.reduce((a, b) => (a.at > b.at ? a : b)) : null;
+}
+
 function caseCard(kase, key) {
   const client = findClient(kase.clientId);
   const due = fmtDue(kase);
@@ -455,6 +472,7 @@ function caseCard(kase, key) {
     who = `${memberAvatar(kase.assignee, 'xs')}<span>Handled by <b>${esc(kase.assignee === ME ? 'you' : firstName(memberName(kase.assignee)))}</b></span>`;
   }
   const cls = [!isOpen(kase) && 'is-done', due.cls === 'overdue' && 'is-overdue'].filter(Boolean).join(' ');
+  const lastUpdate = lastUpdateOf(kase);
   return `
     <div class="case ${cls}" role="button" tabindex="0" data-case="${kase.id}">
       <span class="case-check" aria-hidden="true">${isOpen(kase) ? '' : icon('check')}</span>
@@ -464,10 +482,23 @@ function caseCard(kase, key) {
           <span class="case-when ${due.cls}">${due.label ? `<span class="lbl">${due.label}:</span> ` : ''}${esc(due.text)}</span>
         </span>
         <span class="case-sub">${idChip(caseNo(kase))}<span>${esc(client ? client.name : 'Unknown client')} · ${esc(kase.category)}</span></span>
+        ${lastUpdate ? `
+        <span class="case-followup">${icon('layers')}<span class="quote-text">“${esc(lastUpdate.text)}”</span><span class="muted">— ${esc(firstName(memberName(lastUpdate.by)))}</span></span>` : ''}
         <span class="case-bottom">
-          <span class="tags">${channelTag(kase.channel, 'sm')}${hotTag(kase.priority, 'sm')}${statusTag(kase.status, 'sm')}</span>
+          <span class="tags">${channelTag(kase.channel, 'sm')}${hotTag(kase.priority, 'sm')}</span>
           <span class="case-by">${who}</span>
         </span>
+        <span class="case-quick" data-stop>
+          <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
+            ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
+          </select>
+          ${client && client.email ? `<a class="icon-btn sm" data-action="email-client" href="mailto:${esc(client.email)}" title="Email ${esc(client.name)}" aria-label="Email ${esc(client.name)}">${icon('mail')}</a>` : ''}
+          <button type="button" class="icon-btn sm" data-action="toggle-followup" title="Add a quick follow-up" aria-label="Add a quick follow-up">${icon('pencil')}</button>
+        </span>
+        <form class="quick-followup" data-followup-form="${kase.id}" data-list-key="${key}" data-stop hidden>
+          <input type="text" placeholder="Quick follow-up for the team…" aria-label="Quick follow-up">
+          <button type="submit" class="btn btn-primary btn-sm" aria-label="Send">${icon('check')}</button>
+        </form>
       </span>
     </div>`;
 }
@@ -574,13 +605,13 @@ function parseRoute() {
   const params = new URLSearchParams(query);
   const name = parts[0] || 'home';
   if (name === 'case') return { name: 'case', id: parts[1], params };
-  if (['home', 'activity', 'settings', 'new'].includes(name)) return { name, params };
+  if (['home', 'activity', 'settings', 'new', 'search'].includes(name)) return { name, params };
   return { name: 'home', params };
 }
 
 function render() {
   const route = state.route;
-  const navKey = route.name === 'case' || route.name === 'new' ? '' : route.name;
+  const navKey = route.name === 'case' || route.name === 'new' || route.name === 'search' ? '' : route.name;
   document.querySelectorAll('[data-route]').forEach(el => {
     const active = el.dataset.route === navKey;
     el.classList.toggle('active', active);
@@ -590,6 +621,7 @@ function render() {
   if (route.name === 'activity') renderActivity();
   else if (route.name === 'settings') renderSettings();
   else if (route.name === 'new') renderNewFilePage({ clientId: route.params.get('client') || '' });
+  else if (route.name === 'search') renderSearchPage(route.params.get('q') || '');
   else if (route.name === 'case') renderCasePage(route.id);
   else renderHome();
 }
@@ -600,11 +632,12 @@ function refreshAvatars() {
 
 // ---------- My dashboard ----------
 function renderHome() {
-  const myOpen = myCases().filter(isOpen);
-  const dueToday = myOpen.filter(k => matchesDate(k, 'today'));
-  const overdue = myOpen.filter(k => matchesDate(k, 'overdue'));
-  const hot = myOpen.filter(k => k.priority === 'urgent' || k.priority === 'high');
-  const pool = db.cases.filter(k => !k.assignee && isOpen(k));
+  const mine = myCases();
+  const myOpen = mine.filter(isOpen);
+  const urgent = myOpen.filter(k => k.priority === 'urgent');
+  const ongoing = myOpen.filter(k => k.status === 'in_progress');
+  const waitProvider = myOpen.filter(k => k.status === 'waiting_provider');
+  const waitClient = myOpen.filter(k => k.status === 'waiting_client');
   const me = findMember(ME);
   const view = homeView(state.home.view);
 
@@ -634,13 +667,18 @@ function renderHome() {
       </aside>
 
       <div class="dash-main">
-        <h1 class="visually-hidden">My dashboard</h1>
+        <header class="dash-head">
+          <p class="eyebrow"><img class="eyebrow-logo" src="favicon.svg" alt="">Dashboard</p>
+          <h1 class="page-title dash-title">My <span class="soft">dashboard</span></h1>
+        </header>
 
-        <section class="stats">
-          ${stat({ label: 'My open cases', value: myOpen.length, sub: `<span class="badge">${myOpen.filter(k => k.assignedBy !== ME).length} assigned</span><span>${myOpen.filter(k => k.assignedBy === ME).length} you took</span>`, ic: 'briefcase', featured: true, shortcut: 'view:all' })}
-          ${stat({ label: 'Due today', value: dueToday.length, sub: overdue.length ? `<span class="badge red">${overdue.length} overdue</span>` : '<span class="badge green">On track</span>', ic: 'clock', shortcut: 'date:today' })}
-          ${stat({ label: 'High priority', value: hot.length, sub: 'Urgent and high', ic: 'flame', shortcut: 'priority:hot' })}
-          ${stat({ label: 'Open pool', value: pool.length, sub: 'Waiting for someone to take them', ic: 'inbox', shortcut: 'view:pool' })}
+        <section class="stats stats-mini">
+          ${miniStat({ label: 'To handle', value: myOpen.length, ic: 'briefcase', shortcut: 'view:all' })}
+          ${miniStat({ label: 'All', value: mine.length, ic: 'layers' })}
+          ${miniStat({ label: 'Urgent', value: urgent.length, ic: 'flame', tone: 'urgent', shortcut: 'priority:urgent' })}
+          ${miniStat({ label: 'Ongoing', value: ongoing.length, ic: 'refresh', tone: 'progress', shortcut: 'view:in_progress' })}
+          ${miniStat({ label: 'On provider', value: waitProvider.length, ic: 'briefcase', tone: 'provider', shortcut: 'view:waiting_provider' })}
+          ${miniStat({ label: 'On client', value: waitClient.length, ic: 'clock', tone: 'client', shortcut: 'view:waiting_client' })}
         </section>
 
         <section class="panel">
@@ -929,9 +967,29 @@ function dotChart() {
 // ---------- Settings ----------
 const EMOJIS = ['🛎️', '🎩', '✈️', '🍷', '🌴', '⭐', '🦋', '🌙', '🗝️', '🥂', '💎', '🌸'];
 
+const BG_THEMES = [
+  { id: 0, label: 'Default' },
+  { id: 1, label: 'Blue' },
+  { id: 2, label: 'Green' },
+  { id: 3, label: 'Rose' },
+  { id: 4, label: 'Graphite' },
+];
+
+function bgThemeOf(member) {
+  return member && Number.isInteger(member.bg) ? member.bg : 0;
+}
+
+// Applies the signed-in member's background colour to the whole app shell.
+function applyBgTheme() {
+  const bg = bgThemeOf(findMember(ME));
+  document.body.classList.remove(...BG_THEMES.map(t => `bg-${t.id}`));
+  if (bg) document.body.classList.add(`bg-${bg}`);
+}
+
 function renderSettings() {
   const me = findMember(ME);
   const mine = myCases();
+  const bg = bgThemeOf(me);
   viewEl.innerHTML = `
     <header class="page-head">
       <div>
@@ -980,6 +1038,12 @@ function renderSettings() {
         <div class="setting-row">
           <div><b>Your icon</b><p>Upload a photo, pick an icon, or use your initials (${esc(memberInitials(me))}).</p></div>
           <button type="button" class="btn btn-secondary btn-md" data-action="edit-avatar">${icon('pencil')}Change</button>
+        </div>
+        <div class="setting-row">
+          <div><b>Background colour</b><p>Pick a background tint for your workspace.</p></div>
+          <div class="tone-row">
+            ${BG_THEMES.map(t => `<button type="button" class="bg-swatch bg-swatch-${t.id}${t.id === bg ? ' active' : ''}" data-bg="${t.id}" aria-label="${t.label} background" title="${t.label}"></button>`).join('')}
+          </div>
         </div>
         <div class="setting-row">
           <div><b>Sample data</b><p>${db.demo ? 'Sample clients and cases are showing so you can try Gustavo.' : 'Sample data is cleared.'}</p></div>
@@ -1038,6 +1102,12 @@ function openAvatarSheet() {
         <span class="fld-label">Colour</span>
         <div class="tone-row">
           ${[0, 1, 2, 3, 4].map(t => `<button type="button" class="tone-${t}${t === tone ? ' active' : ''}" data-tone="${t}" aria-label="Colour ${t + 1}"></button>`).join('')}
+        </div>
+      </div>
+      <div class="fld">
+        <span class="fld-label">Gradient</span>
+        <div class="tone-row">
+          ${[5, 6, 7, 8, 9].map(t => `<button type="button" class="tone-${t}${t === tone ? ' active' : ''}" data-tone="${t}" aria-label="Gradient ${t - 4}"></button>`).join('')}
         </div>
       </div>
       <div class="form-actions">
@@ -1143,24 +1213,29 @@ function sheetHead(ic, eyebrow, title, extra = '') {
     </div>`;
 }
 
-// ---------- Search (client ID / name, case number) ----------
+// ---------- Search (case ID, client ID, name, phone or email) ----------
 function caseMatches(query) {
   const digits = query.replace(/\D/g, '');
   if (!digits) return [];
   return db.cases
     .filter(k => String(k.number).includes(digits))
     .sort((a, b) => (String(b.number).startsWith(digits) - String(a.number).startsWith(digits)) || a.number - b.number)
-    .slice(0, 5);
+    .slice(0, 20);
 }
 
 function clientMatches(query) {
   const term = query.trim().toLowerCase();
-  const digits = term.replace(/^c-?/, '');
   if (!term) return [];
+  const idDigits = term.replace(/^c-?/, '');
+  const phoneDigits = term.replace(/\D/g, '');
   return db.clients
-    .filter(c => c.name.toLowerCase().includes(term) || (/^\d+$/.test(digits) && String(c.number).includes(digits)))
+    .filter(c =>
+      c.name.toLowerCase().includes(term) ||
+      (/^\d+$/.test(idDigits) && String(c.number).includes(idDigits)) ||
+      (c.email && c.email.toLowerCase().includes(term)) ||
+      (phoneDigits && c.phone && c.phone.replace(/\D/g, '').includes(phoneDigits)))
     .sort((a, b) => a.name.localeCompare(b.name))
-    .slice(0, 6);
+    .slice(0, 50);
 }
 
 function caseHit(kase) {
@@ -1176,62 +1251,85 @@ function caseHit(kase) {
     </div>`;
 }
 
-function clientHit(client) {
-  const open = db.cases.filter(k => k.clientId === client.id && isOpen(k)).length;
+function rankTag(tier) {
+  return `<span class="tag sm${tier !== 'Standard' ? ` tier-${tier.toLowerCase()}` : ''}">${esc(tier)}</span>`;
+}
+
+function clientResultRow(client) {
+  const total = db.cases.filter(k => k.clientId === client.id).length;
   return `
-    <div class="hit" role="button" tabindex="0" data-client="${client.id}">
+    <div class="hit client-result" role="button" tabindex="0" data-client="${client.id}">
       ${avatar(client.name, client.id, 'sm')}
       <span class="hit-main">
         <span class="hit-name">${esc(client.name)}</span>
-        <span class="hit-sub">${client.tier !== 'Standard' ? `${esc(client.tier)} · ` : ''}${open} open case${open === 1 ? '' : 's'}</span>
+        <span class="hit-sub">${esc([client.phone, client.email].filter(Boolean).join(' · ') || 'No contact details')}</span>
       </span>
-      ${idChip(clientNo(client))}
+      <span class="client-result-meta">
+        ${rankTag(client.tier)}
+        <span class="tag sm">${total} case${total === 1 ? '' : 's'}</span>
+        ${idChip(clientNo(client))}
+      </span>
+      ${client.email ? `<a class="icon-btn" data-action="email-client" href="mailto:${esc(client.email)}" title="Email ${esc(client.name)}" aria-label="Email ${esc(client.name)}">${icon('mail')}</a>` : ''}
     </div>`;
 }
 
-function openSearchSheet() {
-  openSheet(`
-    ${sheetHead('search', 'Search', 'Find a client or a case')}
-    <div class="form">
-      <div class="fld">
-        <label class="fld-label" for="sCase">Case number</label>
-        <label class="search lg">${icon('hash')}<input id="sCase" inputmode="numeric" autocomplete="off" placeholder="e.g. 1006 or G-1006"></label>
-      </div>
-      <div class="fld">
-        <label class="fld-label" for="sClient">Client</label>
-        <label class="search lg">${icon('user')}<input id="sClient" autocomplete="off" placeholder="Client ID or full name"></label>
-      </div>
-      <div class="results" id="sResults"></div>
-      <div class="search-divider"></div>
-      <div class="fld-row">
-        <button type="button" class="link-btn" data-action="advanced-search">${icon('sliders')}Advanced search</button>
-        <button type="button" class="link-btn" data-action="add-client">${icon('userPlus')}Add client</button>
-      </div>
-    </div>`, {
-    label: 'Search',
-    onMount(sheet) {
-      const caseIn = sheet.querySelector('#sCase');
-      const clientIn = sheet.querySelector('#sClient');
-      const results = sheet.querySelector('#sResults');
-      const draw = () => {
-        const cases = caseMatches(caseIn.value);
-        const clients = clientMatches(clientIn.value);
-        let html = '';
-        if (caseIn.value.trim()) html += `<p class="results-title">Cases</p>${cases.length ? cases.map(caseHit).join('') : '<div class="empty">No case with that number.</div>'}`;
-        if (clientIn.value.trim()) html += `<p class="results-title">Clients</p>${clients.length ? clients.map(clientHit).join('') : '<div class="empty">No client with that ID or name.</div>'}`;
-        results.innerHTML = html;
-      };
-      caseIn.addEventListener('input', draw);
-      clientIn.addEventListener('input', draw);
-      caseIn.addEventListener('keydown', e => {
-        if (e.key !== 'Enter') return;
-        const hits = caseMatches(caseIn.value);
-        const exact = hits.find(k => String(k.number) === caseIn.value.replace(/\D/g, '')) || (hits.length === 1 && hits[0]);
-        if (exact) openCaseSheet(exact.id);
-      });
-      caseIn.focus();
-    },
+// ---------- Search page (always in a new tab) ----------
+function openSearchTab(query = '') {
+  const hash = `#/search${query ? `?q=${encodeURIComponent(query)}` : ''}`;
+  const tab = window.open(`app.html${hash}`, '_blank');
+  if (!tab) {
+    location.hash = hash;
+    toast('Pop-ups are blocked, so search opened here');
+  }
+}
+
+function renderSearchPage(query) {
+  viewEl.innerHTML = `
+    <div class="form-page">
+      <header class="page-head">
+        <div>
+          <p class="eyebrow"><img class="eyebrow-logo" src="favicon.svg" alt="">Search</p>
+          <h1 class="page-title"><span class="soft">Find a</span> client or case</h1>
+        </div>
+      </header>
+      ${window.opener ? `<div class="tab-note">${icon('layers')}This opened in a new tab, so your other tab stays exactly where you left it.</div>` : ''}
+      <section class="panel">
+        <div class="form">
+          <div class="fld">
+            <label class="fld-label" for="pSearch">Case ID, client ID, name, phone or email</label>
+            <label class="search lg">${icon('search')}<input id="pSearch" autocomplete="off" placeholder="e.g. Nir, C-2004, G-1006, +1 555…" value="${esc(query)}"></label>
+          </div>
+          <div class="results" id="pResults"></div>
+          <div class="search-divider"></div>
+          <div class="fld-row">
+            <button type="button" class="link-btn" data-action="advanced-search">${icon('sliders')}Advanced search</button>
+            <button type="button" class="link-btn" data-action="add-client">${icon('userPlus')}Add client</button>
+          </div>
+        </div>
+      </section>
+    </div>`;
+
+  const input = viewEl.querySelector('#pSearch');
+  const results = viewEl.querySelector('#pResults');
+  const draw = () => {
+    const q = input.value.trim();
+    if (!q) { results.innerHTML = ''; return; }
+    const cases = caseMatches(q);
+    const clients = clientMatches(q);
+    let html = '';
+    html += `<p class="results-title">Cases</p>${cases.length ? cases.map(caseHit).join('') : '<div class="empty">No case with that ID.</div>'}`;
+    html += `<p class="results-title">Clients ${clients.length ? `<span class="count-badge">${clients.length}</span>` : ''}</p>${clients.length ? clients.map(clientResultRow).join('') : '<div class="empty">No client matches that.</div>'}`;
+    results.innerHTML = html;
+  };
+  input.addEventListener('input', draw);
+  input.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const hits = caseMatches(input.value);
+    const exact = hits.find(k => String(k.number) === input.value.replace(/\D/g, '')) || (hits.length === 1 && hits[0]);
+    if (exact) openCaseSheet(exact.id);
   });
+  input.focus();
+  draw();
 }
 
 function openClientSheet(id) {
@@ -1703,10 +1801,16 @@ function toast(message) {
 
 // ---------- Wiring ----------
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-copy],[data-take],[data-case],[data-client],[data-view],[data-shortcut],[data-fset],[data-atab],[data-range],[data-logtype],[data-action]');
-  if (!el || el.tagName === 'SELECT') return;
+  const el = e.target.closest('[data-copy],[data-take],[data-case],[data-client],[data-view],[data-shortcut],[data-fset],[data-atab],[data-range],[data-logtype],[data-bg],[data-stop],[data-action]');
+  if (!el || el.tagName === 'SELECT' || el.dataset.stop !== undefined) return;
   if (el.dataset.copy) return copyId(el.dataset.copy);
   if (el.dataset.take) return takeCase(el.dataset.take);
+  if (el.dataset.bg !== undefined) {
+    updateMember(ME, { bg: Number(el.dataset.bg) });
+    applyBgTheme();
+    render();
+    return toast('Background updated');
+  }
   if (el.dataset.case) return openCaseSheet(el.dataset.case);
   if (el.dataset.client) return openClientSheet(el.dataset.client);
   if (el.dataset.view) {
@@ -1736,12 +1840,18 @@ document.addEventListener('click', e => {
   switch (el.dataset.action) {
     case 'new-file': return openNewFileTab();
     case 'new-file-client': return openNewFileTab(el.dataset.clientId);
-    case 'search': return openSearchSheet();
+    case 'search': return openSearchTab();
     case 'advanced-search': return openAdvancedSearch();
     case 'add-client': return openAddClientSheet();
     case 'edit-avatar': return openAvatarSheet();
     case 'close-sheet': return closeSheet();
     case 'sign-out': return signOut();
+    case 'toggle-followup': {
+      const form = el.closest('.case').querySelector('[data-followup-form]');
+      form.hidden = !form.hidden;
+      if (!form.hidden) form.querySelector('input').focus();
+      return;
+    }
     case 'clear-refine':
       Object.assign(state[el.dataset.key], { priority: '', date: '', text: '' });
       return render();
@@ -1761,11 +1871,19 @@ document.addEventListener('click', e => {
 });
 
 document.addEventListener('change', e => {
-  const el = e.target.closest('select[data-fset]');
-  if (!el) return;
-  const [key, field] = el.dataset.fset.split('.');
-  state[key][field] = el.value;
-  render();
+  const fset = e.target.closest('select[data-fset]');
+  if (fset) {
+    const [key, field] = fset.dataset.fset.split('.');
+    state[key][field] = fset.value;
+    return render();
+  }
+  const statusEl = e.target.closest('select[data-status-for]');
+  if (statusEl) {
+    const id = statusEl.dataset.statusFor;
+    setCaseStatus(id, statusEl.value, ME);
+    toast(`${caseNo(findCase(id))} moved to ${labelOf(STATUSES, statusEl.value)}`);
+    return render();
+  }
 });
 
 document.addEventListener('input', e => {
@@ -1775,6 +1893,17 @@ document.addEventListener('input', e => {
   renderList(el.dataset.ftext);
 });
 
+document.addEventListener('submit', e => {
+  const form = e.target.closest('[data-followup-form]');
+  if (!form) return;
+  e.preventDefault();
+  const input = form.querySelector('input');
+  if (!input.value.trim()) return;
+  addCaseUpdate(form.dataset.followupForm, input.value, ME);
+  toast('Follow-up added');
+  renderList(form.dataset.listKey);
+});
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') return closeSheet();
   // Shortcuts: "/" searches, "n" opens a new file — unless you're typing.
@@ -1782,7 +1911,7 @@ document.addEventListener('keydown', e => {
   if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && !sheetRoot.firstElementChild) {
     if (e.key === '/') {
       e.preventDefault();
-      return openSearchSheet();
+      return openSearchTab();
     }
     if (e.key === 'n' || e.key === 'N') {
       e.preventDefault();
@@ -1836,6 +1965,7 @@ function init() {
   }
   document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
   refreshAvatars();
+  applyBgTheme();
   state.route = parseRoute();
   render();
 }

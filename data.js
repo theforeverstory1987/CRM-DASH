@@ -18,8 +18,9 @@ const PRIORITIES = [
 
 const STATUSES = [
   { id: 'new', label: 'New', short: 'New' },
-  { id: 'in_progress', label: 'In progress', short: 'In progress' },
-  { id: 'waiting', label: 'Waiting on client', short: 'Waiting' },
+  { id: 'in_progress', label: 'In progress', short: 'Ongoing' },
+  { id: 'waiting_provider', label: 'Waiting on provider', short: 'On provider' },
+  { id: 'waiting_client', label: 'Waiting on client', short: 'On client' },
   { id: 'done', label: 'Done', short: 'Done' },
 ];
 
@@ -50,6 +51,8 @@ function migrate(data) {
   }
   const admin = data.team.find(m => m.id === 'admin');
   if (admin && admin.initials === undefined) admin.initials = 'AR';
+  // "Waiting" used to be one status; it's now split into provider vs. client.
+  for (const k of data.cases) if (k.status === 'waiting') k.status = 'waiting_client';
   return data;
 }
 
@@ -184,7 +187,7 @@ function buildSeed() {
   };
 
   const team = [
-    { id: 'admin', name: 'Admin', initials: 'AR', title: 'Administrator', role: 'admin' },
+    { id: 'admin', name: 'Amit.R', initials: 'AR', title: 'Administrator', role: 'admin' },
     { id: 'daniel', name: 'Daniel Reyes', title: 'Head concierge', role: 'admin' },
     { id: 'sofia', name: 'Sofia Marín', title: 'Concierge', role: 'staff' },
     { id: 'noa', name: 'Noa Adler', title: 'Concierge', role: 'staff' },
@@ -206,14 +209,14 @@ function buildSeed() {
   const rows = [
     ['c1', "Anniversary dinner for 2 at the chef's table", 'emma', 'Dining', 'phone', 'high', 'in_progress', 'admin', 'daniel', 'daniel', 26, dayAt(0, 19, 30)],
     ['c2', 'Private jet, Nice to London', 'james', 'Travel', 'email', 'urgent', 'new', 'admin', 'daniel', 'daniel', 3, dayAt(1, 9)],
-    ['c3', 'Courtside tickets for Saturday', 'marco', 'Tickets', 'phone', 'normal', 'waiting', 'admin', 'admin', 'admin', 50, dayAt(3, 18)],
+    ['c3', 'Courtside tickets for Saturday', 'marco', 'Tickets', 'phone', 'normal', 'waiting_client', 'admin', 'admin', 'admin', 50, dayAt(3, 18)],
     ['c4', 'Suite upgrade for the Tokyo stay', 'aiko', 'Hotel', 'email', 'normal', 'in_progress', 'admin', 'admin', 'sofia', 30, dayAt(-1, 17)],
     ['c5', '40 white roses for a birthday', 'olivia', 'Gifts', 'phone', 'low', 'done', 'admin', 'admin', 'admin', 80, dayAt(-2, 10), 50],
     ['c6', 'Yacht charter in Mykonos, 4 days', 'noah', 'Travel', 'email', 'high', 'new', null, null, 'daniel', 5, dayAt(6, 12)],
     ['c7', 'Table for 8, Friday at 8pm', 'james', 'Dining', 'phone', 'normal', 'new', null, null, 'sofia', 2, dayAt(2, 20)],
     ['c8', 'Personal shopper in Milan', 'emma', 'Lifestyle', 'email', 'normal', 'in_progress', 'sofia', 'daniel', 'daniel', 40, dayAt(4, 11)],
     ['c9', 'Airport transfer from JFK', 'olivia', 'Travel', 'phone', 'normal', 'done', 'noa', 'noa', 'noa', 110, dayAt(-4, 7), 96],
-    ['c10', 'Opera box for the premiere', 'marco', 'Events', 'email', 'high', 'waiting', 'sofia', 'sofia', 'sofia', 70, dayAt(9, 19)],
+    ['c10', 'Opera box for the premiere', 'marco', 'Events', 'email', 'high', 'waiting_provider', 'sofia', 'sofia', 'sofia', 70, dayAt(9, 19)],
     ['c11', 'Spa day for two', 'aiko', 'Lifestyle', 'phone', 'low', 'new', null, null, 'admin', 20, dayAt(7, 10)],
     ['c12', 'Late checkout and a car to the airport', 'james', 'Hotel', 'email', 'normal', 'in_progress', 'noa', 'daniel', 'daniel', 16, dayAt(1, 11)],
   ];
@@ -233,6 +236,7 @@ function buildSeed() {
   byId.c1.details = 'Celebrating 10 years. Would love a small cake at the end, no shellfish.';
   byId.c1.updates.push({ id: uid(), at: iso(now - 4 * HOUR), by: 'admin', text: 'Chef confirmed the counter for 7:30pm and a shellfish-free menu.' });
   byId.c3.updates.push({ id: uid(), at: iso(now - 20 * HOUR), by: 'admin', text: 'Sent two seat options by email. Waiting for Marco to choose.' });
+  byId.c10.updates.push({ id: uid(), at: iso(now - 30 * HOUR), by: 'sofia', text: 'Box office says they’ll confirm availability by Friday.' });
   byId.c2.details = 'Two passengers, one dog. Flexible by an hour either way.';
 
   const activity = [];

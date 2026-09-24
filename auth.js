@@ -2,7 +2,7 @@
 // credentials are visible to anyone who opens this file — replace with a
 // real backend before giving the portal to clients.
 const USERS = [
-  { username: 'admin', password: '12345', name: 'Admin', role: 'admin' },
+  { username: 'admin', password: '12345', name: 'Amit.R', role: 'admin' },
 ];
 
 const SESSION_KEY = 'crm_session';
