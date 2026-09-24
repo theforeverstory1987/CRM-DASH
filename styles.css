@@ -7,42 +7,27 @@
   --brand-100: #d2e3ff;
 
   /* Surfaces & text (light) */
-  --bg: #f4f6fa;
+  --bg: #f5f5f5;
   --surface: #ffffff;
-  --border: #e1e5ec;
-  --text: #14161b;
-  --text-muted: #6b7280;
+  --border: #e7e7e7;
+  --text: #111111;
+  --text-muted: #6e6e73;
   --primary: var(--brand-500);
   --primary-hover: var(--brand-700);
   --primary-soft: #e6f0ff;
   --danger: #c0392b;
   --danger-bg: #fbeae8;
 
-  /* Always-dark sign-in panel */
-  --ink: #15171c;
-  --ink-raised: #20232a;
-  --ink-border: #30343d;
-  --ink-text: #f4f6fa;
-  --ink-muted: #8b919c;
+  /* Sign-in panel */
+  --ink: #f6f4f2;
+  --ink-raised: #ffffff;
+  --ink-border: #e2ddd7;
+  --ink-text: #111111;
+  --ink-muted: #6b6b70;
 
   --radius: 14px;
   --radius-lg: 22px;
-  --font: "Urbanist", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #111318;
-    --surface: #1b1d23;
-    --border: #2c2f37;
-    --text: #eef0f4;
-    --text-muted: #9aa0ab;
-    --primary: #2f80ff;
-    --primary-hover: #5596ff;
-    --primary-soft: #13254a;
-    --danger: #f08a7e;
-    --danger-bg: #3a1d1a;
-  }
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -106,9 +91,7 @@ body {
 .brand-panel {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse 70% 55% at 50% 72%, #4d94ff 0%, transparent 70%),
-    linear-gradient(180deg, #0050d6 0%, #0a6cff 55%, #0054dd 100%);
+  background: var(--brand-500);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,8 +106,6 @@ body {
     linear-gradient(to bottom, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
   background-size: 23% 20%;
   background-position: 12% 12%;
-  mask-image: radial-gradient(ellipse 60% 55% at 50% 42%, #000 40%, transparent 85%);
-  -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 42%, #000 40%, transparent 85%);
 }
 
 .brand-logo {
@@ -185,17 +166,18 @@ body {
 
 .signin-title h1 {
   margin: 0;
-  font-size: clamp(44px, 6vw, 68px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-size: clamp(46px, 6vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.05em;
   line-height: 1;
+  color: #111111;
 }
 
 .app-icon {
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 6px 18px rgba(0, 103, 255, 0.25);
   flex-shrink: 0;
 }
 
@@ -259,7 +241,7 @@ body {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--brand-300);
+  color: var(--brand-500);
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -268,7 +250,7 @@ body {
   border-radius: 10px;
 }
 
-.toggle-password:hover { background: rgba(143, 184, 255, 0.12); }
+.toggle-password:hover { background: var(--primary-soft); }
 
 /* iOS-style toggle switch */
 .switch {
@@ -322,9 +304,9 @@ body {
 .signin-form .btn-primary:hover { background: #1f7bff; }
 
 .login-error {
-  background: rgba(240, 138, 126, 0.12);
-  border: 1px solid rgba(240, 138, 126, 0.35);
-  color: #f5a89e;
+  background: #fdecee;
+  border: 1px solid #f7c5cb;
+  color: #c81e32;
   border-radius: var(--radius);
   padding: 12px 14px;
   font-size: 14px;
@@ -369,60 +351,3 @@ body {
   .app-icon { width: 52px; height: 52px; border-radius: 13px; }
 }
 
-/* ---------- App shell (after login) ---------- */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 24px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brand img {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-}
-
-.brand-name {
-  font-weight: 600;
-  font-size: 19px;
-}
-
-.topbar-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  color: var(--text-muted);
-}
-
-.main {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 32px 24px;
-}
-
-.welcome h1 {
-  margin: 0 0 6px;
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.welcome p {
-  margin: 0;
-  color: var(--text-muted);
-}
-
-@media (max-width: 480px) {
-  .topbar { padding: 12px 16px; }
-  .main { padding: 24px 16px; }
-}
