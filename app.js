@@ -626,7 +626,7 @@ function caseCard(kase, key) {
   const open = expandedCases.has(kase.id);
   const d = kase.dueAt ? new Date(kase.dueAt) : null;
   const late = isOpen(kase) && d && d < new Date();
-  const cls = [!isOpen(kase) && 'is-done', late && 'is-overdue', open && 'is-open'].filter(Boolean).join(' ');
+  const cls = [`st-${kase.status}`, !isOpen(kase) && 'is-done', late && 'is-overdue', isOpen(kase) && kase.priority === 'urgent' && 'is-urgent', open && 'is-open'].filter(Boolean).join(' ');
   const lastUpdate = lastUpdateOf(kase);
   const kind = requestKind(kase);
   const countdown = dueCountdown(kase);
@@ -1515,7 +1515,7 @@ function reportsHtml() {
     .filter(r => r.value > 0)
     .sort((a, b) => b.value - a.value);
   const byPriority = [
-    { label: 'Urgent', color: '#ff4d1a', value: openNow.filter(k => k.priority === 'urgent').length },
+    { label: 'Urgent', color: '#ff3350', value: openNow.filter(k => k.priority === 'urgent').length },
     { label: 'High', color: '#f97316', value: openNow.filter(k => k.priority === 'high').length },
     { label: 'Normal', color: '#0067ff', value: openNow.filter(k => k.priority === 'normal').length },
     { label: 'Low', color: '#b8b8bd', value: openNow.filter(k => k.priority === 'low').length },

@@ -4,21 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f6f4f2">
-<title>Sign in · Gustavo</title>
+<title>Gustavo</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=48">
+<link rel="stylesheet" href="styles.css?v=49">
 </head>
 <body class="login-page">
 <div class="login-shell">
-  <!-- Sign-in panel -->
+  <!-- Welcome: no username or password, one click in. -->
   <main class="signin-panel">
     <div class="signin-inner">
       <div class="signin-eyebrow">
         <span>001</span>
-        <span>Sign in</span>
+        <span>Welcome</span>
       </div>
 
       <div class="signin-title">
@@ -26,48 +26,24 @@
         <img class="app-icon" src="favicon.svg" alt="" width="64" height="64">
       </div>
 
-      <p class="signin-lede">Welcome back. <strong>Sign in to manage your clients and their requests.</strong></p>
+      <p class="signin-lede">The concierge team’s CRM. <strong>Clients, requests, suppliers and follow-ups, all in one dashboard.</strong></p>
 
-      <div id="loginError" class="login-error hidden" role="alert"></div>
-
-      <form id="loginForm" class="signin-form" novalidate>
-        <div class="field">
-          <label for="username">Username</label>
-          <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" autofocus required>
-        </div>
-
-        <div class="field">
-          <label for="password">Password</label>
-          <div class="password-wrap">
-            <input id="password" name="password" type="password" autocomplete="current-password" required>
-            <button type="button" id="togglePassword" class="toggle-password" aria-label="Show password">Show</button>
-          </div>
-        </div>
-
-        <label class="switch">
-          <input id="remember" type="checkbox">
-          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
-          <span>Remember me</span>
-        </label>
-
-        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
-      </form>
-
-      <p class="signin-footer">Need access? Contact your administrator.</p>
+      <a class="btn btn-primary btn-block enter-btn" id="enterBtn" href="app.html">Enter Gustavo</a>
     </div>
   </main>
 
-  <!-- Brand panel -->
-  <section class="brand-panel" aria-hidden="true">
-    <div class="brand-grid"></div>
-    <svg class="brand-logo" viewBox="0 0 100 100" fill="none" stroke-linecap="round">
+  <!-- Brand panel: the logo and what the dashboard is for. -->
+  <section class="brand-panel">
+    <div class="brand-grid" aria-hidden="true"></div>
+    <svg class="brand-logo" viewBox="0 0 100 100" fill="none" stroke-linecap="round" aria-hidden="true">
       <path d="M74.6 32.8 A30 30 0 1 0 78.2 60.3" stroke="currentColor" stroke-width="17"/>
       <path d="M59 56 L78 56" stroke="currentColor" stroke-width="15" opacity="0.7"/>
     </svg>
+    <p class="brand-tagline">Every client request, from the first call to done: cases, follow-ups, suppliers and reminders in one place for the whole team.</p>
   </section>
 </div>
 
-<script src="auth.js?v=48"></script>
-<script src="login.js?v=48"></script>
+<script src="auth.js?v=49"></script>
+<script src="login.js?v=49"></script>
 </body>
 </html>

@@ -16,10 +16,20 @@
   --primary: #0067ff;
   --primary-hover: #0057d9;
   --primary-soft: #e8f0ff;
-  --red: #ff4d1a;
-  --red-strong: #e63c0c;
-  --red-text: #d63a0c;
-  --red-soft: #fff0ea;
+  --red: #ff3350;
+  --red-strong: #e11d48;
+  --red-text: #d10f2d;
+  --red-soft: #ffe8ec;
+  --purple: #8a3ffc;
+  --purple-text: #6f2ae0;
+  --purple-soft: #f1e8ff;
+  --amber: #ff8a00;
+  --amber-text: #b45309;
+  --amber-soft: #fff1e0;
+  --teal: #0891b2;
+  --teal-text: #0e7490;
+  --teal-soft: #e0f5fa;
+  --green-vivid: #22c55e;
   --orange: #f97316;
   --orange-text: #c2410c;
   --orange-soft: #fff2e8;
@@ -32,7 +42,7 @@
   --orange-600: #e04800;
   --green: #15803d;
   --green-soft: #e9f7ee;
-  --danger: #d63a0c;
+  --danger: #d10f2d;
   --radius-card: 26px;
   --sheet-bg: #ffffff;
   --shadow-card: 0 1px 2px rgba(17, 17, 17, 0.04), 0 8px 24px rgba(17, 17, 17, 0.04);
@@ -65,15 +75,21 @@ html.dark .app-body {
   --primary: #3d8bff;
   --primary-hover: #5a9cff;
   --primary-soft: rgba(61, 139, 255, 0.18);
-  --red-text: #ff8a66;
-  --red-soft: rgba(255, 77, 26, 0.18);
+  --red-text: #ff7a90;
+  --purple-text: #b996ff;
+  --purple-soft: rgba(138, 63, 252, 0.22);
+  --amber-text: #ffb45c;
+  --amber-soft: rgba(255, 138, 0, 0.18);
+  --teal-text: #5fd0e8;
+  --teal-soft: rgba(8, 145, 178, 0.22);
+  --red-soft: rgba(255, 51, 80, 0.18);
   --orange-text: #ffa45c;
   --orange-soft: rgba(249, 115, 22, 0.18);
   --orange-50: rgba(249, 115, 22, 0.1);
   --orange-100: rgba(249, 115, 22, 0.22);
   --green: #3fd07a;
   --green-soft: rgba(34, 197, 94, 0.18);
-  --danger: #ff8a66;
+  --danger: #ff7a90;
   --sheet-bg: #1a1d23;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
   color-scheme: dark;
@@ -4116,3 +4132,32 @@ html.dark .car-pic { color: #f1f2f4; }
   .cw-meta { grid-template-columns: minmax(0, 1fr); }
   .budget-row { flex-wrap: wrap; }
 }
+
+/* Status colours: blue new, purple ongoing, orange waiting on supplier, turquoise waiting on client,
+   green done. Red is urgent (and the alert colour). */
+.tag.st-new,
+.status-select.st-new { background-color: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+.tag.st-in_progress,
+.status-select.st-in_progress { background-color: var(--purple-soft); border-color: var(--purple); color: var(--purple-text); }
+.tag.st-waiting_provider,
+.status-select.st-waiting_provider { background-color: var(--amber-soft); border-color: var(--amber); color: var(--amber-text); }
+.tag.st-waiting_client,
+.status-select.st-waiting_client { background-color: var(--teal-soft); border-color: var(--teal); color: var(--teal-text); }
+.tag.st-done,
+.status-select.st-done { background-color: var(--green-soft); border-color: var(--green-vivid); color: var(--green); }
+.tag.pr-urgent { background: var(--red-strong); border-color: var(--red-strong); color: #fff; }
+
+.transition .tag.to.st-in_progress { background: var(--purple); border-color: var(--purple); color: #fff; }
+.transition .tag.to.st-waiting_provider { background: var(--amber); border-color: var(--amber); color: #111; }
+.transition .tag.to.st-waiting_client { background: var(--teal); border-color: var(--teal); color: #fff; }
+.transition .tag.to.st-done { background: var(--green-vivid); border-color: var(--green-vivid); color: #111; }
+
+/* Each case bar's left edge shows its status; urgent open cases are red. */
+.case-bar { border-left: 5px solid var(--bar-edge, var(--card-border)); }
+.case-bar.is-overdue { border-left: 5px solid var(--bar-edge, var(--card-border)); }
+.case-bar.st-new { --bar-edge: var(--primary); }
+.case-bar.st-in_progress { --bar-edge: var(--purple); }
+.case-bar.st-waiting_provider { --bar-edge: var(--amber); }
+.case-bar.st-waiting_client { --bar-edge: var(--teal); }
+.case-bar.st-done { --bar-edge: var(--green-vivid); }
+.case-bar.is-urgent { --bar-edge: var(--red); }

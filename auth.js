@@ -31,3 +31,13 @@ function endSession() {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(SESSION_KEY);
 }
+
+// The app doesn't ask for a username or password: without a session, it signs in as the team's admin.
+function ensureSession() {
+  try {
+    if (!getSession()) startSession(USERS[0], true);
+  } catch {
+    // Storage is blocked: the app still opens, it just won't remember you.
+  }
+  return getSession();
+}
