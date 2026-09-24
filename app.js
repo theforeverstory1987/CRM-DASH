@@ -18,7 +18,7 @@ const state = {
   route: { name: 'home' },
   // The dashboard shows My cases or All files; the tiles switch between them in place.
   dash: 'mine',
-  home: { view: 'all', type: '', priority: '', date: '', sort: 'due', text: '' },
+  home: { view: 'all', layout: 'squares', handled: 'all', created: '', status: '' },
   all: { status: 'all', whose: '', type: '', priority: '', date: '', sort: 'due', text: '' },
   suppliers: { group: 'transfers', id: '' },
   files: { view: 'calendar', handled: 'all', status: 'new', tier: 'VIP', name: '', from: '', to: '', type: '', priority: '', date: '', sort: 'due', text: '' },
@@ -69,6 +69,8 @@ const ICONS = {
   receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
   send: '<path d="M21 3 10 14"/><path d="M21 3 14 21l-4-7-7-4z"/>',
   folder: '<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.3l2 2.5h8.7A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/>',
+  grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
 };
 
 const STATUS_ICONS = { new: 'plus', in_progress: 'refresh', waiting_provider: 'store', waiting_client: 'clock', done: 'check' };
@@ -147,7 +149,7 @@ function memberAvatar(id, size = '', { badge = false } = {}) {
   const { cls, style } = paintOf(member, id);
   let face;
   if (member && member.photo) face = `<span class="avatar ${size}"><img src="${esc(member.photo)}" alt=""></span>`;
-  else if (member && member.emoji) face = `<span class="avatar emoji ${cls} ${size}"${style}>${esc(member.emoji)}</span>`;
+  else if (member && member.emoji) face = `<span class="avatar emoji ${cls} ${size}"${style}>${emojiPic(member.emoji)}</span>`;
   else return `<span class="avatar ${cls} ${size}"${style} aria-hidden="true">${esc(memberInitials(member))}</span>`;
   // With a photo or icon, only the profile button in the side rail keeps the initials, in a corner bubble.
   if (!badge) return face.replace('<span class="avatar', '<span aria-hidden="true" class="avatar');
@@ -168,6 +170,20 @@ function flag(code) {
   const country = COUNTRIES.find(([c]) => c === code);
   if (!country || !FLAG_SVGS[code]) return '';
   return `<svg class="flag" viewBox="0 0 ${FLAG_W} ${FLAG_H}" preserveAspectRatio="none" role="img" aria-label="${esc(country[1])}"><title>${esc(country[1])}</title>${FLAG_SVGS[code]}</svg>`;
+}
+
+// Pictures that are real photos instead of 3D emoji. Transfers: a black Rolls-Royce Phantom
+// (photo by Terry Cohen on Unsplash, free under the Unsplash License), cropped square.
+const PHOTO_PICS = {
+  '🚘': 'https://images.unsplash.com/photo-1776639520963-ba8b7475e9de?w=160&h=160&fit=crop&crop=entropy&auto=format&q=80',
+};
+
+// Emoji drawn as Microsoft's Fluent 3D pictures (MIT licence, 256px, from jsDelivr), sized to the text around them.
+// Offline, the plain emoji takes the picture's place (see the error listener under Wiring).
+function emojiPic(emoji) {
+  if (PHOTO_PICS[emoji]) return `<img class="emoji3d photo-pic" src="${PHOTO_PICS[emoji]}" alt="" data-fallback="${esc(emoji)}" draggable="false">`;
+  const code = [...emoji].map(ch => ch.codePointAt(0).toString(16)).join('-');
+  return `<img class="emoji3d" src="https://cdn.jsdelivr.net/npm/@lobehub/fluent-emoji-3d@1/assets/${code}.webp" alt="" data-fallback="${esc(emoji)}" draggable="false">`;
 }
 
 // The request type as a hashtag, with the request's picture in front when given (🎤 #Tickets).
@@ -280,29 +296,13 @@ function tierTag(tier) {
   return tier && tier !== 'Standard' ? `<span class="tag sm tier-${tier.toLowerCase()}">${esc(tier)}</span>` : '';
 }
 
-function stat({ label, value, sub = '', ic, featured = false, shortcut = '' }) {
-  const tag = shortcut ? 'button' : 'div';
-  const attrs = shortcut ? ` type="button" data-shortcut="${shortcut}" aria-label="${esc(label)}: ${value}. Show these cases"` : '';
+function stat({ label, value, sub = '', ic, featured = false }) {
   return `
-    <${tag} class="stat${featured ? ' featured' : ''}"${attrs}>
+    <div class="stat${featured ? ' featured' : ''}">
       <span class="stat-top"><span class="stat-label">${label}</span><span class="stat-icon">${icon(ic)}</span></span>
       <span class="stat-value">${value}</span>
       <span class="stat-sub">${sub}</span>
-    </${tag}>`;
-}
-
-// A coloured dashboard tile: a link (href), a list shortcut, or an action button.
-function dashTile({ label, value, sub = '', ic, color, href = '', shortcut = '', action = '', active = false }) {
-  const tag = href ? 'a' : 'button';
-  const attrs = href ? ` href="${href}"`
-    : ` type="button"${shortcut ? ` data-shortcut="${shortcut}"` : ''}${action ? ` data-action="${action}"` : ''}`;
-  return `
-    <${tag} class="dash-tile tile-${color}${active ? ' active' : ''}"${attrs}${active ? ' aria-current="page"' : ''}>
-      <span class="dash-tile-icon">${icon(ic)}</span>
-      <span class="dash-tile-value">${value}</span>
-      <span class="dash-tile-label">${label}</span>
-      ${sub ? `<span class="dash-tile-sub">${sub}</span>` : ''}
-    </${tag}>`;
+    </div>`;
 }
 
 function pillButtons(attr, opts, active) {
@@ -354,6 +354,10 @@ const HOME_VIEWS = [
 ];
 const VIEW_KEY = 'gustavo_home_view';
 
+// How My cases shows its cases: [id, label, icon].
+const HOME_LAYOUTS = [['squares', 'Squares', 'grid'], ['list', 'List', 'list'], ['calendar', 'Calendar', 'calendar']];
+const LAYOUT_KEY = 'gustavo_home_layout';
+
 function homeView(id) {
   for (const s of HOME_VIEWS) for (const v of s.items) if (v.id === id) return v;
   return HOME_VIEWS[0].items[0];
@@ -384,7 +388,7 @@ const FILE_VIEWS = [
   {
     section: 'Views',
     items: [
-      { id: 'calendar', label: 'Calendar view', icon: 'calendar', hint: 'Cases on the day they’re needed, this month and a month ahead', count: () => calendarCases().length },
+      { id: 'calendar', label: 'Calendar view', icon: 'calendar', hint: 'Cases on the day they’re needed, from today to five weeks ahead', count: () => calendarCases().length },
       { id: 'today', label: 'Opened today', icon: 'filePlus', hint: 'Files opened today', empty: 'No files opened today yet.', count: () => filesFor('today').length },
       { id: 'all', label: 'All files', icon: 'layers', hint: 'Every file across the team, open first', empty: 'No files yet.', count: () => db.cases.length },
     ],
@@ -484,17 +488,22 @@ function matchesPriority(kase, filter) {
 
 function filteredCases(key) {
   const f = state[key];
+  // My cases: the side menu picks the cases, narrowed by when they were opened and status; open first, then by date.
+  if (key === 'home') {
+    return homeViewCases(f.view)
+      .filter(k => matchesCreated(k, f.created) && (!f.status || k.status === f.status))
+      .sort((a, b) => (isOpen(b) - isOpen(a)) || dueSort(a, b));
+  }
   const term = f.text.trim().toLowerCase();
-  const showsDone = key === 'files' ? f.view === 'status' && f.status === 'done' : key !== 'home' && f.status === 'done';
+  const showsDone = key === 'files' ? f.view === 'status' && f.status === 'done' : f.status === 'done';
   const sorters = {
     due: showsDone ? doneSort : dueSort,
     priority: (a, b) => (PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]) || dueSort(a, b),
     newest: (a, b) => b.createdAt.localeCompare(a.createdAt),
   };
   const byClient = (a, b) => clientNameOf(a).localeCompare(clientNameOf(b)) || (isOpen(b) - isOpen(a)) || dueSort(a, b);
-  const base = key === 'home' ? homeViewCases(f.view)
-    : key === 'files' ? filesFor(f.view)
-      : scopedCases(key).filter(k => (f.status === 'all' ? isOpen(k) : k.status === f.status));
+  const base = key === 'files' ? filesFor(f.view)
+    : scopedCases(key).filter(k => (f.status === 'all' ? isOpen(k) : k.status === f.status));
   return base
     .filter(k => !f.type || k.category === f.type)
     .filter(k => matchesPriority(k, f.priority))
@@ -554,12 +563,14 @@ function renderList(key) {
   const list = filteredCases(key);
   const countEl = document.getElementById(`${key}Count`);
   if (countEl) countEl.textContent = list.length;
-  const emptyText = isRefined(key)
-    ? 'No cases match these filters.'
+  const refined = key === 'home' ? Boolean(state.home.created || state.home.status) : isRefined(key);
+  const emptyText = refined ? 'No cases match these filters.'
     : key === 'home' ? homeView(state.home.view).empty
       : key === 'files' ? fileView(state.files.view).empty : 'No cases here.';
+  // The dashboard shows squares (My cases can switch to a list); other lists keep one-line bars.
+  const card = key === 'files' || (key === 'home' && state.home.layout !== 'list') ? caseTile : caseCard;
   listEl.innerHTML = list.length
-    ? list.map(k => caseCard(k, key)).join('')
+    ? list.map(k => card(k, key)).join('')
     : `<div class="empty">${emptyText}</div>`;
 }
 
@@ -583,7 +594,7 @@ const CATEGORY_KINDS = {
   Restaurant: { icon: '🍽️', date: 'Reservation' },
   Hotel: { icon: '🏨', date: 'Check-in' },
   Flights: { icon: '✈️', date: 'Flight' },
-  Transfers: { icon: CAR_PIC, date: 'Pickup' },
+  Transfers: { icon: '🚘', date: 'Pickup' },
   Massage: { icon: '💆', date: 'Appointment' },
   Yacht: { icon: '🛥️', date: 'Sailing' },
   Events: { icon: '🎉', date: 'Event date' },
@@ -652,7 +663,7 @@ function caseCard(kase, key) {
         <div class="bar-more">
           <div class="bar-facts">
             <span class="bar-when ${late ? 'overdue' : !isOpen(kase) ? 'done' : ''}">
-              <span class="bar-when-pic" aria-hidden="true">${kind.icon}</span>
+              <span class="bar-when-pic" aria-hidden="true">${emojiPic(kind.icon)}</span>
               <span><small>${esc(kind.date)}</small><b>${esc(d ? `${longDayFmt.format(d)}, ${timeFmt.format(d)}` : 'No date')}</b>${d ? `<em>${esc(countdown.text)}</em>` : ''}</span>
             </span>
             <span class="bar-request">${hashtag(kase.category)}${kind.label ? `<span class="kind-badge">${esc(kind.label)}</span>` : ''}${hotTag(kase.priority, 'sm')}</span>
@@ -669,6 +680,52 @@ function caseCard(kase, key) {
             <button type="button" class="btn btn-primary btn-md bar-open" data-case="${kase.id}">${icon('arrowUpRight')}Open case</button>
           </div>
         </div>` : ''}
+    </div>`;
+}
+
+// A case's date on a square: 25.09.26 (day, month, two-digit year).
+function dotDate(iso) {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(-2)}`;
+}
+
+// A case on the dashboard, top to bottom: file ID (with the request's picture in the corner), client and flag,
+// the headline, the date, then Follow-up (with how many so far) and Email, and the status (changeable there).
+// Clicking anywhere else on the square opens the case.
+function caseTile(kase, key) {
+  const client = findClient(kase.clientId);
+  const cls = [`st-${kase.status}`, !isOpen(kase) && 'is-done'].filter(Boolean).join(' ');
+  const n = kase.updates.length;
+  const late = isOpen(kase) && kase.dueAt && new Date(kase.dueAt) < new Date();
+  return `
+    <div class="case-tile ${cls}" data-bar="${kase.id}" data-list-key="${key}" data-case="${kase.id}">
+      <div class="tile-body" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case #${caseNo(kase)}">
+        <span class="tile-top">
+          <span class="tile-no">#${caseNo(kase)}</span>
+          <span class="tile-pic" aria-hidden="true">${emojiPic(requestKind(kase).icon)}</span>
+        </span>
+        <span class="tile-client"><span class="tile-name">${esc(client ? client.name : 'Unknown client')}</span>${client ? flag(client.country) : ''}</span>
+        <span class="tile-title">${esc(kase.title)}</span>
+        <span class="tile-date${late ? ' overdue' : ''}">${icon('calendar')}${kase.dueAt ? dotDate(kase.dueAt) : 'No date'}</span>
+      </div>
+      <div class="tile-actions">
+        <button type="button" class="tile-btn primary" data-action="toggle-followup" aria-label="Add a follow-up (${n} so far)">${icon('plus')}Follow-up${n ? `<span class="tile-btn-count">${n}</span>` : ''}</button>
+        ${client && client.email
+          ? `<a class="tile-btn" href="${esc(caseMailto(kase, client.email))}" title="Send email to ${esc(client.email)}" data-stop>${icon('mail')}Email</a>`
+          : `<span class="tile-btn is-off" data-stop>${icon('mail')}No email</span>`}
+      </div>
+      <span class="tile-status" data-stop>
+        <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
+          ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
+        </select>
+      </span>
+      <form class="quick-followup" data-followup-form="${kase.id}" data-list-key="${key}" data-stop hidden>
+        <input type="text" placeholder="Write a follow-up…" aria-label="New follow-up for #${caseNo(kase)}">
+        <span class="quick-followup-actions">
+          <button type="button" class="btn btn-secondary btn-md" data-action="toggle-followup">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add</button>
+        </span>
+      </form>
     </div>`;
 }
 
@@ -807,41 +864,90 @@ function refreshAvatars() {
 // Only the case list scrolls here, so keep its position when the page redraws in the same view.
 let homeListView = null;
 
-// Quick search and the overview tiles, shared by My dashboard and All files.
-function dashTop(active) {
-  const mine = myCases();
-  const reminders = myReminders().filter(r => !r.done);
-  const overdue = reminders.filter(r => isPast(r.at));
-  const notes = myNotes();
+// The page title, like the Search page's: "My cases" or "All files".
+function dashHead(soft, title) {
   return `
-      <div class="quick-search" id="quickSearch">
-        <label class="quick-label" for="quickInput">${icon('search')}Quick search</label>
-        <input id="quickInput" type="search" autocomplete="off" placeholder="File ID, client name or ID">
-        <div class="quick-results" id="quickResults" hidden></div>
-      </div>
+    <header class="page-head dash-head">
+      <h1 class="page-title"><span class="soft">${soft}</span> ${title}</h1>
+      ${phoneExtras()}
+    </header>`;
+}
 
-      <section class="dash-tiles" aria-label="Overview">
-        ${dashTile({ label: 'My cases', value: mine.length, sub: `${mine.filter(isOpen).length} open`, ic: 'briefcase', color: 'blue', shortcut: 'view:all', active: active === 'home' })}
-        ${dashTile({ label: 'All files', value: db.cases.length, sub: `${db.cases.filter(isOpen).length} open · whole team`, ic: 'layers', color: 'purple',
-          action: 'show-files', active: active === 'files' })}
-        ${dashTile({ label: 'Reminders', value: reminders.length, ic: 'clock', color: 'orange', action: 'open-reminders',
-          sub: overdue.length ? `${overdue.length} overdue` : reminders[0] ? `Next: ${esc(fmtDayTime(reminders[0].at))}` : 'Add a reminder' })}
-        ${dashTile({ label: 'Sticky notes', value: notes.length, ic: 'pencil', color: 'green', action: 'open-notes',
-          sub: notes[0] ? esc(notes[0].text) : 'Add a note' })}
-      </section>`;
+// Open reminders (and how many are overdue) and sticky notes, for their counts.
+function reminderNoteCounts() {
+  const reminders = myReminders().filter(r => !r.done);
+  return { reminders: reminders.length, overdue: reminders.filter(r => isPast(r.at)).length, notes: myNotes().length };
+}
+
+// On phones the Reminders and Sticky notes box is hidden, so two round buttons sit beside the title instead.
+function phoneExtras() {
+  const c = reminderNoteCounts();
+  const badge = (n, cls) => (n ? `<span class="btn-count ${cls}">${n}</span>` : '');
+  return `
+    <div class="dash-phone-btns">
+      <button type="button" class="rail-btn" data-action="open-reminders" aria-label="Reminders: ${c.reminders}">${icon('clock')}${badge(c.reminders, c.overdue ? 'alert' : 'orange')}</button>
+      <button type="button" class="rail-btn" data-action="open-notes" aria-label="Sticky notes: ${c.notes}">${icon('pencil')}${badge(c.notes, 'green')}</button>
+    </div>`;
+}
+
+// A second floating box under the side menu: Reminders and Sticky notes, with counts.
+function dashExtras() {
+  const c = reminderNoteCounts();
+  return `
+    <nav class="dash-nav dash-extras" aria-label="Reminders and sticky notes">
+      <button type="button" class="dash-item" data-action="open-reminders">
+        ${icon('clock')}<span class="dash-item-label">Reminders</span><span class="dash-count${c.overdue ? ' alert' : ''}" title="${c.overdue ? `${c.overdue} overdue` : ''}">${c.reminders}</span>
+      </button>
+      <button type="button" class="dash-item" data-action="open-notes">
+        ${icon('pencil')}<span class="dash-item-label">Sticky notes</span><span class="dash-count">${c.notes}</span>
+      </button>
+    </nav>`;
+}
+
+// Squares, List or Calendar, at the top of My cases.
+function layoutSwitch() {
+  return `
+    <div class="layout-switch" role="group" aria-label="Show cases as">
+      ${HOME_LAYOUTS.map(([id, label, ic]) => `
+        <button type="button" class="${state.home.layout === id ? 'active' : ''}" data-layout="${id}" aria-pressed="${state.home.layout === id}">${icon(ic)}${label}</button>`).join('')}
+    </div>`;
+}
+
+// My cases' two filters: when the case was opened, and its status.
+const CREATED_FILTERS = [['', 'Opened: any time'], ['today', 'Opened today'], ['week', 'Opened in the last 7 days'], ['month', 'Opened in the last 30 days'], ['older', 'Opened over 30 days ago']];
+const STATUS_OPTIONS = [['', 'Any status'], ...STATUSES.map(s => [s.id, s.label])];
+
+function matchesCreated(kase, filter) {
+  if (!filter) return true;
+  const opened = new Date(kase.createdAt);
+  if (filter === 'today') return opened >= startOfDay(new Date());
+  const days = filter === 'week' ? 7 : 30;
+  const since = new Date(Date.now() - days * DAY);
+  return filter === 'older' ? opened < since : opened >= since;
+}
+
+function homeFilters() {
+  const f = state.home;
+  return `
+    <div class="home-filters">
+      ${filterSelect('home', 'created', CREATED_FILTERS, f.created, 'When the case was opened')}
+      ${filterSelect('home', 'status', STATUS_OPTIONS, f.status, 'Status')}
+    </div>`;
 }
 
 function renderHome() {
-  const oldList = document.getElementById('homeList');
-  const keepTop = oldList && homeListView === state.home.view ? oldList.scrollTop : 0;
+  const layout = state.home.layout;
+  const isCal = layout === 'calendar';
+  const place = `${state.home.view}:${layout}`;
+  const old = document.querySelector('#homeScroll, #homeList');
+  const keepTop = old && homeListView === place ? old.scrollTop : 0;
   const me = findMember(ME);
   const view = homeView(state.home.view);
 
   viewEl.innerHTML = `
+    ${dashHead('My', 'cases')}
     <div class="dash">
-      <h1 class="visually-hidden">My dashboard</h1>
-      ${dashTop('home')}
-
+      <div class="dash-left">
       <aside class="dash-nav" aria-label="Dashboard views">
         <div class="dash-me">
           ${memberAvatar(ME)}
@@ -864,22 +970,25 @@ function renderHome() {
             }).join('')}
           </div>`).join('')}
       </aside>
+      ${dashExtras()}
+      </div>
 
       <div class="dash-main">
         <section class="panel">
           <div class="panel-head">
-            <h2>${esc(view.label)} <span class="count-badge" id="homeCount"></span></h2>
-            <span class="muted small">${esc(view.hint)}</span>
+            <h2 class="visually-hidden">${esc(view.label)}</h2>
+            ${layoutSwitch()}
+            ${isCal ? '' : homeFilters()}
           </div>
-          <div class="filters">${refineRow('home')}</div>
-          <div class="case-list" id="homeList"></div>
+          ${isCal
+            ? `<div class="cal-scroll" id="homeScroll">${filesCalendar()}</div>`
+            : `<div class="case-list${layout === 'squares' ? ' case-grid' : ''}" id="homeList"></div>`}
         </section>
       </div>
     </div>`;
-  renderList('home');
-  document.getElementById('homeList').scrollTop = keepTop;
-  homeListView = state.home.view;
-  bindQuickSearch();
+  if (!isCal) renderList('home');
+  document.querySelector('#homeScroll, #homeList').scrollTop = keepTop;
+  homeListView = place;
 }
 
 // ---------- All files ----------
@@ -893,10 +1002,9 @@ function renderFiles() {
   const isCal = view.id === 'calendar';
 
   viewEl.innerHTML = `
+    ${dashHead('All', 'files')}
     <div class="dash">
-      <h1 class="visually-hidden">All files</h1>
-      ${dashTop('files')}
-
+      <div class="dash-left">
       <aside class="dash-nav" aria-label="All files views">
         <div class="dash-me">
           <span class="dash-me-icon">${icon('layers')}</span>
@@ -914,6 +1022,8 @@ function renderFiles() {
               </button>`).join('')}
           </div>`).join('')}
       </aside>
+      ${dashExtras()}
+      </div>
 
       <div class="dash-main">
         <section class="panel">
@@ -923,7 +1033,7 @@ function renderFiles() {
           </div>
           ${isCal
             ? `<div class="cal-scroll" id="filesScroll">${filesCalendar()}</div>`
-            : `${filesControls(view.id)}<div class="case-list" id="filesList"></div>`}
+            : `${filesControls(view.id)}<div class="case-list case-grid" id="filesList"></div>`}
         </section>
       </div>
     </div>`;
@@ -933,7 +1043,6 @@ function renderFiles() {
   if (isCal && !(old && filesListView === 'calendar')) scrollCalendarToToday();
   else document.querySelector('#filesScroll, #filesList').scrollTop = keepTop;
   filesListView = view.id;
-  bindQuickSearch();
 }
 
 function dashCount(item) {
@@ -984,14 +1093,14 @@ function filesControls(view) {
   }
 }
 
-// ---------- Calendar: from the 1st of this month to a month ahead ----------
-const CAL_DAYS = 31;
+// ---------- Calendar: five whole weeks from today ----------
+const CAL_DAYS = 35;
 const monthFmt = new Intl.DateTimeFormat(undefined, { month: 'short' });
 
-// Earlier days this month show what was handled; it opens scrolled to today.
+// Days that have gone aren't shown; still-open cases from them sit behind the "still open" button.
 function calendarRange() {
   const today = startOfDay(new Date());
-  return { today, start: new Date(today.getFullYear(), today.getMonth(), 1), end: addDays(today, CAL_DAYS - 1) };
+  return { today, start: today, end: addDays(today, CAL_DAYS - 1) };
 }
 
 // The Done / Not done filter shared by the calendar and the All files list.
@@ -1015,11 +1124,28 @@ function dayKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+// All files' calendar shows the whole team's cases; My cases' shows yours, in the chosen view.
+// Each keeps its own Done / Not done filter.
+function calendarKey() {
+  return state.dash === 'files' ? 'files' : 'home';
+}
+
+function calendarPool() {
+  return calendarKey() === 'files' ? db.cases : homeViewCases(state.home.view);
+}
+
+// Cases due on one day, after the Done / Not done filter.
+function casesOnDay(key) {
+  const handled = state[calendarKey()].handled;
+  return calendarPool().filter(k => k.dueAt && dayKey(k.dueAt) === key && matchesHandled(k, handled));
+}
+
 // Cases due inside the calendar, open or done, after the Done / Not done filter.
 function calendarCases() {
   const { start, end } = calendarRange();
   const last = endOfDay(end);
-  return db.cases.filter(k => k.dueAt && new Date(k.dueAt) >= start && new Date(k.dueAt) <= last && matchesHandled(k, state.files.handled));
+  const handled = state[calendarKey()].handled;
+  return calendarPool().filter(k => k.dueAt && new Date(k.dueAt) >= start && new Date(k.dueAt) <= last && matchesHandled(k, handled));
 }
 
 // Cases per request type, most first: [['Transfers', 3], ['Restaurant', 2]].
@@ -1032,15 +1158,15 @@ function typeCounts(cases) {
 // Still-open cases due before the calendar starts.
 function openBeforeCalendar() {
   const { start } = calendarRange();
-  return db.cases.filter(k => isOpen(k) && k.dueAt && new Date(k.dueAt) < start);
+  return calendarPool().filter(k => isOpen(k) && k.dueAt && new Date(k.dueAt) < start);
 }
 
-// Green when everything that day is done, orange when some of it isn't
-// (partly done, or past and still open), blue shades for what's coming up.
-function dayState(list, day, today) {
+// Green when everything that day is done, orange when only part of it is,
+// blue shades for what's coming up.
+function dayState(list) {
   const open = list.filter(isOpen).length;
   if (!open) return { cls: 'cal-done', label: 'all done' };
-  if (open < list.length || day < today) return { cls: 'cal-mixed', label: `${open} not done` };
+  if (open < list.length) return { cls: 'cal-mixed', label: `${open} not done` };
   const n = list.length;
   return { cls: `cal-l${n >= 5 ? 4 : n >= 3 ? 3 : n}`, label: `case${n === 1 ? '' : 's'}` };
 }
@@ -1050,26 +1176,24 @@ function filesCalendar() {
   const byDay = {};
   for (const k of calendarCases()) (byDay[dayKey(k.dueAt)] ||= []).push(k);
 
-  // Whole weeks, Sunday to Saturday; days outside the range are faded.
+  // Each row is a week starting on today's weekday, so today is the first day and no day is left empty.
   const cells = [];
-  for (let d = addDays(start, -start.getDay()); d <= end || d.getDay() !== 0; d = addDays(d, 1)) cells.push(d);
+  for (let d = start; d <= end; d = addDays(d, 1)) cells.push(d);
 
   const head = cells.slice(0, 7).map(d => `<span class="cal-head">${esc(weekdayShortFmt.format(d))}</span>`).join('');
   const body = cells.map(d => {
-    if (d < start || d > end) return `<div class="cal-day out" aria-hidden="true"><span class="cal-date">${d.getDate()}</span></div>`;
     const isToday = d.getTime() === today.getTime();
-    const past = d < today ? ' past' : '';
     const tag = isToday ? '<small class="cal-today">Today</small>' : d.getDate() === 1 ? `<small>${esc(monthFmt.format(d))}</small>` : '';
     const date = `<span class="cal-date">${d.getDate()}${tag}</span>`;
     const list = (byDay[dayKey(d)] || []).sort(dueSort);
-    if (!list.length) return `<div class="cal-day${isToday ? ' today' : ''}${past}">${date}</div>`;
-    const state = dayState(list, d, today);
+    if (!list.length) return `<div class="cal-day${isToday ? ' today' : ''}">${date}</div>`;
+    const state = dayState(list);
     // What kind of requests: "3 Transfers", "2 Restaurant".
     const types = typeCounts(list);
     const peek = types.slice(0, 2).map(([c, n]) => `<span><b>${n}</b> ${esc(c)}</span>`).join('');
     const breakdown = types.map(([c, n]) => `${n} ${c}`).join(', ');
     return `
-      <button type="button" class="cal-day ${state.cls}${isToday ? ' today' : ''}${past}" data-day="${dayKey(d)}" aria-label="${esc(`${longDayFmt.format(d)}: ${list.length} case${list.length === 1 ? '' : 's'}, ${state.label}. ${breakdown}`)}" title="${esc(breakdown)}">
+      <button type="button" class="cal-day ${state.cls}${isToday ? ' today' : ''}" data-day="${dayKey(d)}" aria-label="${esc(`${longDayFmt.format(d)}: ${list.length} case${list.length === 1 ? '' : 's'}, ${state.label}. ${breakdown}`)}" title="${esc(breakdown)}">
         ${date}
         <span class="cal-count">${list.length}<span>${esc(state.label)}</span></span>
         <span class="cal-peek">${peek}${types.length > 2 ? `<span>+${types.length - 2} more type${types.length === 3 ? '' : 's'}</span>` : ''}</span>
@@ -1077,15 +1201,16 @@ function filesCalendar() {
   }).join('');
 
   const earlier = openBeforeCalendar();
-  const handled = state.files.handled;
+  const key = calendarKey();
+  const handled = state[key].handled;
   return `
     <div class="cal-bar">
       <span class="cal-range">${icon('calendar')}${esc(`${shortDateFmt.format(start)} – ${shortDateFmt.format(end)}`)}</span>
       <div class="pills sm" role="group" aria-label="Show">
-        ${HANDLED_FILTERS.map(([v, l]) => `<button type="button" class="${handled === v ? 'active' : ''}" data-fset="files.handled" data-value="${v}">${l}</button>`).join('')}
+        ${HANDLED_FILTERS.map(([v, l]) => `<button type="button" class="${handled === v ? 'active' : ''}" data-fset="${key}.handled" data-value="${v}">${l}</button>`).join('')}
       </div>
       <button type="button" class="link-btn" data-action="cal-today">${icon('arrowRight')}Today</button>
-      ${earlier.length && handled !== 'done' ? `<button type="button" class="cal-overdue" data-day="overdue">${icon('flame')}${earlier.length} still open from before ${esc(shortDateFmt.format(start))}</button>` : ''}
+      ${earlier.length && handled !== 'done' ? `<button type="button" class="cal-overdue" data-day="overdue">${icon('flame')}${earlier.length} still open from earlier days</button>` : ''}
     </div>
     <div class="cal-grid">${head}${body}</div>
     <div class="chart-legend cal-legend">
@@ -1098,7 +1223,7 @@ function filesCalendar() {
 
 // Scrolls the calendar so today's week is at the top.
 function scrollCalendarToToday(smooth = false) {
-  const scroller = document.getElementById('filesScroll');
+  const scroller = document.querySelector('.cal-scroll');
   const todayCell = scroller && scroller.querySelector('.cal-day.today');
   if (!todayCell) return;
   if (scroller.scrollHeight > scroller.clientHeight) {
@@ -1113,13 +1238,12 @@ function scrollCalendarToToday(smooth = false) {
 // a count per request type on top (tap one to show only those), then the cases grouped by type.
 function openDaySheet(key, type = '') {
   const overdue = key === 'overdue';
-  const all = (overdue ? openBeforeCalendar()
-    : db.cases.filter(k => k.dueAt && dayKey(k.dueAt) === key && matchesHandled(k, state.files.handled)))
+  const all = (overdue ? openBeforeCalendar() : casesOnDay(key))
     .sort((a, b) => (isOpen(b) - isOpen(a)) || dueSort(a, b));
   const types = typeCounts(all);
   const shown = type ? types.filter(([c]) => c === type) : types;
   const list = type ? all.filter(k => k.category === type) : all;
-  const title = overdue ? `Still open from before ${shortDateFmt.format(calendarRange().start)}` : longDayFmt.format(new Date(`${key}T00:00`));
+  const title = overdue ? 'Still open from earlier days' : longDayFmt.format(new Date(`${key}T00:00`));
   const openList = list.filter(isOpen);
   const done = all.length - all.filter(isOpen).length;
   const hot = openList.filter(k => k.priority === 'urgent' || k.priority === 'high').length;
@@ -1176,55 +1300,6 @@ function dayCaseRow(kase, withDate) {
       </span>
       <span class="day-case-who">${who}</span>
     </div>`;
-}
-
-// ---------- Quick search (dashboard) ----------
-function quickClientHit(client) {
-  const total = db.cases.filter(k => k.clientId === client.id).length;
-  return `
-    <div class="hit" role="button" tabindex="0" data-client="${client.id}">
-      ${avatar(client.name, client.id, 'sm')}
-      <span class="hit-main">
-        <span class="hit-name">${esc(client.name)}</span>
-        <span class="hit-sub">${esc(client.tier)} · ${total} case${total === 1 ? '' : 's'}</span>
-      </span>
-      ${idChip(clientNo(client))}
-    </div>`;
-}
-
-function bindQuickSearch() {
-  const box = document.getElementById('quickSearch');
-  const input = box.querySelector('input');
-  const results = box.querySelector('#quickResults');
-  const draw = () => {
-    const q = input.value.trim();
-    results.hidden = !q;
-    if (!q) return;
-    const cases = caseMatches(q).slice(0, 5);
-    const clients = clientMatches(q).slice(0, 5);
-    results.innerHTML = `
-      ${cases.length ? `<p class="results-title">Cases</p>${cases.map(caseHit).join('')}` : ''}
-      ${clients.length ? `<p class="results-title">Clients</p>${clients.map(quickClientHit).join('')}` : ''}
-      ${cases.length || clients.length ? '' : '<div class="empty">Nothing matches that.</div>'}
-      <button type="button" class="link-btn" data-action="search-all">${icon('search')}Search everything for “${esc(q)}”</button>`;
-  };
-  input.addEventListener('input', draw);
-  input.addEventListener('focus', draw);
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      input.value = '';
-      draw();
-    } else if (e.key === 'Enter') {
-      const hits = caseMatches(input.value);
-      const exact = hits.find(k => String(k.number) === input.value.replace(/\D/g, ''));
-      if (exact) openCaseSheet(exact.id);
-      else if (input.value.trim()) openSearchTab(input.value.trim());
-    }
-  });
-  // Close the results when focus leaves the search (clicking a result keeps it inside).
-  box.addEventListener('focusout', e => {
-    if (!box.contains(e.relatedTarget)) results.hidden = true;
-  });
 }
 
 // ---------- Reminders and sticky notes ----------
@@ -1419,23 +1494,10 @@ function openNotesSheet(color = 'yellow') {
 }
 
 // Number cards jump straight to what they count.
-function applyShortcut(shortcut) {
-  const [field, value] = shortcut.split(':');
-  state.home = { ...state.home, view: 'all', type: '', priority: '', date: '', text: '' };
-  state.home[field] = value;
-  state.dash = 'mine';
-  saveHomeView();
-  if (state.route.name !== 'home') {
-    location.hash = '#/home';
-    return;
-  }
-  render();
-  document.getElementById('homeList')?.closest('.panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
 function saveHomeView() {
   try {
     localStorage.setItem(VIEW_KEY, state.home.view);
+    localStorage.setItem(LAYOUT_KEY, state.home.layout);
   } catch {
     // Remembering the view is a nicety; ignore blocked storage.
   }
@@ -1746,7 +1808,7 @@ function renderSuppliers() {
           <p class="dash-label">Categories</p>
           ${SUPPLIER_GROUPS.map(g => `
             <button type="button" class="dash-item${g.id === group.id ? ' active' : ''}" data-sgroup="${g.id}"${g.id === group.id ? ' aria-current="true"' : ''}>
-              <span class="dash-item-pic" aria-hidden="true">${g.icon}</span><span class="dash-item-label">${esc(g.label)}</span><span class="dash-count">${inGroup(g.id).length}</span>
+              <span class="dash-item-pic" aria-hidden="true">${emojiPic(g.icon)}</span><span class="dash-item-label">${esc(g.label)}</span><span class="dash-count">${inGroup(g.id).length}</span>
             </button>`).join('')}
         </div>
       </aside>
@@ -1756,7 +1818,7 @@ function renderSuppliers() {
           <section class="supplier-grid" aria-label="${esc(group.label)} suppliers">${list.map(s => supplierBox(s, group, s.id === current.id)).join('')}</section>
           ${supplierPanel(current, group)}` : `
           <section class="panel">
-            <div class="panel-head"><h2>${group.icon} ${esc(group.label)}</h2></div>
+            <div class="panel-head"><h2>${emojiPic(group.icon)} ${esc(group.label)}</h2></div>
             <div class="empty">
               No ${esc(group.label.toLowerCase())} suppliers yet. Add the ones you work with.
               <div class="empty-action"><button type="button" class="btn btn-primary btn-md" data-action="add-supplier">${icon('plus')}Add supplier</button></div>
@@ -2115,7 +2177,7 @@ function openAvatarSheet() {
       <div class="fld">
         <span class="fld-label">Or pick an icon</span>
         <div class="emoji-grid">
-          ${EMOJIS.map(e => `<button type="button" data-emoji="${e}" class="${!me.photo && me.emoji === e ? 'active' : ''}" aria-label="Use ${e}">${e}</button>`).join('')}
+          ${EMOJIS.map(e => `<button type="button" data-emoji="${e}" class="${!me.photo && me.emoji === e ? 'active' : ''}" aria-label="Use ${e}">${emojiPic(e)}</button>`).join('')}
         </div>
       </div>
       <div class="fld">
@@ -2816,7 +2878,7 @@ function caseBox(kase) {
       </div>
 
       <div class="cw-request" data-case-view>
-        <span class="cw-request-pic" aria-hidden="true">${kind.icon}</span>
+        <span class="cw-request-pic" aria-hidden="true">${emojiPic(kind.icon)}</span>
         <div class="cw-request-main">
           <b class="cw-request-title">${esc(kase.title)}</b>
           <span class="cw-request-tags">${hashtag(kase.category)}${kind.label ? `<span class="kind-badge">${esc(kind.label)}</span>` : ''}${hotTag(kase.priority, 'sm')}</span>
@@ -3300,8 +3362,14 @@ function toast(message) {
 }
 
 // ---------- Wiring ----------
+// A 3D picture that can't load (offline) turns back into its plain emoji.
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (img.classList && img.classList.contains('emoji3d')) img.replaceWith(img.dataset.fallback);
+}, true);
+
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-copy],[data-take],[data-case],[data-client],[data-view],[data-fview],[data-day],[data-expand],[data-sgroup],[data-supplier],[data-open-supplier],[data-shortcut],[data-fset],[data-atab],[data-range],[data-logtype],[data-bg],[data-stop],[data-action]');
+  const el = e.target.closest('[data-copy],[data-take],[data-case],[data-client],[data-view],[data-layout],[data-fview],[data-day],[data-expand],[data-sgroup],[data-supplier],[data-open-supplier],[data-fset],[data-atab],[data-range],[data-logtype],[data-bg],[data-stop],[data-action]');
   if (!el || el.tagName === 'SELECT' || el.dataset.stop !== undefined) return;
   if (el.dataset.copy) return copyId(el.dataset.copy);
   if (el.dataset.take) return takeCase(el.dataset.take);
@@ -3351,7 +3419,11 @@ document.addEventListener('click', e => {
     saveHomeView();
     return render();
   }
-  if (el.dataset.shortcut) return applyShortcut(el.dataset.shortcut);
+  if (el.dataset.layout) {
+    state.home.layout = el.dataset.layout;
+    saveHomeView();
+    return render();
+  }
   if (el.dataset.fset) {
     const [key, field] = el.dataset.fset.split('.');
     state[key][field] = el.dataset.value;
@@ -3374,7 +3446,6 @@ document.addEventListener('click', e => {
     case 'new-file': return openNewFileTab();
     case 'new-file-client': return openNewFileTab(el.dataset.clientId);
     case 'search': return openSearchTab();
-    case 'search-all': return openSearchTab(document.getElementById('quickInput').value.trim());
     case 'open-reminders': return openRemindersSheet();
     case 'open-notes': return openNotesSheet();
     case 'light-mode': return setDark(false);
@@ -3412,7 +3483,7 @@ document.addEventListener('click', e => {
       return render();
     case 'sign-out': return signOut();
     case 'toggle-followup': {
-      const form = el.closest('.case-bar').querySelector('[data-followup-form]');
+      const form = el.closest('[data-bar]').querySelector('[data-followup-form]');
       form.hidden = !form.hidden;
       if (!form.hidden) form.querySelector('input').focus();
       return;
@@ -3580,6 +3651,8 @@ function init() {
   try {
     const saved = localStorage.getItem(VIEW_KEY);
     if (saved && homeView(saved).id === saved) state.home.view = saved;
+    const layout = localStorage.getItem(LAYOUT_KEY);
+    if (HOME_LAYOUTS.some(([id]) => id === layout)) state.home.layout = layout;
   } catch {
     // Start on "All open" when storage is unavailable.
   }

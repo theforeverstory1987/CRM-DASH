@@ -21,7 +21,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 | **Secondary contact** | Whoever opened the case on the client's behalf (an assistant, family). Name, phone, email. Empty when the client opened it. Also shown as "Opened by". |
 | **Follow-up** | A note on a case: what happened, what's next. The most important information on a case. |
 | **Request type** | One of: Restaurant, Hotel, Flights, Transfers, Massage, Yacht, Events, Tickets, Shopping, Gifts, Other. Shown as a hashtag (`#Tickets`). |
-| **Request picture** | The icon for what the request is (🏀 NBA, 🎤 show, ✈️ flight, black car for transfers…). See §8. |
+| **Request picture** | The icon for what the request is (🏀 NBA, 🎤 show, ✈️ flight, a black Rolls-Royce photo for transfers…), 3D pictures and one photo. See §8. |
 | **Supplier** | A company we buy from (ticket agency, car service, airport VIP, restaurant). |
 | **Booking** | A purchase from a supplier for a case: quantity, price, invoice. |
 | **Team member** | A user of the system. Role `admin` or `staff`. |
@@ -45,11 +45,12 @@ This spec describes what the product does today and the rules it follows. [Pract
 ## 3. Layout
 
 - **Side rail** (desktop), top to bottom:
-  1. **Your profile picture**: the only place that shows your initials in a corner badge, and bigger.
+  1. **Your profile picture**: fills the whole circle with a white stroke inside it (no ring around it). The only place that shows your initials, in a corner badge with a white outline.
   2. **+ New case**: opens in a new tab.
-  3. Search, Activity, **Suppliers**, Advanced search, Settings.
+  3. Search, Activity, **Suppliers**, Advanced search, Settings. The round buttons are spaced 16px apart (closer on short windows) with bigger icons.
   4. At the bottom: dark mode and log out.
 - **Tab bar** (phones): Me, Search, **+**, Activity, Suppliers, Settings.
+- **One background, thin lines:** every page sits on one plain background (white, or the tint picked in Settings) with no frame, floating boxes or shadows. Thin lines divide the rail from the page, the side menus from the main area, stacked sections from each other, and the case squares into one grid.
 - **Side windows** (notes, reminders, search, your icon, add client…) always open on the **left**, next to the menu. On phones they come up from the bottom.
 - **Keyboard:** `/` search, `N` new case, `Esc` closes a panel or window.
 - **Refresh keeps you in place:** after a refresh you're back where you were (My cases or All files, the view and filters, the supplier, and any open case or calendar day). This is kept per browser tab.
@@ -58,21 +59,26 @@ This spec describes what the product does today and the rules it follows. [Pract
 
 ## 4. Dashboard
 
-Top row: **Quick search** (file ID, client name or ID) and four tiles: **My cases**, **All files**, **Reminders**, **Sticky notes**.
-
-**My cases** and **All files** switch the dashboard in place. No page change, no jump. Only the side menu and the main area change, and the active tile gets a blue border.
+Top row, exactly as tall as the profile picture at the top of the rail (48px): the page title (**My cases**, grey "My" and bold "cases", like Search's title). On phones, small Reminders and Sticky notes buttons sit beside it, each with a number badge.
 
 ### 4.1 My cases
-- **Side menu:** your profile, then *All my cases*, *New cases* (folder icon), *Urgent*, *Waiting on supplier*, *Waiting on client*, each with a count. The *Urgent* count uses the alert colour.
-- **Main area:** the case list (§5) with filters: client name/ID search, request type, priority, date, and sort (due date, priority, newest).
+- **Side menu:** your profile, then *All my cases*, *New cases* (folder icon), *Urgent*, *Waiting on supplier*, *Waiting on client*, each with a count. The *Urgent* count uses the alert colour. The main area has no heading of its own; the side menu shows which view you're on.
+- **Squares / List / Calendar** at the top of the main area. The choice is remembered.
+  - **Squares** (default): the cases as square cards (§5).
+  - **List:** the one-line bars (§5).
+  - **Calendar:** the calendar (§4.3) with only your cases in the chosen view, and its own All / Not done / Done filter.
+- **Filters** beside Squares / List / Calendar (not on the calendar): *Opened* (any time, today, last 7 days, last 30 days, over 30 days ago) and *Status*. Cases show open first, then by date.
+- **Reminders and Sticky notes:** a second floating box under the side menu, each with its count (reminders turn red when one is overdue). On phones they're round buttons beside the title.
 
 ### 4.2 All files
+The whole team's cases, opened from **All cases** in a case window. The profile picture in the rail goes back to My cases. Squares, not bars, in its lists.
+
 Side menu, in this order:
 
 - **Views**
   - *Calendar view*: the default when you open All files
   - *Opened today*
-  - *All files*: has the **All / Not done / Done** filter plus the same filters as My cases
+  - *All files*: has the **All / Not done / Done** filter plus client name/ID search, request type, priority, date, and sort (due date, priority, newest)
 - **Needs attention**
   - *Urgent*
   - *Waiting on supplier*
@@ -84,14 +90,14 @@ Side menu, in this order:
   - *Card type*
 
 ### 4.3 Calendar view
-- **Range:** from the **1st of the current month** to **30 days after today**, in whole Sunday–Saturday weeks. It opens scrolled to today's week, and a **Today** button jumps back. Weekday names stay pinned while scrolling.
+- **Range:** **five whole weeks starting today**. Each row starts on today's weekday (today is always the first box), so there are no empty or faded days, and days that have gone are not shown. A **Today** button jumps back to the top. Weekday names stay pinned while scrolling.
 - **Each day** shows its number of cases and the request types (for example "3 Transfers, 2 Restaurant").
 - **Day colours:**
   - **Green:** every case that day is done ("all done").
-  - **Red:** some cases are not done, either a mix of done and open, or a past day that's still open ("2 not done").
+  - **Red:** a mix of done and open cases ("2 not done").
   - **Blue, darker when busier:** upcoming days (1 / 2 / 3–4 / 5+).
 - **Filter:** All cases / Not done / Done.
-- **"N still open from before [1st]"** opens the cases older than the calendar.
+- **"N still open from earlier days"** opens the open cases from days that have gone.
 - **Clicking a day** opens a side panel:
   - A count per request type at the top (*All 5 · 3 #Transfers · 2 #Restaurant*). Tapping a type shows only those cases.
   - The cases, grouped by type, with time, client, flag, card type, headline, details, status, priority and who's handling each.
@@ -99,9 +105,23 @@ Side menu, in this order:
 
 ---
 
-## 5. Case lists: bars
+## 5. Case lists: squares and bars
 
-Every case list (My cases, All files, Activity) shows **compact one-line bars**:
+**Squares** (My cases, All files): a grid of square cards, as many across as fit.
+
+Top to bottom:
+
+1. **#File ID**, with the request's picture (§8) small in the top-right corner.
+2. **Client name + flag.**
+3. **Headline** (the case title, up to 2 lines).
+4. **Date** as 25.09.26 (red when overdue).
+5. **Follow-up** (blue, with how many follow-ups so far) opens a box over the square: *Add* or Enter saves, *Cancel* closes. **Email** opens an email with the subject pre-filled (§9); "No email" when the client has none.
+6. **Status**, changeable right there.
+
+- **Look:** a clean white card with rounded corners; done cases are dimmed. At least 240px wide, as many across as fit.
+- **Clicking anywhere else on the square** opens the case in the full-screen window (§6).
+
+**Bars** (My cases' List, Activity): **compact one-line bars**:
 
 > **Client name + flag | #File ID | headline | status (change it right there) | + Follow-up | ⌄**
 
@@ -159,6 +179,8 @@ Opening a case fills the screen (a phone uses the whole screen). A case also has
 
 ## 8. Request pictures and date labels
 
+Pictures are Microsoft's Fluent 3D emoji (MIT licence, 256px), loaded from jsDelivr; offline, the plain emoji shows instead. Profile icons chosen from the emoji list use the same 3D pictures.
+
 - **Tickets and Events:** the picture comes from words in the headline:
 
   | Words in the headline | Picture | Label | Date label |
@@ -178,7 +200,7 @@ Opening a case fills the screen (a phone uses the whole screen). A case also has
   | Restaurant | 🍽️ | Reservation |
   | Hotel | 🏨 | Check-in |
   | Flights | ✈️ | Flight |
-  | Transfers | **black car** (drawn, not an emoji) | Pickup |
+  | Transfers | a real photo of a black Rolls-Royce Phantom (Terry Cohen, Unsplash License) | Pickup |
   | Massage | 💆 | Appointment |
   | Yacht | 🛥️ | Sailing |
   | Events | 🎉 | Event date |
@@ -210,7 +232,7 @@ Opening a case fills the screen (a phone uses the whole screen). A case also has
 ## 11. Suppliers
 - **Page layout** is like the dashboard: a side menu of **categories**, then the category's supplier boxes and the selected supplier's bookings.
 - **Categories** (in this order) and their suppliers:
-  - Transfers (black car): Assistant, Elite VIP, Blacklane
+  - Transfers (black Rolls-Royce photo): Assistant, Elite VIP, Blacklane
   - Shows 🎤: Connect, Live, Lord, Alex Thompson, JULIA TV
   - Sports 🏀: none yet
   - Airport VIP ✈️: Flow, Laufer
@@ -224,15 +246,14 @@ Opening a case fills the screen (a phone uses the whole screen). A case also has
 - **In the case window**, the supplier name appears under the file status.
 
 ## 12. Reminders and sticky notes
-- **Reminders** (dashboard tile): text and time. Past-due reminders use the alert colour, and each can be ticked done. A reminder added from a case belongs to that case and links back to it.
-- **Sticky notes** (dashboard tile): coloured notes (yellow, pink, blue, green).
+- **Reminders** (box under the side menu): text and time. Past-due reminders use the alert colour, and each can be ticked done. A reminder added from a case belongs to that case and links back to it.
+- **Sticky notes** (box under the side menu): coloured notes (yellow, pink, blue, green).
   - **Share** with teammates, when writing a note or later from the note. Shared notes show "Shared with …" to you and "From …" to them.
   - Only the author can delete a note. Recipients can remove it from their own board.
   - This only works within one browser until there's a server.
 
 ## 13. Search, Activity, Settings
 - **Search:**
-  - *Quick search* (dashboard): file number or client.
   - *Search page* (new tab): case ID, client ID, name, phone or email.
   - *Advanced search*: text, client, status, priority, category, handler, channel, and opened from/until.
 - **Activity:**

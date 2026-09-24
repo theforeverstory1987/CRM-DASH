@@ -71,17 +71,9 @@ const RETITLED_SAMPLES = {
 // Batches added to the sample data after the first release, with the flag that marks a save as having them.
 const SAMPLE_BATCHES = [['moreSamples', extraSampleRows], ['pastSamples', pastSampleRows], ['supplierSamples', supplierSampleRows]];
 
-// Transfers get a black car drawn inline (car emoji only come in colours).
-const CAR_PIC = '<svg class="car-pic" viewBox="0 0 64 32" aria-hidden="true">'
-  + '<path fill="currentColor" d="M3 21.5c0-2.2 1.6-4 3.8-4.4L15 15.6l6.4-6.4a6 6 0 0 1 4.2-1.7h11.8a6 6 0 0 1 4.4 1.9l5.7 6.1 8.2 1.3a5 5 0 0 1 4.3 4.9V25a1.5 1.5 0 0 1-1.5 1.5H55a6 6 0 0 0-12 0H21a6 6 0 0 0-12 0H4.5A1.5 1.5 0 0 1 3 25z"/>'
-  + '<path fill="#cfd8e3" d="M22.5 15.5l4-4.4a2.5 2.5 0 0 1 1.8-.8H32v5.2zM34.5 10.3h3.4a2.5 2.5 0 0 1 1.8.8l4 4.4h-9.2z"/>'
-  + '<circle cx="15" cy="26.5" r="4.5" fill="currentColor"/><circle cx="15" cy="26.5" r="1.8" fill="#cfd8e3"/>'
-  + '<circle cx="49" cy="26.5" r="4.5" fill="currentColor"/><circle cx="49" cy="26.5" r="1.8" fill="#cfd8e3"/>'
-  + '</svg>';
-
 // Supplier categories, in the Suppliers menu's order. `qty` and `date` name the booking's columns.
 const SUPPLIER_GROUPS = [
-  { id: 'transfers', label: 'Transfers', icon: CAR_PIC, qty: 'Passengers', date: 'Pickup' },
+  { id: 'transfers', label: 'Transfers', icon: '🚘', qty: 'Passengers', date: 'Pickup' },
   { id: 'shows', label: 'Shows', icon: '🎤', qty: 'Tickets', date: 'Show date' },
   { id: 'sports', label: 'Sports', icon: '🏀', qty: 'Tickets', date: 'Game date' },
   { id: 'airport', label: 'Airport VIP', icon: '✈️', qty: 'Passengers', date: 'Flight' },

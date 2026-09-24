@@ -1,12 +1,12 @@
 /* Gustavo app (after sign-in). Light only; builds on styles.css. */
 
 .app-body {
-  --frame: #efebe6;
-  --bg: #f6f4f2;
+  --frame: #ffffff;
+  --bg: #ffffff;
   --surface: #ffffff;
   --surface-2: #f3efeb;
   --surface-3: #e9e4de;
-  --card: #fbf9f7;
+  --card: #ffffff;
   --card-border: #efeae5;
   --border: #ece7e2;
   --border-strong: #ddd7d0;
@@ -45,27 +45,27 @@
   --danger: #d10f2d;
   --radius-card: 26px;
   --sheet-bg: #ffffff;
-  --shadow-card: 0 1px 2px rgba(17, 17, 17, 0.04), 0 8px 24px rgba(17, 17, 17, 0.04);
+  --shadow-card: none;
   color-scheme: light;
   background: var(--frame);
   color: var(--text);
   font-size: 15px;
 }
 
-.app-body.bg-1 { --frame: #e7f0ff; --bg: #f2f7ff; --surface-2: #eaf2ff; --card: #f7faff; }
-.app-body.bg-2 { --frame: #e8f5ec; --bg: #f2faf4; --surface-2: #ecf7ef; --card: #f6fbf7; }
-.app-body.bg-3 { --frame: #fbe9eb; --bg: #fff3f4; --surface-2: #fdedef; --card: #fff7f8; }
-.app-body.bg-4 { --frame: #e7e7ea; --bg: #f2f2f4; --surface-2: #ececef; --card: #f7f7f8; }
+.app-body.bg-1 { --frame: #f3f8ff; --bg: #f3f8ff; --surface-2: #e6effd; --card: #f3f8ff; }
+.app-body.bg-2 { --frame: #f3faf5; --bg: #f3faf5; --surface-2: #e5f3e9; --card: #f3faf5; }
+.app-body.bg-3 { --frame: #fff4f5; --bg: #fff4f5; --surface-2: #fbe6e9; --card: #fff4f5; }
+.app-body.bg-4 { --frame: #f4f4f6; --bg: #f4f4f6; --surface-2: #e8e8ec; --card: #f4f4f6; }
 .app-body.bg-1, .app-body.bg-2, .app-body.bg-3, .app-body.bg-4 { background: var(--frame); }
 
 /* Dark mode: the same tokens with dark values (set on <html> so it applies before first paint). */
 html.dark .app-body {
-  --frame: #0d0f13;
-  --bg: #13161b;
+  --frame: #15181d;
+  --bg: #15181d;
   --surface: #1a1d23;
   --surface-2: #23272f;
   --surface-3: #2e333d;
-  --card: #1e2128;
+  --card: #15181d;
   --card-border: #2a2e37;
   --border: #292d36;
   --border-strong: #3a3f4b;
@@ -91,15 +91,15 @@ html.dark .app-body {
   --green-soft: rgba(34, 197, 94, 0.18);
   --danger: #ff7a90;
   --sheet-bg: #1a1d23;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-card: none;
   color-scheme: dark;
 }
 
 /* Background tints, dark versions. */
-html.dark .app-body.bg-1 { --frame: #0c1220; --bg: #111a2b; --card: #172033; }
-html.dark .app-body.bg-2 { --frame: #0c1510; --bg: #111d17; --card: #17251d; }
-html.dark .app-body.bg-3 { --frame: #170d10; --bg: #211317; --card: #2a191e; }
-html.dark .app-body.bg-4 { --frame: #0f0f11; --bg: #161618; --card: #1d1d20; }
+html.dark .app-body.bg-1 { --frame: #111a2b; --bg: #111a2b; --card: #111a2b; }
+html.dark .app-body.bg-2 { --frame: #111d17; --bg: #111d17; --card: #111d17; }
+html.dark .app-body.bg-3 { --frame: #211317; --bg: #211317; --card: #211317; }
+html.dark .app-body.bg-4 { --frame: #161618; --bg: #161618; --card: #161618; }
 
 /* Spots that put white text on the text colour, which is light in dark mode. */
 html.dark .tag.tier-vip,
@@ -131,9 +131,10 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  /* 41px = .content's 12px margin + 1px border + 28px padding, so the profile icon lines up with the page's first row. */
-  padding: 41px 0 20px;
+  gap: 16px;
+  /* 28px = .content's top padding, so the profile icon lines up with the page's first row. */
+  padding: 28px 0 20px;
+  border-right: 1px solid var(--border);
 }
 
 .rail-sep {
@@ -174,16 +175,26 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 }
 
 .rail-new:hover { box-shadow: 0 14px 28px rgba(0, 103, 255, 0.42); }
-.rail-new .ico { width: 22px; height: 22px; stroke-width: 2.2; }
+.rail-btn .ico { width: 23px; height: 23px; }
+.rail-new .ico { width: 25px; height: 25px; stroke-width: 2.2; }
 
+/* Your profile picture fills the whole circle, with a white stroke inside it instead of a ring around it. */
 .rail-me { overflow: hidden; border: none; }
-.rail-me .avatar { width: 100%; height: 100%; font-size: 16px; }
+.rail-me .avatar { width: 100%; height: 100%; font-size: 16px; border: 3px solid #fff; }
+.rail-me.active { box-shadow: 0 6px 16px rgba(17, 17, 17, 0.12); }
 
 .rail-bottom {
   margin-top: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 16px;
+}
+
+/* Short windows: the buttons sit closer, so the whole rail still fits. */
+@media (max-height: 660px) {
+  .rail,
+  .rail-bottom { gap: 10px; }
 }
 
 /* Hover labels to the right of each round button. */
@@ -206,12 +217,10 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   pointer-events: none;
 }
 
+/* The page sits on the same background as the rail, with no frame around it. */
 .content {
   min-width: 0;
-  margin: 12px 12px 12px 0;
   padding: 28px 34px 64px;
-  border-radius: 34px;
-  border: 1px solid var(--border);
   background: var(--bg);
 }
 
@@ -1063,6 +1072,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
 .avatar.emoji { font-size: 1.6em; letter-spacing: 0; }
+.avatar.emoji .emoji3d { width: 64%; height: 64%; object-fit: contain; vertical-align: 0; }
 .avatar.xs { width: 24px; height: 24px; font-size: 10px; }
 .avatar.sm { width: 30px; height: 30px; font-size: 12px; }
 .avatar.lg { width: 56px; height: 56px; font-size: 19px; }
@@ -2293,13 +2303,13 @@ textarea.control {
 
 .dash-main { min-width: 0; }
 
-/* My dashboard fills the window and only the case list scrolls; the top row and side menu stay put.
-   Phones keep normal page scrolling. 24px = .content's top and bottom margins. */
+/* My dashboard fills the window and only the case list scrolls; the title and the side column stay put.
+   Phones keep normal page scrolling. */
 @media (min-width: 861px) {
   .content.is-dash {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 24px);
+    height: 100vh;
     min-height: 520px;
     padding-bottom: 28px;
   }
@@ -2307,7 +2317,7 @@ textarea.control {
   .is-dash .dash {
     flex: 1;
     min-height: 0;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
   }
 
   .is-dash .dash-nav { position: static; max-height: 100%; }
@@ -2329,142 +2339,6 @@ textarea.control {
     padding-right: 10px;
   }
 }
-
-/* Top row: quick search over the side menu, overview tiles over the case list. Both are 104px tall. */
-.quick-search {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  height: 104px;
-  padding: 14px;
-  border-radius: 20px;
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-}
-
-.quick-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.quick-label .ico { width: 15px; height: 15px; }
-
-.quick-search input {
-  width: 100%;
-  height: 42px;
-  padding: 0 14px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--text);
-  font: inherit;
-  font-size: 14px;
-}
-
-.quick-search input:focus { outline: none; border-color: var(--primary); background: var(--surface); }
-
-.quick-results {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 30;
-  width: max(100%, 440px);
-  max-height: 60vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-  border-radius: 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: 0 18px 40px rgba(17, 17, 17, 0.14);
-}
-
-.quick-results[hidden] { display: none; }
-.quick-results .link-btn { align-self: flex-start; margin: 4px 0 0 4px; }
-
-.dash-tiles {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: 104px;
-  gap: 12px;
-}
-
-@media (max-width: 1180px) {
-  .dash-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-/* White tiles: coloured icon on the left, big number, label, one line of detail.
-   No border, except on the tile for where you are. */
-.dash-tile {
-  --tile: var(--primary);
-  min-width: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto auto;
-  align-content: center;
-  column-gap: 14px;
-  padding: 12px 14px;
-  border: 2px solid transparent;
-  border-radius: 20px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  text-align: left;
-  text-decoration: none;
-  box-shadow: var(--shadow-card);
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.tile-blue { --tile: var(--primary); }
-.tile-purple { --tile: #7b61ff; }
-.tile-orange { --tile: #f26b1d; }
-.tile-green { --tile: #16a34a; }
-
-.dash-tile-icon {
-  grid-row: 1 / -1;
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--tile) 14%, transparent);
-  color: var(--tile);
-}
-
-.dash-tile-icon .ico { width: 22px; height: 22px; }
-
-.dash-tile-value {
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.dash-tile-label { margin-top: 4px; font-size: 14px; font-weight: 600; }
-
-.dash-tile-sub {
-  overflow: hidden;
-  font-size: 12px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.dash-tile:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(17, 17, 17, 0.08); }
-.dash-tile:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-
-/* Where you are: a blue border, no fill. */
-.dash-tile.active { border-color: var(--primary); }
 
 /* Sticky notes: paper colours with matching ink. */
 .sticky-yellow { --note: #fff1a8; --note-ink: #5c4700; }
@@ -2576,20 +2450,6 @@ textarea.control {
 .reminder-when { font-size: 12px; color: var(--text-muted); }
 .reminder.is-overdue .reminder-when { color: var(--red-text); }
 
-/* Number cards are buttons that jump to what they count. */
-button.stat {
-  width: 100%;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-button.stat:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: 0 12px 28px rgba(17, 17, 17, 0.08); }
-button.stat.featured:hover { border-color: transparent; box-shadow: 0 16px 36px rgba(0, 103, 255, 0.3); }
-button.stat:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-
 .case-by .btn-take { height: 34px; padding: 0 14px; font-size: 13px; }
 
 @media (max-width: 1100px) and (min-width: 861px) {
@@ -2599,9 +2459,6 @@ button.stat:focus-visible { outline: 2px solid var(--primary); outline-offset: 2
 /* Phones: the views become a row of chips above the list. */
 @media (max-width: 860px) {
   .dash { display: block; }
-  .quick-search,
-  .dash-tiles { margin-bottom: 12px; }
-  .quick-results { width: 100%; }
 
   .dash-nav {
     position: static;
@@ -2667,7 +2524,7 @@ button.stat:focus-visible { outline: 2px solid var(--primary); outline-offset: 2
 .rail-me [data-me-avatar] { display: grid; width: 100%; height: 100%; }
 .rail-me .avatar-wrap,
 .rail-me .avatar-wrap .avatar { width: 100%; height: 100%; }
-.rail-me .avatar-badge { right: -7px; bottom: -7px; min-width: 28px; height: 28px; padding: 0 5px; font-size: 12px; border-width: 2px; border-color: var(--frame); }
+.rail-me .avatar-badge { right: -7px; bottom: -7px; min-width: 28px; height: 28px; padding: 0 5px; font-size: 12px; border-width: 2px; border-color: #fff; }
 
 .tab .avatar-badge { display: none; }
 
@@ -2783,7 +2640,6 @@ button.cal-day {
 button.cal-day:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(17, 17, 17, 0.1); }
 button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-.cal-day.out { background: transparent; border-style: dashed; opacity: 0.4; }
 .cal-day.today { border: 2px solid var(--primary); }
 
 .cal-date {
@@ -3085,7 +2941,6 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
 .cal-mixed .cal-count,
 .cal-mixed .cal-count span { color: var(--red-text); }
 
-.cal-day.past:not(button) { opacity: 0.6; }
 
 .chart-legend i.cal-done,
 .chart-legend i.cal-mixed { background: var(--cal-bg); border: 1px solid currentColor; }
@@ -3593,7 +3448,7 @@ a.contact-value:hover { color: var(--primary); }
 
 /* Suppliers: categories in a side menu, like the dashboard. */
 .suppliers-layout .dash-main > .supplier-grid { margin-bottom: 20px; }
-.dash-item-pic { width: 18px; font-size: 16px; line-height: 1; text-align: center; }
+.dash-item-pic { width: 20px; font-size: 16px; line-height: 1; text-align: center; }
 .empty-action { margin-top: 14px; }
 
 /* ---------- A case, full screen: details on the left, the follow-up chat on the right ---------- */
@@ -3940,10 +3795,10 @@ a.contact-value:hover { color: var(--primary); }
 .bar-who { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-muted); }
 .bar-who b { color: var(--text); }
 
-/* The black car: black on light, light on dark. */
-.car-pic { width: 1.5em; height: 0.75em; vertical-align: -0.05em; color: #111; }
-html.dark .car-pic { color: #f1f2f4; }
-.hashtag-pic .car-pic { width: 1.35em; }
+/* Request and profile pictures: Fluent 3D emoji, sized to the text around them. */
+.emoji3d { width: 1.2em; height: 1.2em; object-fit: contain; vertical-align: -0.22em; }
+/* A real photo (the transfers car) is cropped to fill a rounded square. */
+.photo-pic { object-fit: cover; border-radius: 28%; }
 
 /* Narrow: client and ID, then the headline, then status and follow-up. */
 @media (max-width: 1180px) {
@@ -4188,3 +4043,309 @@ html.dark .car-pic { color: #f1f2f4; }
 /* The case window fills the whole screen, edge to edge. */
 .sheet-overlay.full { padding: 0; }
 .sheet.case-full { width: 100vw; max-width: none; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
+
+/* ---------- Dashboard: a page title like Search's, the side menu on the left and the cases as squares ---------- */
+/* The title row is as tall as the avatar at the top of the rail (48px), so the side menu and cases sit higher. */
+.dash-head { flex-wrap: nowrap; align-items: center; margin-bottom: 16px; }
+.dash-head .page-title { flex-shrink: 0; font-size: 38px; line-height: 48px; white-space: nowrap; }
+
+/* Phones hide the Reminders and Sticky notes box, so they're round buttons beside the title. */
+.dash-phone-btns { display: none; gap: 8px; }
+
+@media (max-width: 860px) {
+  .dash-phone-btns { display: flex; }
+}
+
+/* A number on the phone's round buttons: orange for reminders (red when one is overdue), green for notes. */
+.btn-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-count.orange { background: #f26b1d; }
+.btn-count.green { background: #16a34a; }
+.btn-count.alert { background: var(--red); }
+
+/* Left column: the side menu, then a second floating box with Reminders and Sticky notes. */
+.dash-left { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.dash-extras { gap: 2px; }
+
+@media (min-width: 861px) {
+  .is-dash .dash-left { min-height: 0; max-height: 100%; }
+  .is-dash .dash-left .dash-nav { min-height: 0; }
+  .is-dash .dash-extras { flex-shrink: 0; }
+}
+
+/* Phones: the menu is a row of chips and the round buttons beside the search do the extras' job. */
+@media (max-width: 860px) {
+  .dash-left { display: block; }
+  .dash-extras { display: none; }
+}
+
+/* My cases' filters (opened, status), beside Squares / List / Calendar. */
+.home-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Squares / List / Calendar, at the top right of My cases. */
+.layout-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+
+.layout-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.layout-switch .ico { width: 16px; height: 16px; }
+.layout-switch button:hover { color: var(--text); }
+.layout-switch button.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-card); }
+.layout-switch button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+/* Rows are sized to the squares, not squeezed into the scrolling area. */
+.case-list.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 14px;
+}
+
+.case-grid > .empty { grid-column: 1 / -1; }
+
+/* A clean white square, top to bottom: file ID (the request's picture sits in the corner), client and flag,
+   the headline, the date, then Follow-up and Email, and the status. */
+.case-tile {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  overflow: hidden;
+  border-radius: 26px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.case-tile:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(17, 17, 17, 0.1); }
+.case-tile.is-done { opacity: 0.75; }
+
+.tile-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 4px; overflow: hidden; border-radius: 12px; }
+.tile-body:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+
+.tile-pic {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--surface-2);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.tile-pic .emoji3d { width: 30px; height: 30px; vertical-align: 0; }
+.tile-pic .photo-pic { width: 100%; height: 100%; border-radius: inherit; }
+
+/* The first two lines stay clear of the picture. */
+.tile-no,
+.tile-client { padding-right: 48px; }
+.tile-no { font-size: 15px; font-weight: 800; letter-spacing: 0.01em; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.tile-client { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tile-name { overflow: hidden; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; }
+
+.tile-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.tile-date { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.tile-date .ico { width: 15px; height: 15px; }
+.tile-date.overdue { color: var(--red-text); }
+.case-tile.is-done .tile-name,
+.case-tile.is-done .tile-title { color: var(--text-muted); }
+
+.tile-actions { display: flex; gap: 6px; }
+
+.tile-btn {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tile-btn .ico { width: 16px; height: 16px; }
+.tile-btn.primary { background: var(--primary); color: #fff; }
+.tile-btn.primary .ico { stroke-width: 2.4; }
+.tile-btn.primary:hover { background: var(--primary-hover); }
+a.tile-btn:hover { background: var(--primary-soft); color: var(--primary); }
+.tile-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.tile-btn.is-off { color: var(--text-faint); cursor: default; }
+
+.tile-btn-count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.tile-status { display: flex; }
+.tile-status .status-select { width: 100%; height: 34px; }
+
+/* Follow-up opens a box over the whole square; Cancel closes it. */
+.case-tile .quick-followup {
+  position: absolute;
+  inset: 0;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  border-radius: inherit;
+  background: var(--surface);
+  cursor: default;
+}
+
+.case-tile .quick-followup[hidden] { display: none; }
+.case-tile .quick-followup input { flex: none; height: 44px; font-size: 15px; }
+.quick-followup-actions { display: flex; gap: 8px; }
+.quick-followup-actions .btn { flex: 1; justify-content: center; }
+
+/* ---------- Flat look: one background everywhere, no floating boxes; thin lines divide the areas ---------- */
+.panel,
+.dash-nav,
+.stat,
+.supplier-box {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.panel { padding: 0; }
+.panel + .panel,
+.supplier-grid + .panel { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+.side-col .panel + .panel,
+.report-grid .panel + .panel,
+.case-page .panel + .panel,
+.settings-grid .panel + .panel { margin-top: 0; padding-top: 0; border-top: 0; }
+.form-page .panel { padding: 0; }
+
+/* Side menus: a line on their right instead of a box; Reminders and Sticky notes under a line of their own. */
+.dash-nav { padding: 0; }
+.dash > .dash-left,
+.dash > .dash-nav { padding-right: 20px; border-right: 1px solid var(--border); }
+.dash-extras { padding-top: 12px; border-top: 1px solid var(--border); }
+.dash-me { padding-top: 0; }
+
+@media (min-width: 861px) {
+  .dash > .dash-left,
+  .dash > .dash-nav { align-self: stretch; }
+}
+
+.profile-banner { border-radius: 22px; }
+
+/* Number rows (Activity): each number has a thin line on its left. */
+.stat { min-height: 0; padding: 4px 0 4px 18px; border-left: 1px solid var(--border); }
+.stat.featured { background: none; box-shadow: none; color: var(--text); }
+.stat.featured .stat-value { color: var(--primary); }
+.stat.featured .stat-label,
+.stat.featured .stat-sub,
+.stat.featured .stat-value small { color: var(--text-muted); }
+.stat.featured .stat-icon { background: var(--primary-soft); color: var(--primary); }
+.stat.featured .badge { background: var(--primary-soft); color: var(--primary); }
+
+/* Suppliers: a row of names split by thin lines; the chosen one is underlined in blue. */
+.supplier-grid { gap: 0; }
+.supplier-box { padding: 6px 16px 12px; border-left: 1px solid var(--border); }
+.supplier-box:hover { transform: none; box-shadow: none; }
+.supplier-box:hover .supplier-name,
+.supplier-box.active .supplier-name { color: var(--primary); }
+.supplier-box.active { box-shadow: inset 0 -3px 0 var(--primary); }
+
+/* Case squares: one grid split by thin lines, no boxes. Each square draws its left and top line;
+   the list clips the ones on the outer edge. */
+.case-list.case-grid { gap: 0; }
+
+.case-tile {
+  margin: -1px 0 0 -1px;
+  padding: 16px 18px;
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.case-tile:hover { transform: none; box-shadow: none; background: color-mix(in srgb, var(--primary) 4%, transparent); }
+.tile-pic { top: 14px; right: 16px; }
+.case-tile .quick-followup { background: var(--bg); }
+
+@media (max-width: 860px) {
+  .dash > .dash-left,
+  .dash > .dash-nav { padding-right: 0; border-right: 0; }
+  .case-list.case-grid { overflow: clip; }
+  .stat { padding-left: 12px; }
+  .panel { padding: 0; border-radius: 0; }
+}
