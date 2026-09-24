@@ -31,7 +31,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 
 ## 2. Users and sign-in
 
-- **No username or password.** Opening the app signs you in automatically as the team's admin, Amit.R (`auth.js`: `ensureSession()`). Real accounts need a server.
+- **Nothing to type to get in.** The sign-in page has username and password fields, pre-filled, and **Sign in** always goes through (a known username signs in as that person, anything else as the admin). Opening the app directly also signs in (`auth.js`: `ensureSession()`). Real accounts need a server.
 - Admins can assign cases to anyone. Staff can take cases from the open pool.
 - Sample team: Amit.R (admin), Daniel Reyes (head concierge, admin), Sofia Marín and Noa Adler (concierges).
 
@@ -50,6 +50,7 @@ This spec describes what the product does today and the rules it follows. [Pract
   3. Search, Activity, **Suppliers**, Advanced search, Settings.
   4. At the bottom: dark mode and log out.
 - **Tab bar** (phones): Me, Search, **+**, Activity, Suppliers, Settings.
+- **Side windows** (notes, reminders, search, your icon, add client…) always open on the **left**, next to the menu. On phones they come up from the bottom.
 - **Keyboard:** `/` search, `N` new case, `Esc` closes a panel or window.
 - **Refresh keeps you in place:** after a refresh you're back where you were (My cases or All files, the view and filters, the supplier, and any open case or calendar day). This is kept per browser tab.
 
@@ -105,7 +106,7 @@ Every case list (My cases, All files, Activity) shows **compact one-line bars**:
 > **Client name + flag | #File ID | headline | status (change it right there) | + Follow-up | ⌄**
 
 - **+ Follow-up:** opens a big input on the bar. Enter or *Add* saves it without opening the case.
-- **Clicking the bar** opens it up to show:
+- **Clicking the bar** opens the case in the full-screen window (§6). The **⌄** arrow at the end opens a quick preview instead:
   - The request picture, the date label and date (for example *Game date: Sunday, September 27, 18:00*) and a countdown ("In 3 days", "Tomorrow", "Today, 19:30", "Overdue by 1 day")
   - The request type, a label such as *NBA*, and a priority flag when high or urgent
   - **The last follow-up**: who, when, and up to 3 lines at 17px

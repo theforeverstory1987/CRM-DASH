@@ -4,21 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f6f4f2">
-<title>Gustavo</title>
+<title>Sign in · Gustavo</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=49">
+<link rel="stylesheet" href="styles.css?v=50">
 </head>
 <body class="login-page">
 <div class="login-shell">
-  <!-- Welcome: no username or password, one click in. -->
+  <!-- Sign in: the fields are there, but nothing has to be typed. -->
   <main class="signin-panel">
     <div class="signin-inner">
       <div class="signin-eyebrow">
         <span>001</span>
-        <span>Welcome</span>
+        <span>Sign in</span>
       </div>
 
       <div class="signin-title">
@@ -26,9 +26,31 @@
         <img class="app-icon" src="favicon.svg" alt="" width="64" height="64">
       </div>
 
-      <p class="signin-lede">The concierge team’s CRM. <strong>Clients, requests, suppliers and follow-ups, all in one dashboard.</strong></p>
+      <p class="signin-lede">Welcome back. <strong>The concierge team’s CRM: clients, requests, suppliers and follow-ups.</strong></p>
 
-      <a class="btn btn-primary btn-block enter-btn" id="enterBtn" href="app.html">Enter Gustavo</a>
+      <!-- The fields are filled in already: Sign in goes straight through, nothing to type. -->
+      <form id="loginForm" class="signin-form" novalidate>
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" value="admin">
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input id="password" name="password" type="password" autocomplete="current-password" value="12345">
+            <button type="button" id="togglePassword" class="toggle-password" aria-label="Show password">Show</button>
+          </div>
+        </div>
+
+        <label class="switch">
+          <input id="remember" type="checkbox" checked>
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          <span>Remember me</span>
+        </label>
+
+        <button type="submit" class="btn btn-primary btn-block" id="signInBtn">Sign in</button>
+      </form>
     </div>
   </main>
 
@@ -43,7 +65,7 @@
   </section>
 </div>
 
-<script src="auth.js?v=49"></script>
-<script src="login.js?v=49"></script>
+<script src="auth.js?v=50"></script>
+<script src="login.js?v=50"></script>
 </body>
 </html>

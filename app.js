@@ -632,7 +632,7 @@ function caseCard(kase, key) {
   const countdown = dueCountdown(kase);
   return `
     <div class="case-bar ${cls}" data-bar="${kase.id}" data-list-key="${key}">
-      <div class="bar-row" role="button" tabindex="0" data-expand="${kase.id}" aria-expanded="${open}">
+      <div class="bar-row" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case #${caseNo(kase)}">
         <span class="bar-client"><span class="bar-name">${esc(client ? client.name : 'Unknown client')}</span>${client ? flag(client.country) : ''}</span>
         <span class="bar-no">#${caseNo(kase)}</span>
         <span class="bar-title">${esc(kase.title)}</span>
@@ -642,7 +642,7 @@ function caseCard(kase, key) {
           </select>
         </span>
         ${followupAddButton()}
-        <span class="bar-chevron" aria-hidden="true">${icon('chevronDown')}</span>
+        <button type="button" class="bar-chevron" data-expand="${kase.id}" aria-expanded="${open}" aria-label="${open ? 'Hide details' : 'Show details'}" title="${open ? 'Hide details' : 'Show details'}">${icon('chevronDown')}</button>
       </div>
       <form class="quick-followup" data-followup-form="${kase.id}" data-list-key="${key}" data-stop hidden>
         <input type="text" placeholder="Write a follow-up…" aria-label="New follow-up for #${caseNo(kase)}">
