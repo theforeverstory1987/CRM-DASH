@@ -112,26 +112,8 @@ body {
   position: relative;
   width: min(62%, 420px);
   color: var(--brand-100);
-  margin-bottom: 12%;
+  margin-bottom: 0;
   filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.12));
-}
-
-.brand-captions {
-  position: absolute;
-  left: 48px;
-  right: 48px;
-  bottom: 44px;
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.brand-captions p {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 400;
-  line-height: 1.35;
-  color: rgba(255, 255, 255, 0.92);
 }
 
 .signin-panel {
@@ -304,9 +286,9 @@ body {
 .signin-form .btn-primary:hover { background: #1f7bff; }
 
 .login-error {
-  background: #fdecee;
-  border: 1px solid #f7c5cb;
-  color: #c81e32;
+  background: #fff0ea;
+  border: 1px solid #ffc9b5;
+  color: #d63a0c;
   border-radius: var(--radius);
   padding: 12px 14px;
   font-size: 14px;
@@ -327,21 +309,13 @@ body {
   .brand-panel {
     order: -1;
     min-height: 260px;
-    padding: 32px 16px 72px;
+    padding: 32px 16px;
   }
 
   .brand-logo {
     width: 150px;
     margin-bottom: 0;
   }
-
-  .brand-captions {
-    left: 20px;
-    right: 20px;
-    bottom: 18px;
-  }
-
-  .brand-captions p { font-size: 14px; }
 
   .signin-panel {
     align-items: flex-start;

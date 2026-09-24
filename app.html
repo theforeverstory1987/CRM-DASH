@@ -9,9 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=22">
-<link rel="stylesheet" href="app.css?v=22">
-<script src="auth.js?v=22"></script>
+<link rel="stylesheet" href="styles.css?v=45">
+<link rel="stylesheet" href="app.css?v=45">
+<script src="auth.js?v=45"></script>
 <script>
   // Send signed-out visitors back to the login page before anything renders.
   if (!getSession()) window.location.replace('index.html');
@@ -22,11 +22,12 @@
 <body class="app-body">
 <div class="shell">
   <nav class="rail" aria-label="Main">
-    <a class="rail-btn rail-me" data-route="home" href="#/home" data-label="My dashboard" aria-label="My dashboard"><span data-me-avatar></span></a>
+    <a class="rail-btn rail-me" data-route="home" data-action="my-dashboard" href="#/home" data-label="My dashboard" aria-label="My dashboard"><span data-me-avatar="badge"></span></a>
     <div class="rail-sep"></div>
     <button class="rail-btn rail-new" data-action="new-file" data-label="New file · opens in a new tab  (N)" aria-label="New file (opens in a new tab)"><span data-icon="plus"></span></button>
     <button class="rail-btn" data-action="search" data-label="Search a client or case  (/)" aria-label="Search a client or case"><span data-icon="search"></span></button>
     <a class="rail-btn" data-route="activity" href="#/activity" data-label="Activity · all open cases" aria-label="Activity: all open cases"><span data-icon="activity"></span></a>
+    <a class="rail-btn" data-route="suppliers" href="#/suppliers" data-label="Suppliers" aria-label="Suppliers"><span data-icon="store"></span></a>
     <button class="rail-btn" data-action="advanced-search" data-label="Advanced search" aria-label="Advanced search"><span data-icon="sliders"></span></button>
     <a class="rail-btn" data-route="settings" href="#/settings" data-label="Settings" aria-label="Settings"><span data-icon="settings"></span></a>
     <div class="rail-bottom">
@@ -39,10 +40,11 @@
 </div>
 
 <nav class="tabbar" aria-label="Main">
-  <a class="tab" data-route="home" href="#/home"><span data-me-avatar></span>Me</a>
+  <a class="tab" data-route="home" data-action="my-dashboard" href="#/home"><span data-me-avatar></span>Me</a>
   <button class="tab" data-action="search"><span data-icon="search"></span>Search</button>
   <button class="tab-plus" data-action="new-file" aria-label="New file (opens in a new tab)"><span data-icon="plus"></span></button>
   <a class="tab" data-route="activity" href="#/activity"><span data-icon="activity"></span>Activity</a>
+  <a class="tab" data-route="suppliers" href="#/suppliers"><span data-icon="store"></span>Suppliers</a>
   <a class="tab" data-route="settings" href="#/settings"><span data-icon="settings"></span>Settings</a>
 </nav>
 
@@ -50,7 +52,8 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="tooltip" class="tooltip hidden" role="tooltip"></div>
 
-<script src="data.js?v=22"></script>
-<script src="app.js?v=22"></script>
+<script src="data.js?v=45"></script>
+<script src="flags.js?v=45"></script>
+<script src="app.js?v=45"></script>
 </body>
 </html>

@@ -16,8 +16,12 @@ const IS_ADMIN = (findMember(ME) || {}).role === 'admin';
 
 const state = {
   route: { name: 'home' },
+  // The dashboard shows My cases or All files; the tiles switch between them in place.
+  dash: 'mine',
   home: { view: 'all', type: '', priority: '', date: '', sort: 'due', text: '' },
   all: { status: 'all', whose: '', type: '', priority: '', date: '', sort: 'due', text: '' },
+  suppliers: { group: 'transfers', id: '' },
+  files: { view: 'calendar', handled: 'all', status: 'new', tier: 'VIP', name: '', from: '', to: '', type: '', priority: '', date: '', sort: 'due', text: '' },
   activityTab: 'cases',
   range: 30,
   logType: 'all',
@@ -59,9 +63,15 @@ const ICONS = {
   layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  card: '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',
+  store: '<path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v1.5a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v7h14v-7"/><path d="M10 20v-4h4v4"/>',
+  receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+  send: '<path d="M21 3 10 14"/><path d="M21 3 14 21l-4-7-7-4z"/>',
+  folder: '<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.3l2 2.5h8.7A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/>',
 };
 
-const STATUS_ICONS = { new: 'plus', in_progress: 'refresh', waiting_provider: 'briefcase', waiting_client: 'clock', done: 'check' };
+const STATUS_ICONS = { new: 'plus', in_progress: 'refresh', waiting_provider: 'store', waiting_client: 'clock', done: 'check' };
 
 function icon(name, cls = '') {
   return `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
@@ -88,9 +98,10 @@ function memberName(id) {
   return member ? member.name : 'Someone';
 }
 
-// Two letters: "Emma Laurent" → EL, "Admin" → AD.
+// Two letters: "Yael Mizrahi" → YM, "Admin" → AD.
 function initials(name) {
-  const words = (name || '?').split(/\s+/).filter(Boolean);
+  // Dots split too, so "C.K." → CK.
+  const words = (name || '?').split(/[\s.]+/).filter(Boolean);
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
   return words.slice(0, 2).map(w => w[0].toUpperCase()).join('');
 }
@@ -131,15 +142,15 @@ function paintOf(member, seed) {
   return { cls: `tone-${toneOf(member, seed)}`, style: '' };
 }
 
-function memberAvatar(id, size = '') {
+function memberAvatar(id, size = '', { badge = false } = {}) {
   const member = findMember(id);
   const { cls, style } = paintOf(member, id);
   let face;
   if (member && member.photo) face = `<span class="avatar ${size}"><img src="${esc(member.photo)}" alt=""></span>`;
   else if (member && member.emoji) face = `<span class="avatar emoji ${cls} ${size}"${style}>${esc(member.emoji)}</span>`;
   else return `<span class="avatar ${cls} ${size}"${style} aria-hidden="true">${esc(memberInitials(member))}</span>`;
-  // With a photo or icon, keep the initials in a small bubble so people stay recognisable.
-  if (size === 'xs' || size === 'sm') return face.replace('<span class="avatar', '<span aria-hidden="true" class="avatar');
+  // With a photo or icon, only the profile button in the side rail keeps the initials, in a corner bubble.
+  if (!badge) return face.replace('<span class="avatar', '<span aria-hidden="true" class="avatar');
   return `<span class="avatar-wrap ${size}" aria-hidden="true">${face}<span class="avatar-badge ${cls}"${style}>${esc(memberInitials(member))}</span></span>`;
 }
 
@@ -147,15 +158,21 @@ function caseNo(kase) {
   return `G-${kase.number}`;
 }
 
-// Flag images (not emoji, which Windows shows as two letters) from flagcdn.com.
-function flag(code) {
-  const country = COUNTRIES.find(([c]) => c === code);
-  if (!country) return '';
-  return `<img class="flag" src="https://flagcdn.com/${code.toLowerCase()}.svg" alt="${esc(country[1])}" title="${esc(country[1])}" width="20" height="14" loading="lazy">`;
+// An email about a case, with the case number (and request) already in the subject line.
+function caseMailto(kase, email) {
+  return `mailto:${email}?subject=${encodeURIComponent(`#${caseNo(kase)} · ${kase.title}`)}`;
 }
 
-function hashtag(category) {
-  return `<span class="hashtag">#${esc(category)}</span>`;
+// Flags drawn inline from flags.js (not emoji, which Windows shows as two letters).
+function flag(code) {
+  const country = COUNTRIES.find(([c]) => c === code);
+  if (!country || !FLAG_SVGS[code]) return '';
+  return `<svg class="flag" viewBox="0 0 ${FLAG_W} ${FLAG_H}" preserveAspectRatio="none" role="img" aria-label="${esc(country[1])}"><title>${esc(country[1])}</title>${FLAG_SVGS[code]}</svg>`;
+}
+
+// The request type as a hashtag, with the request's picture in front when given (🚗 #Transfers).
+function hashtag(category, pic = '') {
+  return `<span class="hashtag">${pic ? `<span class="hashtag-pic" aria-hidden="true">${pic}</span>` : ''}#${esc(category)}</span>`;
 }
 
 function clientNo(client) {
@@ -163,8 +180,13 @@ function clientNo(client) {
 }
 
 // An ID that copies itself to the clipboard when clicked.
-function idChip(id) {
-  return `<button type="button" class="id-chip" data-copy="${esc(id)}" title="Copy ${esc(id)}" aria-label="Copy ${esc(id)}">${esc(id)}${icon('copy')}</button>`;
+function idChip(id, cls = '') {
+  return `<button type="button" class="id-chip ${cls}" data-copy="${esc(id)}" title="Copy ${esc(id)}" aria-label="Copy ${esc(id)}">${esc(id)}${icon('copy')}</button>`;
+}
+
+// Case numbers are always the bigger chip, #G-1001; `lg` for a case's own header.
+function caseChip(kase, size = '') {
+  return idChip(`#${caseNo(kase)}`, `case-no ${size}`);
 }
 
 const isOpen = kase => kase.status !== 'done';
@@ -184,7 +206,8 @@ function defaultDue() {
   return toLocalInputValue(d);
 }
 
-const timeFmt = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
+// 24-hour clock everywhere: 19:00.
+const timeFmt = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const weekdayFmt = new Intl.DateTimeFormat(undefined, { weekday: 'long' });
 const weekdayShortFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
 const shortDateFmt = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
@@ -310,7 +333,7 @@ function selectWrap(id, optionsHtml) {
 }
 
 // ---------- Case lists with filters ----------
-const STATUS_FILTERS = [['all', 'All open'], ['new', 'Open'], ['in_progress', 'Ongoing'], ['waiting_provider', 'Wait: provider'], ['waiting_client', 'Wait: client'], ['done', 'Done']];
+const STATUS_FILTERS = [['all', 'All open'], ['new', 'Open'], ['in_progress', 'Ongoing'], ['waiting_provider', 'Wait: supplier'], ['waiting_client', 'Wait: client'], ['done', 'Done']];
 const TYPE_FILTERS = [['', 'Any request type'], ...CATEGORIES.map(c => [c, `#${c}`])];
 const PRIORITY_FILTERS = [['', 'Any priority'], ['hot', 'Urgent & high'], ['urgent', 'Urgent'], ['high', 'High'], ['normal', 'Normal'], ['low', 'Low']];
 const DATE_FILTERS = [['', 'Any date'], ['overdue', 'Overdue'], ['today', 'Due today'], ['week', 'Due this week'], ['later', 'Due later'], ['none', 'No due date']];
@@ -322,9 +345,9 @@ const HOME_VIEWS = [
     section: 'My cases',
     items: [
       { id: 'all', label: 'All my cases', icon: 'briefcase', hint: 'Everything assigned to you or taken by you, open first', empty: 'Nothing on your plate. Open a new file with +.' },
-      { id: 'new', label: 'New cases', icon: 'plus', hint: 'Not started yet', empty: 'No new cases.' },
+      { id: 'new', label: 'New cases', icon: 'folder', hint: 'Not started yet', empty: 'No new cases.' },
       { id: 'urgent', label: 'Urgent', icon: 'flame', hint: 'Open cases marked urgent', empty: 'No urgent cases right now.' },
-      { id: 'waiting_provider', label: 'Waiting on provider', icon: 'briefcase', hint: 'Waiting for the provider to reply', empty: 'No cases waiting on a provider.' },
+      { id: 'waiting_provider', label: 'Waiting on supplier', icon: 'store', hint: 'Waiting for the supplier to reply', empty: 'No cases waiting on a supplier.' },
       { id: 'waiting_client', label: 'Waiting on client', icon: 'clock', hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.' },
     ],
   },
@@ -355,6 +378,74 @@ function homeViewCases(view) {
     default: return mine;
   }
 }
+
+// All files: the whole team's cases, opening on the calendar.
+const FILE_VIEWS = [
+  {
+    section: 'Views',
+    items: [
+      { id: 'calendar', label: 'Calendar view', icon: 'calendar', hint: 'Cases on the day they’re needed, this month and a month ahead', count: () => calendarCases().length },
+      { id: 'today', label: 'Opened today', icon: 'filePlus', hint: 'Files opened today', empty: 'No files opened today yet.', count: () => filesFor('today').length },
+      { id: 'all', label: 'All files', icon: 'layers', hint: 'Every file across the team, open first', empty: 'No files yet.', count: () => db.cases.length },
+    ],
+  },
+  {
+    section: 'Needs attention',
+    items: [
+      { id: 'urgent', label: 'Urgent', icon: 'flame', hint: 'Open cases marked urgent, across the team', empty: 'No urgent cases right now.', count: () => filesFor('urgent').length, alert: true },
+      { id: 'waiting_provider', label: 'Waiting on supplier', icon: 'store', hint: 'Waiting for the supplier to reply', empty: 'No cases waiting on a supplier.', count: () => filesFor('waiting_provider').length },
+      { id: 'waiting_client', label: 'Waiting on client', icon: 'clock', hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.', count: () => filesFor('waiting_client').length },
+    ],
+  },
+  {
+    section: 'Filter by',
+    items: [
+      { id: 'date', label: 'Date', icon: 'clock', hint: 'By the date the client needs it', empty: 'No files for these dates.' },
+      { id: 'name', label: 'Client name', icon: 'user', hint: 'Sorted by client, A to Z', empty: 'No client matches that name.' },
+      { id: 'status', label: 'Status', icon: 'refresh', hint: 'Every file with the status you pick', empty: 'No files with this status.' },
+      { id: 'tier', label: 'Card type', icon: 'card', hint: 'By the client’s membership card', empty: 'No files for this card type.' },
+    ],
+  },
+];
+
+function fileView(id) {
+  for (const s of FILE_VIEWS) for (const v of s.items) if (v.id === id) return v;
+  return FILE_VIEWS[0].items[0];
+}
+
+function filesFor(view) {
+  const f = state.files;
+  switch (view) {
+    case 'today': {
+      const today = startOfDay(new Date()).getTime();
+      return db.cases.filter(k => startOfDay(k.createdAt).getTime() === today);
+    }
+    case 'date': {
+      const from = f.from ? new Date(`${f.from}T00:00`) : null;
+      const to = f.to ? new Date(`${f.to}T23:59:59`) : null;
+      if (!from && !to) return db.cases;
+      return db.cases.filter(k => k.dueAt && (!from || new Date(k.dueAt) >= from) && (!to || new Date(k.dueAt) <= to));
+    }
+    case 'name': {
+      const term = f.name.trim().toLowerCase();
+      if (!term) return db.cases;
+      return db.cases.filter(k => {
+        const c = findClient(k.clientId);
+        return c && (c.name.toLowerCase().includes(term) || clientNo(c).toLowerCase().includes(term));
+      });
+    }
+    case 'status': return db.cases.filter(k => k.status === f.status);
+    case 'tier': return db.cases.filter(k => (findClient(k.clientId) || {}).tier === f.tier);
+    case 'all': return db.cases.filter(k => matchesHandled(k, f.handled));
+    case 'urgent': return db.cases.filter(k => isOpen(k) && k.priority === 'urgent');
+    case 'waiting_provider':
+    case 'waiting_client':
+      return db.cases.filter(k => k.status === view);
+    default: return db.cases;
+  }
+}
+
+const clientNameOf = kase => (findClient(kase.clientId) || {}).name || '';
 
 function matchesText(kase, term) {
   if (!term) return true;
@@ -394,21 +485,23 @@ function matchesPriority(kase, filter) {
 function filteredCases(key) {
   const f = state[key];
   const term = f.text.trim().toLowerCase();
-  const showsDone = key !== 'home' && f.status === 'done';
+  const showsDone = key === 'files' ? f.view === 'status' && f.status === 'done' : key !== 'home' && f.status === 'done';
   const sorters = {
     due: showsDone ? doneSort : dueSort,
     priority: (a, b) => (PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]) || dueSort(a, b),
     newest: (a, b) => b.createdAt.localeCompare(a.createdAt),
   };
-  const base = key === 'home'
-    ? homeViewCases(f.view)
-    : scopedCases(key).filter(k => (f.status === 'all' ? isOpen(k) : k.status === f.status));
+  const byClient = (a, b) => clientNameOf(a).localeCompare(clientNameOf(b)) || (isOpen(b) - isOpen(a)) || dueSort(a, b);
+  const base = key === 'home' ? homeViewCases(f.view)
+    : key === 'files' ? filesFor(f.view)
+      : scopedCases(key).filter(k => (f.status === 'all' ? isOpen(k) : k.status === f.status));
   return base
     .filter(k => !f.type || k.category === f.type)
     .filter(k => matchesPriority(k, f.priority))
     .filter(k => matchesDate(k, f.date))
     .filter(k => matchesText(k, term))
-    .sort((a, b) => (isOpen(b) - isOpen(a)) || (sorters[f.sort] || dueSort)(a, b));
+    .sort(key === 'files' && f.view === 'name' ? byClient
+      : (a, b) => (isOpen(b) - isOpen(a)) || (sorters[f.sort] || dueSort)(a, b));
 }
 
 function statusCounts(key) {
@@ -463,7 +556,8 @@ function renderList(key) {
   if (countEl) countEl.textContent = list.length;
   const emptyText = isRefined(key)
     ? 'No cases match these filters.'
-    : key === 'home' ? homeView(state.home.view).empty : 'No cases here.';
+    : key === 'home' ? homeView(state.home.view).empty
+      : key === 'files' ? fileView(state.files.view).empty : 'No cases here.';
   listEl.innerHTML = list.length
     ? list.map(k => caseCard(k, key)).join('')
     : `<div class="empty">${emptyText}</div>`;
@@ -471,6 +565,70 @@ function renderList(key) {
 
 function lastUpdateOf(kase) {
   return kase.updates.length ? kase.updates.reduce((a, b) => (a.at > b.at ? a : b)) : null;
+}
+
+// What a request is about: a picture, a short label (NBA) and what its date means.
+// Tickets and events are read from the title; everything else goes by request type.
+const TICKET_KINDS = [
+  { test: /\bNBA\b/i, icon: '🏀', label: 'NBA', date: 'Game date' },
+  { test: /basketball|courtside|euroleague/i, icon: '🏀', label: 'Basketball', date: 'Game date' },
+  { test: /champions league|premier league|football|soccer|la liga/i, icon: '⚽', label: 'Football', date: 'Game date' },
+  { test: /tennis|wimbledon|roland.garros/i, icon: '🎾', label: 'Tennis', date: 'Match date' },
+  { test: /formula 1|\bF1\b|grand prix/i, icon: '🏎️', label: 'F1', date: 'Race date' },
+  { test: /concert|festival|jazz|arena/i, icon: '🎤', label: 'Concert', date: 'Show date' },
+  { test: /opera|theatre|theater|musical|premiere|stand-up|comedy|show/i, icon: '🎤', label: 'Show', date: 'Show date' },
+];
+
+const CATEGORY_KINDS = {
+  Restaurant: { icon: '🍽️', date: 'Reservation' },
+  Hotel: { icon: '🏨', date: 'Check-in' },
+  Flights: { icon: '✈️', date: 'Flight' },
+  Transfers: { icon: '🚗', date: 'Pickup' },
+  Massage: { icon: '💆', date: 'Appointment' },
+  Yacht: { icon: '🛥️', date: 'Sailing' },
+  Events: { icon: '🎉', date: 'Event date' },
+  Tickets: { icon: '🎤', date: 'Show date' },
+  Shopping: { icon: '🛍️', date: 'Needed by' },
+  Gifts: { icon: '🎁', date: 'Deliver by' },
+  Other: { icon: '📌', date: 'Needed by' },
+};
+
+function requestKind(kase) {
+  const byTitle = ['Tickets', 'Events'].includes(kase.category) && TICKET_KINDS.find(k => k.test.test(kase.title));
+  return byTitle || { label: '', ...(CATEGORY_KINDS[kase.category] || CATEGORY_KINDS.Other) };
+}
+
+const shortTimeFmt = timeFmt;
+
+// The date the request is for, on the card's left: "23.9" coloured by where it stands, "Sun 19:00" under it.
+function whenTile(kase) {
+  const kind = requestKind(kase);
+  const d = kase.dueAt ? new Date(kase.dueAt) : null;
+  const today = d && dayDiff(d) === 0;
+  const cls = !isOpen(kase) ? 'done' : d && d < new Date() ? 'overdue' : today ? 'today' : 'upcoming';
+  return `
+    <span class="when-tile ${cls}" title="${esc(kind.date)}${d ? `: ${esc(longDayFmt.format(d))}` : ''}">
+      ${d ? `
+        <span class="when-day">${d.getDate()}.${d.getMonth() + 1}</span>
+        <span class="when-time">${esc(today ? 'Today' : weekdayShortFmt.format(d))} ${esc(timeFmt.format(d))}</span>`
+        : '<span class="when-time">No date</span>'}
+    </span>`;
+}
+
+// "+ Follow-up" on a case card: opens a box on the card to add one without opening the case.
+function followupAddButton() {
+  return `<button type="button" class="followup-add" data-action="toggle-followup" aria-label="Add a follow-up">${icon('plus')}Follow-up</button>`;
+}
+
+// How far off the request is: "In 3 days", "Tomorrow", "Overdue by 2 days".
+function dueCountdown(kase) {
+  if (!isOpen(kase)) return { text: 'Done', cls: 'done' };
+  if (!kase.dueAt) return { text: 'No date', cls: '' };
+  const diff = dayDiff(kase.dueAt);
+  if (new Date(kase.dueAt) < new Date()) return { text: diff === 0 ? 'Overdue today' : `Overdue by ${-diff} day${diff === -1 ? '' : 's'}`, cls: 'overdue' };
+  if (diff === 0) return { text: `Today, ${shortTimeFmt.format(new Date(kase.dueAt))}`, cls: 'today' };
+  if (diff === 1) return { text: 'Tomorrow', cls: '' };
+  return { text: `In ${diff} days`, cls: '' };
 }
 
 function caseCard(kase, key) {
@@ -482,44 +640,49 @@ function caseCard(kase, key) {
       ? `<span>Open pool</span><button type="button" class="btn-take" data-take="${kase.id}">${icon('plus')}Take</button>`
       : `${icon('inbox')}<span><b>Open pool</b></span>`;
   } else if (key === 'home' && kase.assignee === ME) {
+    // Your own cases only say who handed them to you.
     who = kase.assignedBy === ME
-      ? `${memberAvatar(ME, 'xs')}<span>You took this</span>`
+      ? ''
       : `${memberAvatar(kase.assignedBy, 'xs')}<span>Assigned by <b>${esc(firstName(memberName(kase.assignedBy)))}</b></span>`;
   } else {
     who = `${memberAvatar(kase.assignee, 'xs')}<span>Handled by <b>${esc(kase.assignee === ME ? 'you' : firstName(memberName(kase.assignee)))}</b></span>`;
   }
   const cls = [!isOpen(kase) && 'is-done', due.cls === 'overdue' && 'is-overdue'].filter(Boolean).join(' ');
   const lastUpdate = lastUpdateOf(kase);
-  // Hierarchy: client and flag, request type and what they asked for, requested and opened dates, then actions.
+  const kind = requestKind(kase);
+  const countdown = dueCountdown(kase);
+  // Hierarchy: the date it's for (with what it is), the client, what they asked for, the last follow-up, then actions.
   return `
     <div class="case ${cls}" role="button" tabindex="0" data-case="${kase.id}">
-      <span class="case-check" aria-hidden="true">${isOpen(kase) ? '' : icon('check')}</span>
+      ${whenTile(kase)}
       <span class="case-body">
         <span class="case-top">
           <span class="case-client">${esc(client ? client.name : 'Unknown client')}${client ? flag(client.country) : ''}</span>
-          <span class="case-when ${due.cls}">${due.label ? `<span class="lbl">${due.label}:</span> ` : ''}${esc(due.text)}</span>
+          <span class="case-when ${countdown.cls}">${esc(countdown.text)}</span>
         </span>
         <span class="case-sub">
-          <span class="case-request">${hashtag(kase.category)}<span class="case-title">${esc(kase.title)}</span></span>
+          <span class="case-request">${hashtag(kase.category, kind.icon)}${kind.label ? `<span class="kind-badge">${esc(kind.label)}</span>` : ''}<span class="case-title">${esc(kase.title)}</span></span>
           <span class="case-opened"><span class="lbl">Opened:</span> ${esc(fmtDayTime(kase.createdAt))}</span>
         </span>
         ${lastUpdate ? `
-        <span class="case-followup">${icon('layers')}<span class="quote-text">“${esc(lastUpdate.text)}”</span><span class="muted">— ${esc(firstName(memberName(lastUpdate.by)))}</span></span>` : ''}
+        <span class="case-last">
+          <span class="case-last-meta">${icon('layers')}<b>Last follow-up</b><span>${esc(firstName(memberName(lastUpdate.by)))} · ${esc(fmtDayTime(lastUpdate.at))}</span>${followupAddButton()}</span>
+          <span class="case-last-text">${esc(lastUpdate.text)}</span>
+        </span>` : `<span class="case-last none">${icon('layers')}<span>No follow-up yet</span>${followupAddButton()}</span>`}
+        <form class="quick-followup" data-followup-form="${kase.id}" data-list-key="${key}" data-stop hidden>
+          <input type="text" placeholder="Write a follow-up…" aria-label="New follow-up">
+          <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add</button>
+        </form>
         <span class="case-bottom">
-          <span class="tags">${idChip(caseNo(kase))}${channelTag(kase.channel, 'sm')}${hotTag(kase.priority, 'sm')}</span>
+          <span class="tags">${caseChip(kase)}${channelTag(kase.channel, 'sm')}${hotTag(kase.priority, 'sm')}</span>
           <span class="case-by">${who}</span>
         </span>
         <span class="case-quick" data-stop>
           <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
             ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
           </select>
-          ${client && client.email ? `<a class="btn-email" data-action="email-client" href="mailto:${esc(client.email)}" title="${esc(client.email)}">${icon('mail')}Email ${esc(firstName(client.name))}</a>` : ''}
-          <button type="button" class="icon-btn sm" data-action="toggle-followup" title="Add a quick follow-up" aria-label="Add a quick follow-up">${icon('pencil')}</button>
+          ${client && client.email ? `<a class="btn-email" data-action="email-client" href="${esc(caseMailto(kase, client.email))}" title="${esc(client.email)}">${icon('mail')}Email ${esc(firstName(client.name))}</a>` : ''}
         </span>
-        <form class="quick-followup" data-followup-form="${kase.id}" data-list-key="${key}" data-stop hidden>
-          <input type="text" placeholder="Quick follow-up for the team…" aria-label="Quick follow-up">
-          <button type="submit" class="btn btn-primary btn-sm" aria-label="Send">${icon('check')}</button>
-        </form>
       </span>
     </div>`;
 }
@@ -531,7 +694,7 @@ function poolItem(kase) {
     <div class="pool-item">
       <div class="pool-body" role="button" tabindex="0" data-case="${kase.id}">
         <span class="pool-title">${esc(kase.title)}</span>
-        <span class="pool-sub">${idChip(caseNo(kase))}<span>${esc(client ? client.name : 'Unknown client')} · ${esc(kase.category)}</span></span>
+        <span class="pool-sub">${caseChip(kase)}<span>${esc(client ? client.name : 'Unknown client')} · ${esc(kase.category)}</span></span>
         <span class="tags">${hotTag(kase.priority, 'sm')}<span class="tag sm${due.cls === 'overdue' ? ' pr-urgent' : ''}">${icon('clock')}${esc(due.text)}</span></span>
       </div>
       <button type="button" class="btn-take" data-take="${kase.id}">${icon('plus')}Take</button>
@@ -626,7 +789,7 @@ function parseRoute() {
   const params = new URLSearchParams(query);
   const name = parts[0] || 'home';
   if (name === 'case') return { name: 'case', id: parts[1], params };
-  if (['home', 'activity', 'settings', 'new', 'search'].includes(name)) return { name, params };
+  if (['home', 'activity', 'suppliers', 'settings', 'new', 'search'].includes(name)) return { name, params };
   return { name: 'home', params };
 }
 
@@ -642,34 +805,30 @@ function render() {
   // The dashboard's own scrolling list; toggled before drawing so a redraw keeps its scroll position.
   viewEl.classList.toggle('is-dash', route.name === 'home');
   if (route.name === 'activity') renderActivity();
+  else if (route.name === 'suppliers') renderSuppliers();
   else if (route.name === 'settings') renderSettings();
   else if (route.name === 'new') renderNewFilePage({ clientId: route.params.get('client') || '' });
   else if (route.name === 'search') renderSearchPage(route.params.get('q') || '');
   else if (route.name === 'case') renderCasePage(route.id);
+  else if (state.dash === 'files') renderFiles();
   else renderHome();
 }
 
 function refreshAvatars() {
-  document.querySelectorAll('[data-me-avatar]').forEach(el => { el.innerHTML = memberAvatar(ME); });
+  document.querySelectorAll('[data-me-avatar]').forEach(el => { el.innerHTML = memberAvatar(ME, '', { badge: el.dataset.meAvatar === 'badge' }); });
 }
 
 // ---------- My dashboard ----------
 // Only the case list scrolls here, so keep its position when the page redraws in the same view.
 let homeListView = null;
 
-function renderHome() {
-  const oldList = document.getElementById('homeList');
-  const keepTop = oldList && homeListView === state.home.view ? oldList.scrollTop : 0;
+// Quick search and the overview tiles, shared by My dashboard and All files.
+function dashTop(active) {
   const mine = myCases();
   const reminders = myReminders().filter(r => !r.done);
   const overdue = reminders.filter(r => isPast(r.at));
   const notes = myNotes();
-  const me = findMember(ME);
-  const view = homeView(state.home.view);
-
-  viewEl.innerHTML = `
-    <div class="dash">
-      <h1 class="visually-hidden">My dashboard</h1>
+  return `
       <div class="quick-search" id="quickSearch">
         <label class="quick-label" for="quickInput">${icon('search')}Quick search</label>
         <input id="quickInput" type="search" autocomplete="off" placeholder="File ID, client name or ID">
@@ -677,13 +836,26 @@ function renderHome() {
       </div>
 
       <section class="dash-tiles" aria-label="Overview">
-        ${dashTile({ label: 'My cases', value: mine.length, sub: `${mine.filter(isOpen).length} open`, ic: 'briefcase', color: 'blue', shortcut: 'view:all', active: true })}
-        ${dashTile({ label: 'All files', value: db.cases.length, sub: `${db.cases.filter(isOpen).length} open · whole team`, ic: 'layers', color: 'purple', href: '#/activity' })}
+        ${dashTile({ label: 'My cases', value: mine.length, sub: `${mine.filter(isOpen).length} open`, ic: 'briefcase', color: 'blue', shortcut: 'view:all', active: active === 'home' })}
+        ${dashTile({ label: 'All files', value: db.cases.length, sub: `${db.cases.filter(isOpen).length} open · whole team`, ic: 'layers', color: 'purple',
+          action: 'show-files', active: active === 'files' })}
         ${dashTile({ label: 'Reminders', value: reminders.length, ic: 'clock', color: 'orange', action: 'open-reminders',
           sub: overdue.length ? `${overdue.length} overdue` : reminders[0] ? `Next: ${esc(fmtDayTime(reminders[0].at))}` : 'Add a reminder' })}
         ${dashTile({ label: 'Sticky notes', value: notes.length, ic: 'pencil', color: 'green', action: 'open-notes',
           sub: notes[0] ? esc(notes[0].text) : 'Add a note' })}
-      </section>
+      </section>`;
+}
+
+function renderHome() {
+  const oldList = document.getElementById('homeList');
+  const keepTop = oldList && homeListView === state.home.view ? oldList.scrollTop : 0;
+  const me = findMember(ME);
+  const view = homeView(state.home.view);
+
+  viewEl.innerHTML = `
+    <div class="dash">
+      <h1 class="visually-hidden">My dashboard</h1>
+      ${dashTop('home')}
 
       <aside class="dash-nav" aria-label="Dashboard views">
         <div class="dash-me">
@@ -723,6 +895,302 @@ function renderHome() {
   document.getElementById('homeList').scrollTop = keepTop;
   homeListView = state.home.view;
   bindQuickSearch();
+}
+
+// ---------- All files ----------
+let filesListView = null;
+
+function renderFiles() {
+  const f = state.files;
+  const old = document.querySelector('#filesScroll, #filesList');
+  const keepTop = old && filesListView === f.view ? old.scrollTop : 0;
+  const view = fileView(f.view);
+  const isCal = view.id === 'calendar';
+
+  viewEl.innerHTML = `
+    <div class="dash">
+      <h1 class="visually-hidden">All files</h1>
+      ${dashTop('files')}
+
+      <aside class="dash-nav" aria-label="All files views">
+        <div class="dash-me">
+          <span class="dash-me-icon">${icon('layers')}</span>
+          <div class="dash-me-text">
+            <div class="dash-me-name">All files</div>
+            <div class="dash-me-sub">${db.cases.length} files · ${db.cases.filter(isOpen).length} open</div>
+          </div>
+        </div>
+        ${FILE_VIEWS.map(section => `
+          <div class="dash-section">
+            <p class="dash-label">${section.section}</p>
+            ${section.items.map(item => `
+              <button type="button" class="dash-item${item.id === view.id ? ' active' : ''}" data-fview="${item.id}"${item.id === view.id ? ' aria-current="true"' : ''}>
+                ${icon(item.icon)}<span class="dash-item-label">${item.label}</span>${item.count ? dashCount(item) : ''}
+              </button>`).join('')}
+          </div>`).join('')}
+      </aside>
+
+      <div class="dash-main">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>${esc(view.label)} <span class="count-badge" id="filesCount"></span></h2>
+            <span class="muted small">${esc(view.hint)}</span>
+          </div>
+          ${isCal
+            ? `<div class="cal-scroll" id="filesScroll">${filesCalendar()}</div>`
+            : `${filesControls(view.id)}<div class="case-list" id="filesList"></div>`}
+        </section>
+      </div>
+    </div>`;
+  if (isCal) document.getElementById('filesCount').textContent = calendarCases().length;
+  else renderList('files');
+  // A fresh calendar opens on today's week; a redraw keeps its place.
+  if (isCal && !(old && filesListView === 'calendar')) scrollCalendarToToday();
+  else document.querySelector('#filesScroll, #filesList').scrollTop = keepTop;
+  filesListView = view.id;
+  bindQuickSearch();
+}
+
+function dashCount(item) {
+  const n = item.count();
+  return `<span class="dash-count${item.alert && n > 0 ? ' alert' : ''}">${n}</span>`;
+}
+
+// The controls above the list, one kind per view.
+function filesControls(view) {
+  const f = state.files;
+  const pill = (field, value, label, count) => `<button type="button" class="${f[field] === value ? 'active' : ''}" data-fset="files.${field}" data-value="${esc(value)}">${esc(label)}${count !== undefined ? `<span class="pill-count">${count}</span>` : ''}</button>`;
+  switch (view) {
+    case 'all':
+      return `
+        <div class="filters">
+          <div class="pills" role="group" aria-label="Show">${HANDLED_FILTERS.map(([v, l]) => pill('handled', v, l, db.cases.filter(k => matchesHandled(k, v)).length)).join('')}</div>
+          ${refineRow('files')}
+        </div>`;
+    case 'date':
+      return `
+        <div class="filters">
+          <div class="pills" role="group" aria-label="Needed by">${DATE_FILTERS.map(([v, l]) => pill('date', v, l)).join('')}</div>
+          <div class="filter-row">
+            <label class="date-field">From<input type="date" class="date-input" data-fdate="from" value="${esc(f.from)}"></label>
+            <label class="date-field">Until<input type="date" class="date-input" data-fdate="to" value="${esc(f.to)}"></label>
+            ${f.from || f.to ? `<button type="button" class="link-btn" data-action="clear-dates">${icon('x')}Clear dates</button>` : ''}
+          </div>
+        </div>`;
+    case 'name': {
+      const clients = [...db.clients].sort((a, b) => a.name.localeCompare(b.name));
+      return `
+        <div class="filters">
+          <div class="filter-row">
+            <label class="search">${icon('search')}<input type="search" data-fname placeholder="Type a client name or ID" aria-label="Client name" value="${esc(f.name)}"></label>
+          </div>
+          <div class="pills" role="group" aria-label="Clients">
+            ${pill('name', '', 'All clients')}
+            ${clients.map(c => pill('name', c.name, c.name, db.cases.filter(k => k.clientId === c.id).length)).join('')}
+          </div>
+        </div>`;
+    }
+    case 'status':
+      return `<div class="filters"><div class="pills" role="group" aria-label="Status">${STATUSES.map(s => pill('status', s.id, s.label, db.cases.filter(k => k.status === s.id).length)).join('')}</div></div>`;
+    case 'tier':
+      return `<div class="filters"><div class="pills" role="group" aria-label="Card type">${[...TIERS].reverse().map(t => pill('tier', t, t, db.cases.filter(k => (findClient(k.clientId) || {}).tier === t).length)).join('')}</div></div>`;
+    default:
+      return '';
+  }
+}
+
+// ---------- Calendar: from the 1st of this month to a month ahead ----------
+const CAL_DAYS = 31;
+const monthFmt = new Intl.DateTimeFormat(undefined, { month: 'short' });
+
+// Earlier days this month show what was handled; it opens scrolled to today.
+function calendarRange() {
+  const today = startOfDay(new Date());
+  return { today, start: new Date(today.getFullYear(), today.getMonth(), 1), end: addDays(today, CAL_DAYS - 1) };
+}
+
+// The Done / Not done filter shared by the calendar and the All files list.
+function matchesHandled(kase, filter) {
+  if (filter === 'open') return isOpen(kase);
+  if (filter === 'done') return !isOpen(kase);
+  return true;
+}
+
+const HANDLED_FILTERS = [['all', 'All cases'], ['open', 'Not done'], ['done', 'Done']];
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+// Local date as YYYY-MM-DD, used to group cases by day.
+function dayKey(value) {
+  const d = new Date(value);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Cases due inside the calendar, open or done, after the Done / Not done filter.
+function calendarCases() {
+  const { start, end } = calendarRange();
+  const last = endOfDay(end);
+  return db.cases.filter(k => k.dueAt && new Date(k.dueAt) >= start && new Date(k.dueAt) <= last && matchesHandled(k, state.files.handled));
+}
+
+// Cases per request type, most first: [['Transfers', 3], ['Restaurant', 2]].
+function typeCounts(cases) {
+  const counts = {};
+  for (const k of cases) counts[k.category] = (counts[k.category] || 0) + 1;
+  return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+
+// Still-open cases due before the calendar starts.
+function openBeforeCalendar() {
+  const { start } = calendarRange();
+  return db.cases.filter(k => isOpen(k) && k.dueAt && new Date(k.dueAt) < start);
+}
+
+// Green when everything that day is done, orange when some of it isn't
+// (partly done, or past and still open), blue shades for what's coming up.
+function dayState(list, day, today) {
+  const open = list.filter(isOpen).length;
+  if (!open) return { cls: 'cal-done', label: 'all done' };
+  if (open < list.length || day < today) return { cls: 'cal-mixed', label: `${open} not done` };
+  const n = list.length;
+  return { cls: `cal-l${n >= 5 ? 4 : n >= 3 ? 3 : n}`, label: `case${n === 1 ? '' : 's'}` };
+}
+
+function filesCalendar() {
+  const { today, start, end } = calendarRange();
+  const byDay = {};
+  for (const k of calendarCases()) (byDay[dayKey(k.dueAt)] ||= []).push(k);
+
+  // Whole weeks, Sunday to Saturday; days outside the range are faded.
+  const cells = [];
+  for (let d = addDays(start, -start.getDay()); d <= end || d.getDay() !== 0; d = addDays(d, 1)) cells.push(d);
+
+  const head = cells.slice(0, 7).map(d => `<span class="cal-head">${esc(weekdayShortFmt.format(d))}</span>`).join('');
+  const body = cells.map(d => {
+    if (d < start || d > end) return `<div class="cal-day out" aria-hidden="true"><span class="cal-date">${d.getDate()}</span></div>`;
+    const isToday = d.getTime() === today.getTime();
+    const past = d < today ? ' past' : '';
+    const tag = isToday ? '<small class="cal-today">Today</small>' : d.getDate() === 1 ? `<small>${esc(monthFmt.format(d))}</small>` : '';
+    const date = `<span class="cal-date">${d.getDate()}${tag}</span>`;
+    const list = (byDay[dayKey(d)] || []).sort(dueSort);
+    if (!list.length) return `<div class="cal-day${isToday ? ' today' : ''}${past}">${date}</div>`;
+    const state = dayState(list, d, today);
+    // What kind of requests: "3 Transfers", "2 Restaurant".
+    const types = typeCounts(list);
+    const peek = types.slice(0, 2).map(([c, n]) => `<span><b>${n}</b> ${esc(c)}</span>`).join('');
+    const breakdown = types.map(([c, n]) => `${n} ${c}`).join(', ');
+    return `
+      <button type="button" class="cal-day ${state.cls}${isToday ? ' today' : ''}${past}" data-day="${dayKey(d)}" aria-label="${esc(`${longDayFmt.format(d)}: ${list.length} case${list.length === 1 ? '' : 's'}, ${state.label}. ${breakdown}`)}" title="${esc(breakdown)}">
+        ${date}
+        <span class="cal-count">${list.length}<span>${esc(state.label)}</span></span>
+        <span class="cal-peek">${peek}${types.length > 2 ? `<span>+${types.length - 2} more type${types.length === 3 ? '' : 's'}</span>` : ''}</span>
+      </button>`;
+  }).join('');
+
+  const earlier = openBeforeCalendar();
+  const handled = state.files.handled;
+  return `
+    <div class="cal-bar">
+      <span class="cal-range">${icon('calendar')}${esc(`${shortDateFmt.format(start)} – ${shortDateFmt.format(end)}`)}</span>
+      <div class="pills sm" role="group" aria-label="Show">
+        ${HANDLED_FILTERS.map(([v, l]) => `<button type="button" class="${handled === v ? 'active' : ''}" data-fset="files.handled" data-value="${v}">${l}</button>`).join('')}
+      </div>
+      <button type="button" class="link-btn" data-action="cal-today">${icon('arrowRight')}Today</button>
+      ${earlier.length && handled !== 'done' ? `<button type="button" class="cal-overdue" data-day="overdue">${icon('flame')}${earlier.length} still open from before ${esc(shortDateFmt.format(start))}</button>` : ''}
+    </div>
+    <div class="cal-grid">${head}${body}</div>
+    <div class="chart-legend cal-legend">
+      <span><i class="cal-done"></i>All done</span>
+      <span><i class="cal-mixed"></i>Not all done</span>
+      <span>Coming up:</span>
+      <span><i class="cal-l1"></i>1</span><span><i class="cal-l2"></i>2</span><span><i class="cal-l3"></i>3–4</span><span><i class="cal-l4"></i>5+</span>
+    </div>`;
+}
+
+// Scrolls the calendar so today's week is at the top.
+function scrollCalendarToToday(smooth = false) {
+  const scroller = document.getElementById('filesScroll');
+  const todayCell = scroller && scroller.querySelector('.cal-day.today');
+  if (!todayCell) return;
+  if (scroller.scrollHeight > scroller.clientHeight) {
+    scroller.scrollTo({ top: todayCell.offsetTop - 34, behavior: smooth ? 'smooth' : 'auto' });
+  } else if (smooth) {
+    // Phones: the page scrolls, not the calendar.
+    todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// Side panel with the cases due on one day (or still open from before the calendar):
+// a count per request type on top (tap one to show only those), then the cases grouped by type.
+function openDaySheet(key, type = '') {
+  const overdue = key === 'overdue';
+  const all = (overdue ? openBeforeCalendar()
+    : db.cases.filter(k => k.dueAt && dayKey(k.dueAt) === key && matchesHandled(k, state.files.handled)))
+    .sort((a, b) => (isOpen(b) - isOpen(a)) || dueSort(a, b));
+  const types = typeCounts(all);
+  const shown = type ? types.filter(([c]) => c === type) : types;
+  const list = type ? all.filter(k => k.category === type) : all;
+  const title = overdue ? `Still open from before ${shortDateFmt.format(calendarRange().start)}` : longDayFmt.format(new Date(`${key}T00:00`));
+  const openList = list.filter(isOpen);
+  const done = all.length - all.filter(isOpen).length;
+  const hot = openList.filter(k => k.priority === 'urgent' || k.priority === 'high').length;
+  const pool = openList.filter(k => !k.assignee).length;
+  const typeBtn = (value, count, label) => `
+    <button type="button" class="day-type${type === value ? ' active' : ''}" data-day-type="${esc(value)}" aria-pressed="${type === value}">
+      <span class="day-type-count">${count}</span><span class="day-type-label">${esc(label)}</span>
+    </button>`;
+  openSheet(`
+    ${sheetHead('calendar', `${all.length} case${all.length === 1 ? '' : 's'}${done ? ` · ${done === all.length ? 'all' : done} done` : ''}`, esc(title))}
+    ${all.length ? `
+      <div class="day-types" role="group" aria-label="Request types">
+        ${typeBtn('', all.length, 'All')}
+        ${types.map(([c, n]) => typeBtn(c, n, `#${c}`)).join('')}
+      </div>` : ''}
+    ${hot || pool ? `
+      <div class="tags day-summary">
+        ${hot ? `<span class="tag sm pr-urgent">${icon('flame')}${hot} urgent or high</span>` : ''}
+        ${pool ? `<span class="tag sm">${icon('inbox')}${pool} in the open pool</span>` : ''}
+      </div>` : ''}
+    <div class="day-list">
+      ${list.length ? shown.map(([c, n]) => `
+        <h3 class="day-group">${hashtag(c)}<span class="count-badge">${n}</span></h3>
+        ${list.filter(k => k.category === c).map(k => dayCaseRow(k, overdue)).join('')}`).join('')
+        : '<div class="empty">Nothing due on this day.</div>'}
+    </div>`, {
+    label: title,
+    onMount(sheet) {
+      sheet.addEventListener('click', e => {
+        const btn = e.target.closest('[data-day-type]');
+        if (btn) openDaySheet(key, btn.dataset.dayType);
+      });
+    },
+  });
+  sheetBack = () => openDaySheet(key, type);
+  currentSheet = { type: 'day', key, dayType: type };
+}
+
+function dayCaseRow(kase, withDate) {
+  const client = findClient(kase.clientId);
+  const due = new Date(kase.dueAt);
+  const who = kase.assignee
+    ? `${memberAvatar(kase.assignee, 'sm')}<span>${esc(kase.assignee === ME ? 'You' : firstName(memberName(kase.assignee)))}</span>`
+    : `<span class="day-pool">${icon('inbox')}</span><span>Open pool</span>`;
+  const cls = !isOpen(kase) ? ' is-done' : due < new Date() ? ' is-overdue' : '';
+  return `
+    <div class="day-case${cls}" role="button" tabindex="0" data-case="${kase.id}">
+      <span class="day-time">${esc(withDate ? shortDateFmt.format(due) : timeFmt.format(due))}</span>
+      <span class="day-case-body">
+        <span class="day-case-client">${esc(client ? client.name : 'Unknown client')}${client ? flag(client.country) + tierTag(client.tier) : ''}</span>
+        <span class="case-request">${hashtag(kase.category)}<span class="case-title">${esc(kase.title)}</span></span>
+        ${kase.details ? `<span class="day-details">${esc(kase.details)}</span>` : ''}
+        <span class="tags">${caseChip(kase)}${statusTag(kase.status, 'sm')}${hotTag(kase.priority, 'sm')}${channelTag(kase.channel, 'sm')}</span>
+      </span>
+      <span class="day-case-who">${who}</span>
+    </div>`;
 }
 
 // ---------- Quick search (dashboard) ----------
@@ -789,8 +1257,13 @@ function myReminders() {
   return db.reminders.filter(r => r.by === ME).sort((a, b) => (a.done - b.done) || a.at.localeCompare(b.at));
 }
 
+// Your own notes and the ones teammates shared with you.
 function myNotes() {
-  return db.notes.filter(n => n.by === ME);
+  return db.notes.filter(n => n.by === ME || (n.sharedWith || []).includes(ME));
+}
+
+function namesOf(ids) {
+  return ids.map(id => firstName(memberName(id))).join(', ');
 }
 
 function reminderRow(r) {
@@ -813,7 +1286,7 @@ function openRemindersSheet() {
     <form class="form" id="reminderForm" novalidate>
       <div class="fld">
         <label class="fld-label" for="rText">Remind me to…</label>
-        <input id="rText" class="control" autocomplete="off" placeholder="e.g. Call Emma about the cake">
+        <input id="rText" class="control" autocomplete="off" placeholder="e.g. Call Yael about the cake">
       </div>
       <div class="inline-add">
         <input id="rAt" type="datetime-local" class="control" value="${esc(defaultDue())}" aria-label="When">
@@ -847,12 +1320,80 @@ function openRemindersSheet() {
   });
 }
 
+function stickyNote(n) {
+  const mine = n.by === ME;
+  const shared = (n.sharedWith || []).filter(id => findMember(id));
+  const meta = mine
+    ? (shared.length ? `<span class="sticky-meta">${icon('share')}Shared with ${esc(namesOf(shared))}</span>` : '')
+    : `<span class="sticky-meta">${memberAvatar(n.by, 'xs')}From ${esc(firstName(memberName(n.by)))}</span>`;
+  const actions = mine
+    ? `<button type="button" class="icon-btn sm" data-note-share="${n.id}" aria-label="Share note" title="Share">${icon('share')}</button>
+       <button type="button" class="icon-btn sm" data-note-delete="${n.id}" aria-label="Delete note" title="Delete">${icon('x')}</button>`
+    : `<button type="button" class="icon-btn sm" data-note-remove="${n.id}" aria-label="Remove from my notes" title="Remove from my notes">${icon('x')}</button>`;
+  return `
+    <div class="sticky sticky-${noteColor(n.color)}">
+      <p>${esc(n.text)}</p>
+      ${meta}
+      <span class="sticky-foot">${esc(fmtDayTime(n.at))}<span class="sticky-actions">${actions}</span></span>
+    </div>`;
+}
+
+function backButton() {
+  return `<button type="button" class="square-btn back" data-action="sheet-back" aria-label="Back" title="Back">${icon('arrowRight')}</button>`;
+}
+
+// Pick which teammates see a note; they get it on their own sticky notes, marked as from you.
+function openShareNoteSheet(id) {
+  const note = db.notes.find(n => n.id === id);
+  if (!note) return;
+  const shared = note.sharedWith || [];
+  const others = db.team.filter(m => m.id !== note.by);
+  openSheet(`
+    ${sheetHead('share', 'Share note', 'Who should see it?', backButton())}
+    <div class="sticky sticky-${noteColor(note.color)} share-preview"><p>${esc(note.text)}</p></div>
+    <form class="form" id="shareForm" novalidate>
+      <div class="share-list">
+        ${others.map(m => `
+          <label class="share-row">
+            ${memberAvatar(m.id, 'sm')}
+            <span class="hit-main"><span class="hit-name">${esc(m.name)}</span><span class="hit-sub">${esc(m.title)}</span></span>
+            <input type="checkbox" name="share" value="${m.id}"${shared.includes(m.id) ? ' checked' : ''}>
+          </label>`).join('')}
+      </div>
+      <p class="fld-hint">They’ll see it on their sticky notes, marked as from you. Only you can delete it.</p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary btn-md" data-action="sheet-back">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-md">${icon('share')}Save</button>
+      </div>
+    </form>`, {
+    label: 'Share note',
+    onMount(sheet) {
+      const form = sheet.querySelector('#shareForm');
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const ids = [...form.querySelectorAll('input[name="share"]:checked')].map(i => i.value);
+        shareNote(id, ids);
+        render();
+        openNotesSheet();
+        toast(ids.length ? `Shared with ${namesOf(ids)}` : 'Note is private again');
+      });
+    },
+  });
+  sheetBack = () => openNotesSheet();
+}
+
 function openNotesSheet(color = 'yellow') {
   const notes = myNotes();
+  const others = db.team.filter(m => m.id !== ME);
   openSheet(`
     ${sheetHead('pencil', 'Sticky notes', 'Your notes')}
     <form class="form" id="noteForm" novalidate>
       <textarea id="nText" class="control" rows="3" placeholder="Write a note…" aria-label="Note"></textarea>
+      ${others.length ? `
+        <div class="fld">
+          <span class="fld-label">Share with <span class="muted small">(optional)</span></span>
+          ${checkGroup('nShare', others.map(m => ({ id: m.id, label: firstName(m.name) })))}
+        </div>` : ''}
       <div class="inline-add">
         <div class="note-colors" role="radiogroup" aria-label="Note colour">
           ${NOTE_COLORS.map(c => `<label class="note-swatch sticky-${c}"><input type="radio" name="nColor" value="${c}"${c === color ? ' checked' : ''}><span class="visually-hidden">${c}</span></label>`).join('')}
@@ -861,11 +1402,7 @@ function openNotesSheet(color = 'yellow') {
       </div>
     </form>
     <div class="note-grid">
-      ${notes.length ? notes.map(n => `
-        <div class="sticky sticky-${noteColor(n.color)}">
-          <p>${esc(n.text)}</p>
-          <span class="sticky-foot">${esc(fmtDayTime(n.at))}<button type="button" class="icon-btn sm" data-note-delete="${n.id}" aria-label="Delete note" title="Delete">${icon('x')}</button></span>
-        </div>`).join('') : '<div class="empty">No notes yet.</div>'}
+      ${notes.length ? notes.map(stickyNote).join('') : '<div class="empty">No notes yet.</div>'}
     </div>`, {
     label: 'Sticky notes',
     onMount(sheet) {
@@ -874,15 +1411,20 @@ function openNotesSheet(color = 'yellow') {
         e.preventDefault();
         const text = sheet.querySelector('#nText').value;
         if (!text.trim()) return;
-        addNote(text, form.nColor.value, ME);
+        const share = [...form.querySelectorAll('input[name="nShare"]:checked')].map(i => i.value);
+        addNote(text, form.nColor.value, ME, share);
         render();
         openNotesSheet(form.nColor.value);
-        toast('Note added');
+        toast(share.length ? `Note shared with ${namesOf(share)}` : 'Note added');
       });
       sheet.addEventListener('click', e => {
+        const share = e.target.closest('[data-note-share]');
         const remove = e.target.closest('[data-note-delete]');
-        if (!remove) return;
-        deleteNote(remove.dataset.noteDelete);
+        const unshare = e.target.closest('[data-note-remove]');
+        if (share) return openShareNoteSheet(share.dataset.noteShare);
+        if (remove) deleteNote(remove.dataset.noteDelete);
+        else if (unshare) unshareNote(unshare.dataset.noteRemove, ME);
+        else return;
         render();
         openNotesSheet(form.nColor.value);
       });
@@ -896,7 +1438,12 @@ function applyShortcut(shortcut) {
   const [field, value] = shortcut.split(':');
   state.home = { ...state.home, view: 'all', type: '', priority: '', date: '', text: '' };
   state.home[field] = value;
+  state.dash = 'mine';
   saveHomeView();
+  if (state.route.name !== 'home') {
+    location.hash = '#/home';
+    return;
+  }
   render();
   document.getElementById('homeList')?.closest('.panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -983,7 +1530,7 @@ function reportsHtml() {
     .filter(r => r.value > 0)
     .sort((a, b) => b.value - a.value);
   const byPriority = [
-    { label: 'Urgent', color: '#ff3848', value: openNow.filter(k => k.priority === 'urgent').length },
+    { label: 'Urgent', color: '#ff4d1a', value: openNow.filter(k => k.priority === 'urgent').length },
     { label: 'High', color: '#f97316', value: openNow.filter(k => k.priority === 'high').length },
     { label: 'Normal', color: '#0067ff', value: openNow.filter(k => k.priority === 'normal').length },
     { label: 'Low', color: '#b8b8bd', value: openNow.filter(k => k.priority === 'low').length },
@@ -1159,6 +1706,264 @@ function dotChart() {
     <div class="chart-legend"><span><i style="background:var(--primary)"></i>Opened</span><span><i style="background:#a9c8ff"></i>Completed</span></div>
     <div class="dot-cols" style="--dot:${dot}px; --dot-gap:${gapPx}px">${cols}</div>
     <div class="dot-labels">${data.map((x, i) => `<span>${i % 2 === 1 ? x.d.getDate() : ''}</span>`).join('')}</div>`;
+}
+
+// ---------- Suppliers ----------
+const moneyFmt = new Intl.NumberFormat('en', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 });
+const eventDayFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+
+function money(n) {
+  return moneyFmt.format(n || 0);
+}
+
+function supplierGroup(id) {
+  return SUPPLIER_GROUPS.find(g => g.id === id) || SUPPLIER_GROUPS[0];
+}
+
+function bookingsOf(supplierId) {
+  return db.bookings.filter(b => b.supplierId === supplierId);
+}
+
+function bookingTotals(list) {
+  return {
+    clients: new Set(list.map(b => b.clientId)).size,
+    qty: list.reduce((n, b) => n + (b.qty || 0), 0),
+    price: list.reduce((n, b) => n + (b.price || 0), 0),
+    missing: list.filter(b => !b.invoice).length,
+  };
+}
+
+// Suppliers, laid out like the dashboard: categories in a side menu, the category's suppliers and bookings beside it.
+function renderSuppliers() {
+  const group = supplierGroup(state.suppliers.group);
+  const inGroup = id => db.suppliers.filter(s => s.group === id);
+  const list = inGroup(group.id);
+  const current = list.find(s => s.id === state.suppliers.id) || list[0];
+  viewEl.innerHTML = `
+    <header class="page-head">
+      <div>
+        <p class="eyebrow"><img class="eyebrow-logo" src="favicon.svg" alt="">Suppliers</p>
+        <h1 class="page-title"><span class="soft">Your</span> suppliers</h1>
+      </div>
+      <button type="button" class="btn btn-primary btn-md" data-action="add-supplier">${icon('plus')}Add supplier</button>
+    </header>
+
+    <div class="dash suppliers-layout">
+      <aside class="dash-nav" aria-label="Supplier categories">
+        <div class="dash-me">
+          <span class="dash-me-icon">${icon('store')}</span>
+          <div class="dash-me-text">
+            <div class="dash-me-name">Suppliers</div>
+            <div class="dash-me-sub">${db.suppliers.length} suppliers · ${db.bookings.length} bookings</div>
+          </div>
+        </div>
+        <div class="dash-section">
+          <p class="dash-label">Categories</p>
+          ${SUPPLIER_GROUPS.map(g => `
+            <button type="button" class="dash-item${g.id === group.id ? ' active' : ''}" data-sgroup="${g.id}"${g.id === group.id ? ' aria-current="true"' : ''}>
+              <span class="dash-item-pic" aria-hidden="true">${g.icon}</span><span class="dash-item-label">${esc(g.label)}</span><span class="dash-count">${inGroup(g.id).length}</span>
+            </button>`).join('')}
+        </div>
+      </aside>
+
+      <div class="dash-main">
+        ${list.length ? `
+          <section class="supplier-grid" aria-label="${esc(group.label)} suppliers">${list.map(s => supplierBox(s, group, s.id === current.id)).join('')}</section>
+          ${supplierPanel(current, group)}` : `
+          <section class="panel">
+            <div class="panel-head"><h2>${group.icon} ${esc(group.label)}</h2></div>
+            <div class="empty">
+              No ${esc(group.label.toLowerCase())} suppliers yet. Add the ones you work with.
+              <div class="empty-action"><button type="button" class="btn btn-primary btn-md" data-action="add-supplier">${icon('plus')}Add supplier</button></div>
+            </div>
+          </section>`}
+      </div>
+    </div>`;
+}
+
+function openAddSupplierSheet(groupId) {
+  openSheet(`
+    ${sheetHead('store', 'Suppliers', 'Add supplier')}
+    <form class="form" id="supplierForm" novalidate>
+      <div class="fld">
+        <label class="fld-label" for="sName">Name</label>
+        <input id="sName" class="control" autocomplete="off" placeholder="e.g. a ticket agency, a car service, a restaurant">
+      </div>
+      <div class="fld">
+        <span class="fld-label">Category</span>
+        ${segRadio('sGroup', SUPPLIER_GROUPS.map(g => ({ id: g.id, label: `${g.icon} ${g.label}` })), groupId)}
+      </div>
+      <div class="fld-grid">
+        <div class="fld"><label class="fld-label" for="sPhone">Phone</label><input id="sPhone" class="control" type="tel" autocomplete="off"></div>
+        <div class="fld"><label class="fld-label" for="sEmail">Email</label><input id="sEmail" class="control" type="email" autocomplete="off"></div>
+      </div>
+      <p class="form-error hidden" id="supplierError" role="alert"></p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary btn-md" data-action="close-sheet">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add supplier</button>
+      </div>
+    </form>`, {
+    label: 'Add supplier',
+    onMount(sheet) {
+      const form = sheet.querySelector('#supplierForm');
+      const nameInput = sheet.querySelector('#sName');
+      nameInput.focus();
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        if (!nameInput.value.trim()) {
+          const errorEl = sheet.querySelector('#supplierError');
+          errorEl.textContent = 'Enter the supplier’s name.';
+          errorEl.classList.remove('hidden');
+          nameInput.focus();
+          return;
+        }
+        const supplier = addSupplier({
+          name: nameInput.value,
+          group: form.sGroup.value,
+          phone: sheet.querySelector('#sPhone').value,
+          email: sheet.querySelector('#sEmail').value,
+        });
+        state.suppliers = { group: supplier.group, id: supplier.id };
+        closeSheet();
+        render();
+        toast(`${supplier.name} added to ${supplierGroup(supplier.group).label}`);
+      });
+    },
+  });
+}
+
+function supplierBox(supplier, group, active) {
+  const t = bookingTotals(bookingsOf(supplier.id));
+  return `
+    <button type="button" class="supplier-box${active ? ' active' : ''}" data-supplier="${supplier.id}" aria-pressed="${active}">
+      <span class="supplier-logo tone-${hashTone(supplier.id)}">${esc(initials(supplier.name))}</span>
+      <span class="supplier-name">${esc(supplier.name)}</span>
+      <span class="supplier-sub">${t.clients} client${t.clients === 1 ? '' : 's'} · ${t.qty} ${esc(group.qty.toLowerCase())}</span>
+      <span class="supplier-total">${money(t.price)}</span>
+      ${t.missing ? `<span class="badge red">${t.missing} invoice${t.missing === 1 ? '' : 's'} missing</span>`
+        : t.qty ? '<span class="badge green">Invoices in</span>' : '<span class="badge">No bookings yet</span>'}
+    </button>`;
+}
+
+// The chosen supplier's bookings: who bought, when, how many, for how much, and the invoice.
+function supplierPanel(supplier, group) {
+  const rows = bookingsOf(supplier.id).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const t = bookingTotals(rows);
+  return `
+    <section class="panel supplier-panel">
+      <div class="panel-head">
+        <h2>${esc(supplier.name)} <span class="count-badge">${rows.length}</span></h2>
+        <div class="head-actions">
+          ${supplier.phone ? `<a class="btn-email" href="tel:${esc(supplier.phone.replace(/[^\d+]/g, ''))}">${icon('phone')}${esc(supplier.phone)}</a>` : ''}
+          ${supplier.email ? `<a class="btn-email" href="mailto:${esc(supplier.email)}">${icon('mail')}Email</a>` : ''}
+          <button type="button" class="btn btn-primary btn-md" data-action="add-booking" data-supplier-id="${supplier.id}">${icon('plus')}Add booking</button>
+        </div>
+      </div>
+      ${rows.length ? `
+        <div class="table-wrap">
+          <table class="bookings">
+            <thead>
+              <tr><th>Client</th><th>Phone</th><th>${esc(group.date)}</th><th class="num">${esc(group.qty)}</th><th class="num">Price</th><th>Invoice</th><th>Case</th></tr>
+            </thead>
+            <tbody>${rows.map(b => bookingRow(b, group)).join('')}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3">Total · ${t.clients} client${t.clients === 1 ? '' : 's'}</td>
+                <td class="num" data-label="${esc(group.qty)}">${t.qty}</td>
+                <td class="num" data-label="Price">${money(t.price)}</td>
+                <td colspan="2" data-label="Invoices">${t.missing ? `<span class="tag sm alert">${t.missing} missing</span>` : '<span class="tag sm st-done">All in</span>'}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>` : `<div class="empty">No bookings with ${esc(supplier.name)} yet. Add one when you buy for a client.</div>`}
+    </section>`;
+}
+
+function bookingRow(b, group) {
+  const client = findClient(b.clientId);
+  const kase = findCase(b.caseId);
+  const when = b.date ? new Date(b.date) : null;
+  return `
+    <tr data-case="${esc(b.caseId)}">
+      <td data-label="Client">
+        <span class="bk-client">
+          ${client ? avatar(client.name, client.id, 'sm') : ''}
+          <button type="button" class="feed-link" data-case="${esc(b.caseId)}">${esc(client ? client.name : 'Unknown client')}</button>
+          ${client ? flag(client.country) : ''}
+        </span>
+      </td>
+      <td data-label="Phone">${client && client.phone ? `<a class="bk-phone" data-stop href="tel:${esc(client.phone.replace(/[^\d+]/g, ''))}">${esc(client.phone)}</a>` : '<span class="muted">–</span>'}</td>
+      <td data-label="${esc(group.date)}">${when ? `${esc(eventDayFmt.format(when))} · ${esc(timeFmt.format(when))}` : '<span class="muted">–</span>'}</td>
+      <td class="num" data-label="${esc(group.qty)}">${b.qty}</td>
+      <td class="num" data-label="Price">${money(b.price)}</td>
+      <td data-label="Invoice">${b.invoice ? `<span class="tag sm st-done">${icon('receipt')}${esc(b.invoice)}</span>` : '<span class="tag sm alert">Missing</span>'}</td>
+      <td data-label="Case">${kase ? caseChip(kase) : ''}</td>
+    </tr>`;
+}
+
+function openBookingSheet(supplierId) {
+  const supplier = findSupplier(supplierId);
+  if (!supplier) return;
+  const group = supplierGroup(supplier.group);
+  const cases = [...db.cases].sort((a, b) => (isOpen(b) - isOpen(a)) || b.number - a.number);
+  openSheet(`
+    ${sheetHead('store', `${esc(group.label)} · ${esc(supplier.name)}`, 'Add booking')}
+    <form class="form" id="bookingForm" novalidate>
+      <div class="fld">
+        <label class="fld-label" for="bCase">Case</label>
+        ${selectWrap('bCase', options([['', 'Choose a case…'], ...cases.map(k => [k.id, `#${caseNo(k)} · ${clientNameOf(k)} · ${k.title}`])], ''))}
+      </div>
+      <div class="fld-grid">
+        <div class="fld"><label class="fld-label" for="bDate">${esc(group.date)}</label><input id="bDate" type="datetime-local" class="control"></div>
+        <div class="fld"><label class="fld-label" for="bQty">${esc(group.qty)}</label><input id="bQty" type="number" min="1" step="1" value="2" class="control"></div>
+      </div>
+      <div class="fld-grid">
+        <div class="fld"><label class="fld-label" for="bPrice">Price (₪)</label><input id="bPrice" type="number" min="0" step="1" class="control" placeholder="0"></div>
+        <div class="fld"><label class="fld-label" for="bInvoice">Invoice number</label><input id="bInvoice" class="control" autocomplete="off" placeholder="Leave empty until it arrives"></div>
+      </div>
+      <p class="form-error hidden" id="bookingError" role="alert"></p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary btn-md" data-action="close-sheet">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add booking</button>
+      </div>
+    </form>`, {
+    label: `Add booking with ${supplier.name}`,
+    onMount(sheet) {
+      const caseSelect = sheet.querySelector('#bCase');
+      const dateInput = sheet.querySelector('#bDate');
+      // The booking's date starts as the case's requested date.
+      caseSelect.addEventListener('change', () => {
+        const kase = findCase(caseSelect.value);
+        if (kase && kase.dueAt) dateInput.value = toLocalInputValue(new Date(kase.dueAt));
+      });
+      sheet.querySelector('#bookingForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const qty = Number(sheet.querySelector('#bQty').value);
+        const price = Number(sheet.querySelector('#bPrice').value || 0);
+        const problem = !caseSelect.value ? 'Choose the case this booking is for.'
+          : !(qty >= 1) ? `Enter how many ${group.qty.toLowerCase()}.`
+            : price < 0 ? 'The price can’t be negative.' : '';
+        if (problem) {
+          const errorEl = sheet.querySelector('#bookingError');
+          errorEl.textContent = problem;
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        addBooking({
+          supplierId,
+          caseId: caseSelect.value,
+          date: dateInput.value ? new Date(dateInput.value).toISOString() : null,
+          qty,
+          price,
+          invoice: sheet.querySelector('#bInvoice').value,
+        });
+        closeSheet();
+        render();
+        toast(`Booking added with ${supplier.name}`);
+      });
+      caseSelect.focus();
+    },
+  });
 }
 
 // ---------- Settings ----------
@@ -1421,13 +2226,20 @@ function squareImage(file, size) {
 const sheetRoot = document.getElementById('sheetRoot');
 let lastFocus = null;
 let openCaseId = null;
+// Reopens the sheet a case was opened from (a calendar day), for the case's back button.
+let sheetBack = null;
+// The case or calendar day that's open, so a refresh can bring it back.
+let currentSheet = null;
 
-function openSheet(html, { label = '', onMount } = {}) {
+// `full` fills the screen (a case); otherwise it's a drawer from the side.
+function openSheet(html, { label = '', onMount, full = false } = {}) {
   if (!sheetRoot.contains(document.activeElement)) lastFocus = document.activeElement;
   openCaseId = null;
+  sheetBack = null;
+  currentSheet = null;
   sheetRoot.innerHTML = `
-    <div class="sheet-overlay">
-      <div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(label)}">${html}</div>
+    <div class="sheet-overlay${full ? ' full' : ''}">
+      <div class="sheet${full ? ' case-full' : ''}" role="dialog" aria-modal="true" aria-label="${esc(label)}">${html}</div>
     </div>`;
   const overlay = sheetRoot.firstElementChild;
   overlay.addEventListener('mousedown', e => {
@@ -1441,14 +2253,17 @@ function closeSheet() {
   if (!sheetRoot.firstElementChild) return;
   sheetRoot.innerHTML = '';
   openCaseId = null;
+  sheetBack = null;
+  currentSheet = null;
   document.body.classList.remove('sheet-open');
   if (lastFocus && lastFocus.focus) lastFocus.focus();
 }
 
+// `ic` is an icon name, or ready markup (a case's request picture).
 function sheetHead(ic, eyebrow, title, extra = '') {
   return `
     <div class="sheet-head">
-      <span class="sheet-tile">${icon(ic)}</span>
+      <span class="sheet-tile">${ic.startsWith('<') ? ic : icon(ic)}</span>
       <div class="sheet-head-text">
         <p class="eyebrow">${eyebrow}</p>
         <h2 class="sheet-title">${title}</h2>
@@ -1492,7 +2307,7 @@ function caseHit(kase) {
         <span class="hit-name">${esc(kase.title)}</span>
         <span class="hit-sub">${esc(client ? client.name : 'Unknown client')} · ${esc(labelOf(STATUSES, kase.status))} · ${esc(fmtDue(kase).text)}</span>
       </span>
-      ${idChip(caseNo(kase))}
+      ${caseChip(kase)}
     </div>`;
 }
 
@@ -1542,7 +2357,7 @@ function renderSearchPage(query) {
         <div class="form">
           <div class="fld">
             <label class="fld-label" for="pSearch">Case ID, client ID, name, phone or email</label>
-            <label class="search lg">${icon('search')}<input id="pSearch" autocomplete="off" placeholder="e.g. Nir, C-2004, G-1006, +1 555…" value="${esc(query)}"></label>
+            <label class="search lg">${icon('search')}<input id="pSearch" autocomplete="off" placeholder="e.g. Omer, C-2004, G-1006, +972 50…" value="${esc(query)}"></label>
           </div>
           <div class="results" id="pResults"></div>
           <div class="search-divider"></div>
@@ -1714,6 +2529,7 @@ function newFileFormHtml(draft) {
           ? selectWrap('fClient', options([['', 'Choose a client…'], ...clients.map(c => [c.id, `${c.name} · ${clientNo(c)}${c.tier !== 'Standard' ? ` · ${c.tier}` : ''}`])], draft.clientId || ''))
           : '<p class="fld-empty">No clients yet. Add one first with “New client”.</p>'}
       </div>
+      ${requesterFields(draft.requester)}
       <div class="fld">
         <label class="fld-label" for="fTitle">What do they need?</label>
         <input id="fTitle" class="control" placeholder="e.g. Table for 4 on Friday at 8pm" value="${esc(draft.title || '')}">
@@ -1769,7 +2585,9 @@ function renderNewFilePage(draft) {
     priority: form.priority.value,
     assignee: viewEl.querySelector('#fHandler').value,
     details: viewEl.querySelector('#fDetails').value,
+    requester: readRequester(viewEl),
   });
+  bindRequesterFields(viewEl);
 
   viewEl.querySelector('#newClientLink').addEventListener('click', () => {
     const saved = collect();
@@ -1787,7 +2605,9 @@ function renderNewFilePage(draft) {
     e.preventDefault();
     const v = collect();
     const errorEl = viewEl.querySelector('#fileError');
-    const problem = !v.clientId ? 'Choose a client for this file.' : !v.title.trim() ? 'Describe what the client needs.' : '';
+    const problem = !v.clientId ? 'Choose a client for this file.'
+      : v.requester && !v.requester.name ? 'Enter the name of the person who opened the case.'
+        : !v.title.trim() ? 'Describe what the client needs.' : '';
     if (problem) {
       errorEl.textContent = problem;
       errorEl.classList.remove('hidden');
@@ -1802,6 +2622,7 @@ function renderNewFilePage(draft) {
       details: v.details,
       dueAt: v.due ? new Date(v.due).toISOString() : null,
       assignee: v.assignee || null,
+      requester: v.requester,
     }, ME);
     location.hash = `#/case/${kase.id}`;
     toast(`File ${caseNo(kase)} created`);
@@ -1814,7 +2635,7 @@ function openAddClientSheet({ onSaved } = {}) {
     <form class="form" id="clientForm" novalidate>
       <div class="fld">
         <label class="fld-label" for="cName">Full name</label>
-        <input id="cName" class="control" autocomplete="off" placeholder="e.g. Emma Laurent">
+        <input id="cName" class="control" autocomplete="off" placeholder="e.g. Yael Mizrahi">
       </div>
       <div class="fld-grid">
         <div class="fld"><label class="fld-label" for="cPhone">Phone</label><input id="cPhone" class="control" type="tel" autocomplete="off"></div>
@@ -1867,82 +2688,312 @@ function openAddClientSheet({ onSaved } = {}) {
 }
 
 // ---------- Case details (drawer and full page share the markup) ----------
-function caseDetailParts(kase) {
+// Phone and email of the client (or whoever opened the case for them), each with its action.
+function contactRows(person, kase) {
+  const tel = person.phone ? person.phone.replace(/[^\d+]/g, '') : '';
+  const mail = person.email ? caseMailto(kase, person.email) : '';
+  return `
+    <div class="contact-rows">
+      <div class="contact-row">
+        <span class="contact-icon">${icon('phone')}</span>
+        ${person.phone ? `<a class="contact-value" href="tel:${esc(tel)}">${esc(person.phone)}</a>` : '<span class="contact-value muted">No phone</span>'}
+        ${person.phone ? `<a class="btn-email" href="tel:${esc(tel)}">${icon('phone')}Call</a>` : ''}
+      </div>
+      <div class="contact-row">
+        <span class="contact-icon">${icon('mail')}</span>
+        ${person.email ? `<a class="contact-value" href="${esc(mail)}">${esc(person.email)}</a>` : '<span class="contact-value muted">No email</span>'}
+        ${person.email ? `<a class="btn-email send" href="${esc(mail)}" title="Email about #${caseNo(kase)}">${icon('mail')}Send email</a>` : ''}
+      </div>
+    </div>`;
+}
+
+// ---------- A case, full screen ----------
+// Everything about a case on one screen: when it's for, the full description, the client (with rank),
+// who opened it and when it last changed on the left; the follow-ups as a chat on the right.
+
+// When a case last changed, and who changed it: its newest follow-up or logged event.
+function lastUpdateInfo(kase) {
+  let last = { at: kase.createdAt, by: kase.createdBy };
+  for (const u of kase.updates) if (u.at > last.at) last = u;
+  for (const e of db.activity) if (e.caseId === kase.id && e.at > last.at) last = e;
+  return last;
+}
+
+function caseHeader(kase, actions = '') {
+  const kind = requestKind(kase);
+  return `
+    <header class="cf-head">
+      <span class="cf-pic" aria-hidden="true">${kind.icon}</span>
+      <div class="cf-head-text">
+        <div class="cf-eyebrow">
+          ${caseChip(kase, 'lg')}${hashtag(kase.category)}${kind.label ? `<span class="kind-badge">${esc(kind.label)}</span>` : ''}
+          ${statusTag(kase.status, 'sm')}${hotTag(kase.priority, 'sm')}
+        </div>
+        <h2 class="cf-title">${esc(kase.title)}</h2>
+      </div>
+      ${actions ? `<div class="cf-head-actions">${actions}</div>` : ''}
+    </header>`;
+}
+
+function rankBadge(tier) {
+  return `<span class="rank-badge tier-${esc((tier || 'Standard').toLowerCase())}">${icon('shield')}${esc(tier || 'Standard')}</span>`;
+}
+
+function caseLeft(kase) {
   const client = findClient(kase.clientId);
-  const due = fmtDue(kase);
-  const updates = [...kase.updates].sort((a, b) => b.at.localeCompare(a.at));
+  const kind = requestKind(kase);
+  const due = kase.dueAt ? new Date(kase.dueAt) : null;
+  const late = isOpen(kase) && due && due < new Date();
+  const last = lastUpdateInfo(kase);
+  const req = kase.requester;
   const handler = kase.assignee
     ? `${memberAvatar(kase.assignee, 'xs')}${esc(memberName(kase.assignee))}`
     : '<span class="muted">Open pool</span>';
-  const byAssign = kase.assignedBy && kase.assignedBy !== kase.assignee;
+  const bookings = db.bookings.filter(b => b.caseId === kase.id);
+  const clientCases = client ? db.cases.filter(k => k.clientId === client.id) : [];
+  const country = client && COUNTRIES.find(([c]) => c === client.country);
+  const whenCls = !isOpen(kase) ? ' done' : late ? ' overdue' : '';
 
-  const main = `
-    ${client ? `
-      <div class="client-card">
-        ${avatar(client.name, client.id, 'lg')}
-        <div class="client-card-body">
-          <div class="client-card-name">${esc(client.name)}${flag(client.country)} ${tierTag(client.tier)} ${idChip(clientNo(client))}</div>
-          <div class="client-card-meta">${[client.phone, client.email].filter(Boolean).map(esc).join(' · ') || 'No contact details'}</div>
-          ${client.notes ? `<div class="client-card-notes">${esc(client.notes)}</div>` : ''}
-        </div>
-        <div class="client-card-actions">
-          ${client.phone ? `<a class="round-btn" href="tel:${esc(client.phone.replace(/[^\d+]/g, ''))}" aria-label="Call ${esc(client.name)}">${icon('phone')}</a>` : ''}
-          ${client.email ? `<a class="round-btn" href="mailto:${esc(client.email)}" aria-label="Email ${esc(client.name)}">${icon('mail')}</a>` : ''}
-        </div>
-      </div>` : ''}
-
-    <div class="fld">
-      <span class="fld-label">Status</span>
-      ${segRadio('status', STATUSES, kase.status, 'short')}
+  return `
+    <div class="cf-when${whenCls}">
+      <span class="cf-when-pic" aria-hidden="true">${kind.icon}</span>
+      <div>
+        <span class="cf-label">${esc(late ? `Overdue · ${kind.date}` : kind.date)}</span>
+        <b>${esc(due ? `${longDayFmt.format(due)}, ${timeFmt.format(due)}` : 'No date')}</b>
+        <small>${esc(dueCountdown(kase).text)}</small>
+      </div>
     </div>
 
-    <dl class="info-grid">
-      <div><dt>Priority</dt><dd>${priorityTag(kase.priority, 'sm')}</dd></div>
-      <div><dt>${due.label || 'Needed by'}</dt><dd class="${due.cls}">${esc(due.text)}</dd></div>
-      <div><dt>Came in by</dt><dd>${channelTag(kase.channel, 'sm')}</dd></div>
-      <div><dt>Handled by</dt><dd>${handler}</dd></div>
-      <div><dt>Opened</dt><dd>${esc(fmtDayTime(kase.createdAt))}</dd></div>
-      <div><dt>${byAssign ? 'Assigned by' : 'Opened by'}</dt><dd>${esc(memberName(byAssign ? kase.assignedBy : kase.createdBy))}</dd></div>
-    </dl>
-
-    ${!kase.assignee || IS_ADMIN ? `
-      <div class="assign-row">
-        ${!kase.assignee ? `<button type="button" class="btn btn-primary btn-md" data-take="${kase.id}">${icon('check')}Take this case</button>` : ''}
-        ${IS_ADMIN ? `
-          <label class="fld-inline">
-            <span class="fld-label">Assign to</span>
-            <select class="control-sm" data-assign aria-label="Assign to">
-              ${options([['', 'Open pool'], ...db.team.map(m => [m.id, m.id === ME ? `${m.name} (you)` : m.name])], kase.assignee || '')}
-            </select>
-          </label>` : ''}
-      </div>` : ''}
-
-    ${kase.details ? `<div class="details"><span class="fld-label">Details</span><p>${esc(kase.details)}</p></div>` : ''}`;
-
-  const notes = `
-    <div class="updates-block">
-      <span class="fld-label">Updates</span>
-      <form class="update-form" data-update-form>
-        <textarea class="control" rows="2" placeholder="Add an update for the team…" aria-label="Update"></textarea>
-        <button type="submit" class="btn btn-primary btn-md">Add</button>
+    <section class="cf-section">
+      <div class="cf-section-head">
+        <h3>Description</h3>
+        <button type="button" class="link-btn" data-desc-edit>${icon('pencil')}${kase.details ? 'Edit' : 'Add'}</button>
+      </div>
+      <div class="cf-desc" data-desc-view>${kase.details ? esc(kase.details) : '<span class="muted">No description yet. Add what the client asked for and anything agreed.</span>'}</div>
+      <form class="details-form" data-details-form hidden>
+        <textarea class="control" rows="5" aria-label="Description" placeholder="What they asked for, what was agreed, what’s left to do…">${esc(kase.details)}</textarea>
+        <div class="details-actions">
+          <button type="button" class="btn btn-secondary btn-md" data-details-cancel>Cancel</button>
+          <button type="submit" class="btn btn-primary btn-md">${icon('check')}Save</button>
+        </div>
       </form>
-      ${updates.length ? updates.map(u => `
-        <article class="update">
-          <div class="update-head">
-            ${memberAvatar(u.by, 'sm')}
-            <div class="update-main">
-              <p class="update-text"><b>${esc(memberName(u.by))}</b></p>
-              <p class="update-time">${fmtDayTime(u.at)}</p>
-            </div>
-          </div>
-          <div class="quote">${esc(u.text)}</div>
-        </article>`).join('') : '<div class="empty">No updates yet.</div>'}
-    </div>`;
+    </section>
 
-  return { main, notes };
+    ${client ? `
+      <section class="cf-section">
+        <div class="cf-section-head"><h3>Client</h3>${idChip(clientNo(client))}</div>
+        <div class="case-contact-head">
+          ${avatar(client.name, client.id, 'lg')}
+          <div class="case-contact-name">
+            <div class="client-card-name">${esc(client.name)}${flag(client.country)}</div>
+            <div class="case-contact-sub">${esc(country ? country[1] : 'No country')} · client since ${esc(shortDateFmt.format(new Date(client.createdAt)))}</div>
+          </div>
+          ${rankBadge(client.tier)}
+        </div>
+        <dl class="cf-facts">
+          <div><dt>Rank</dt><dd>${esc(client.tier)}</dd></div>
+          <div><dt>Cases</dt><dd>${clientCases.filter(isOpen).length} open · ${clientCases.length} in total</dd></div>
+        </dl>
+        ${contactRows(client, kase)}
+        ${client.notes ? `<div class="client-card-notes"><b>Preferences:</b> ${esc(client.notes)}</div>` : ''}
+      </section>` : ''}
+
+    <section class="cf-section">
+      <div class="cf-section-head">
+        <h3>Opened by</h3>
+        <button type="button" class="link-btn" data-action="edit-requester" data-case-id="${kase.id}">${icon('pencil')}Change</button>
+      </div>
+      ${req ? `
+        <div class="opened-by-person">
+          ${avatar(req.name, req.name, 'sm')}
+          <span class="hit-main"><span class="hit-name">${esc(req.name)}</span><span class="hit-sub">On behalf of ${esc(client ? client.name : 'the client')}</span></span>
+        </div>
+        ${contactRows(req, kase)}`
+        : `<p class="opened-by-client">${icon('user')}The client${client ? `, ${esc(client.name)}` : ''}</p>`}
+      <dl class="cf-facts">
+        <div><dt>Created by</dt><dd>${memberAvatar(kase.createdBy, 'xs')}${esc(memberName(kase.createdBy))} · ${esc(fmtDayTime(kase.createdAt))}</dd></div>
+        <div><dt>Last updated</dt><dd>${memberAvatar(last.by, 'xs')}${esc(memberName(last.by))} · ${esc(fmtDayTime(last.at))}</dd></div>
+      </dl>
+    </section>
+
+    <section class="cf-section">
+      <div class="cf-section-head"><h3>Case</h3></div>
+      <div class="fld">
+        <span class="fld-label">Status</span>
+        ${segRadio('status', STATUSES, kase.status, 'short')}
+      </div>
+      <dl class="cf-facts">
+        <div><dt>Priority</dt><dd>${priorityTag(kase.priority, 'sm')}</dd></div>
+        <div><dt>Came in by</dt><dd>${channelTag(kase.channel, 'sm')}</dd></div>
+        <div><dt>Handled by</dt><dd>${handler}</dd></div>
+        ${kase.assignedBy && kase.assignedBy !== kase.assignee ? `<div><dt>Assigned by</dt><dd>${esc(memberName(kase.assignedBy))}</dd></div>` : ''}
+      </dl>
+      ${!kase.assignee || IS_ADMIN ? `
+        <div class="assign-row">
+          ${!kase.assignee ? `<button type="button" class="btn btn-primary btn-md" data-take="${kase.id}">${icon('check')}Take this case</button>` : ''}
+          ${IS_ADMIN ? `
+            <label class="fld-inline">
+              <span class="fld-label">Assign to</span>
+              <select class="control-sm" data-assign aria-label="Assign to">
+                ${options([['', 'Open pool'], ...db.team.map(m => [m.id, m.id === ME ? `${m.name} (you)` : m.name])], kase.assignee || '')}
+              </select>
+            </label>` : ''}
+        </div>` : ''}
+    </section>
+
+    ${bookings.length ? `
+      <section class="cf-section case-bookings">
+        <div class="cf-section-head"><h3>Bought from</h3></div>
+        ${bookings.map(b => {
+          const supplier = findSupplier(b.supplierId);
+          const group = supplierGroup(supplier && supplier.group);
+          return `
+            <a class="case-booking" href="#/suppliers" data-open-supplier="${esc(b.supplierId)}">
+              <span class="supplier-logo sm tone-${hashTone(b.supplierId)}">${esc(initials(supplier ? supplier.name : '?'))}</span>
+              <span class="hit-main"><span class="hit-name">${esc(supplier ? supplier.name : 'Supplier')}</span><span class="hit-sub">${b.qty} ${esc(group.qty.toLowerCase())} · ${money(b.price)}</span></span>
+              ${b.invoice ? `<span class="tag sm st-done">${icon('receipt')}${esc(b.invoice)}</span>` : '<span class="tag sm alert">Invoice missing</span>'}
+            </a>`;
+        }).join('')}
+      </section>` : ''}`;
 }
 
-function bindCaseDetail(root, kase, rerender) {
+// ---------- Follow-ups as a chat ----------
+// Follow-ups are the messages; the case's own events (opened, assigned, status changes) sit between them.
+function caseChatItems(kase) {
+  const events = db.activity
+    .filter(e => e.caseId === kase.id && e.type !== 'note_added')
+    .map(e => ({ kind: 'event', at: e.at, event: e }));
+  const notes = kase.updates.map(u => ({ kind: 'note', at: u.at, by: u.by, text: u.text }));
+  return [...events, ...notes].sort((a, b) => a.at.localeCompare(b.at));
+}
+
+function chatEventText(e) {
+  const who = memberName(e.by);
+  const to = e.to === ME ? 'you' : memberName(e.to);
+  switch (e.type) {
+    case 'case_created': return `${who} opened the case`;
+    case 'case_assigned': return `${who} assigned it to ${to}`;
+    case 'case_taken': return `${who} took the case`;
+    case 'case_unassigned': return `${who} moved it to the open pool`;
+    case 'status_changed': return `${who} changed the status: ${labelOf(STATUSES, e.from)} → ${labelOf(STATUSES, e.to)}`;
+    default: return who;
+  }
+}
+
+// What "done" sounds like for each kind of request.
+const DONE_REPLIES = {
+  Tickets: 'Tickets sent to the client ✓',
+  Events: 'Tickets sent to the client ✓',
+  Transfers: 'Driver details sent to the client ✓',
+  Restaurant: 'Table confirmed, details sent to the client ✓',
+  Flights: 'Flight booked, details sent to the client ✓',
+  Hotel: 'Booking confirmed and sent to the client ✓',
+  Yacht: 'Charter confirmed, details sent to the client ✓',
+  Massage: 'Appointment confirmed with the client ✓',
+};
+
+// Ready-made follow-ups; the ones with a status also move the case there when sent.
+function quickReplies(kase) {
+  return [
+    { text: 'Working on it', status: 'in_progress' },
+    { text: 'Called the client, no answer', status: null },
+    { text: 'Sent options to the client, waiting for their answer', status: 'waiting_client' },
+    { text: 'Asked the supplier, waiting for confirmation', status: 'waiting_provider' },
+    { text: DONE_REPLIES[kase.category] || 'Done and confirmed with the client ✓', status: 'done' },
+  ].filter(r => !r.status || r.status !== kase.status);
+}
+
+function caseChat(kase) {
+  let lastDay = '';
+  const log = caseChatItems(kase).map(item => {
+    const day = dayLabel(item.at);
+    const sep = day !== lastDay ? `<div class="chat-day"><span>${esc(day)}</span></div>` : '';
+    lastDay = day;
+    const time = esc(timeFmt.format(new Date(item.at)));
+    if (item.kind === 'event') return `${sep}<div class="chat-event">${esc(chatEventText(item.event))} · ${time}</div>`;
+    const mine = item.by === ME;
+    return `${sep}
+      <div class="chat-msg${mine ? ' mine' : ''}">
+        ${mine ? '' : memberAvatar(item.by, 'sm')}
+        <div class="chat-bubble">
+          ${mine ? '' : `<span class="chat-name">${esc(memberName(item.by))}</span>`}
+          <p>${esc(item.text)}</p>
+          <span class="chat-time">${time}</span>
+        </div>
+      </div>`;
+  }).join('');
+  return `
+    <section class="case-chat" aria-label="Follow-ups">
+      <header class="chat-head">${icon('layers')}<h3>Follow-ups</h3><span class="count-badge">${kase.updates.length}</span></header>
+      <div class="chat-log" data-chat-log>${log}${kase.updates.length ? '' : '<div class="chat-empty">No follow-ups yet. Write the first one below, or pick a ready one.</div>'}</div>
+      <form class="chat-form" data-chat-form>
+        <div class="chat-replies" role="group" aria-label="Ready follow-ups">
+          ${quickReplies(kase).map((r, i) => `<button type="button" class="chat-reply" data-reply="${i}">${esc(r.text)}${r.status ? `<span class="chat-reply-status">→ ${esc(labelOf(STATUSES, r.status))}</span>` : ''}</button>`).join('')}
+        </div>
+        <div class="chat-pending" hidden></div>
+        <div class="chat-input">
+          <textarea rows="1" placeholder="Write a follow-up… Enter sends" aria-label="Follow-up"></textarea>
+          <button type="submit" class="chat-send" aria-label="Send">${icon('send')}</button>
+        </div>
+      </form>
+    </section>`;
+}
+
+function bindCaseChat(root, kase, rerender) {
+  const form = root.querySelector('[data-chat-form]');
+  const box = form.querySelector('textarea');
+  const pending = form.querySelector('.chat-pending');
+  const replies = quickReplies(kase);
+  let status = null;
+
+  // Grows with what you type, up to a few lines.
+  const grow = () => {
+    box.style.height = 'auto';
+    box.style.height = `${Math.min(box.scrollHeight, 160)}px`;
+  };
+  const setPending = next => {
+    status = next;
+    pending.hidden = !next;
+    pending.innerHTML = next
+      ? `Sending also moves the case to <b>${esc(labelOf(STATUSES, next))}</b> <button type="button" class="link-btn" data-pending-clear>Keep the status</button>`
+      : '';
+  };
+
+  form.querySelectorAll('[data-reply]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const reply = replies[Number(btn.dataset.reply)];
+      box.value = reply.text;
+      setPending(reply.status);
+      grow();
+      box.focus();
+    });
+  });
+  pending.addEventListener('click', e => {
+    if (e.target.closest('[data-pending-clear]')) setPending(null);
+  });
+  box.addEventListener('input', grow);
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = box.value.trim();
+    if (!text) return;
+    addCaseUpdate(kase.id, text, ME);
+    if (status) setCaseStatus(kase.id, status, ME);
+    rerender();
+    toast(status ? `Follow-up added · ${labelOf(STATUSES, status)}` : 'Follow-up added');
+  });
+
+  // Open on the newest message.
+  const log = root.querySelector('[data-chat-log]');
+  log.scrollTop = log.scrollHeight;
+}
+
+function bindCaseView(root, kase, rerender) {
   root.querySelectorAll('input[name="status"]').forEach(input => {
     input.addEventListener('change', () => {
       setCaseStatus(kase.id, input.value, ME);
@@ -1959,31 +3010,149 @@ function bindCaseDetail(root, kase, rerender) {
         : `${caseNo(kase)} assigned to ${select.value === ME ? 'you' : memberName(select.value)}`);
     });
   }
-  root.querySelector('[data-update-form]').addEventListener('submit', e => {
+
+  // The description reads as text; Edit swaps in a box to change it.
+  const view = root.querySelector('[data-desc-view]');
+  const form = root.querySelector('[data-details-form]');
+  const box = form.querySelector('textarea');
+  const editBtn = root.querySelector('[data-desc-edit]');
+  const editing = on => {
+    view.hidden = on;
+    form.hidden = !on;
+    editBtn.hidden = on;
+    if (on) box.focus();
+  };
+  editBtn.addEventListener('click', () => editing(true));
+  form.querySelector('[data-details-cancel]').addEventListener('click', () => {
+    box.value = kase.details || '';
+    editing(false);
+  });
+  form.addEventListener('submit', e => {
     e.preventDefault();
-    const text = e.target.querySelector('textarea').value;
-    if (!text.trim()) return;
-    addCaseUpdate(kase.id, text, ME);
+    setCaseDetails(kase.id, box.value);
     rerender();
-    toast('Update added');
+    toast('Description saved');
+  });
+
+  bindCaseChat(root, kase, rerender);
+}
+
+// Who opened the case: the client, or someone for them (with their phone and email).
+function requesterFields(req) {
+  return `
+    <div class="fld">
+      <span class="fld-label">Opened by</span>
+      ${segRadio('reqWho', [{ id: 'client', label: 'The client' }, { id: 'other', label: 'Someone else' }], req ? 'other' : 'client')}
+    </div>
+    <div class="requester-fields"${req ? '' : ' hidden'}>
+      <div class="fld">
+        <label class="fld-label" for="rqName">Their name</label>
+        <input id="rqName" class="control" autocomplete="off" placeholder="e.g. Roni Cohen" value="${esc(req ? req.name : '')}">
+      </div>
+      <div class="fld-grid">
+        <div class="fld"><label class="fld-label" for="rqPhone">Their phone</label><input id="rqPhone" class="control" type="tel" autocomplete="off" value="${esc(req ? req.phone : '')}"></div>
+        <div class="fld"><label class="fld-label" for="rqEmail">Their email</label><input id="rqEmail" class="control" type="email" autocomplete="off" value="${esc(req ? req.email : '')}"></div>
+      </div>
+    </div>`;
+}
+
+function bindRequesterFields(root) {
+  const fields = root.querySelector('.requester-fields');
+  root.querySelectorAll('input[name="reqWho"]').forEach(input => {
+    input.addEventListener('change', () => {
+      fields.hidden = input.value !== 'other';
+      if (!fields.hidden) fields.querySelector('#rqName').focus();
+    });
   });
 }
 
-function openCaseSheet(id) {
-  const kase = findCase(id);
+// null when the client opened it; otherwise what was typed (the name may still be empty).
+function readRequester(root) {
+  const other = (root.querySelector('input[name="reqWho"]:checked') || {}).value === 'other';
+  if (!other) return null;
+  return {
+    name: root.querySelector('#rqName').value.trim(),
+    phone: root.querySelector('#rqPhone').value.trim(),
+    email: root.querySelector('#rqEmail').value.trim(),
+  };
+}
+
+function openRequesterSheet(caseId) {
+  const kase = findCase(caseId);
   if (!kase) return;
-  const parts = caseDetailParts(kase);
-  const newTab = `<a class="square-btn" href="app.html#/case/${kase.id}" target="_blank" aria-label="Open in a new tab" title="Open in a new tab">${icon('arrowUpRight')}</a>`;
-  openSheet(`${sheetHead('briefcase', `${idChip(caseNo(kase))} · ${esc(kase.category)}`, esc(kase.title), newTab)}${parts.main}${parts.notes}`, {
-    label: `Case ${caseNo(kase)}`,
+  // Coming back to the case keeps the case's own back button (to a calendar day, say).
+  const caseBack = sheetBack;
+  const backToCase = () => {
+    if (state.route.name === 'case') {
+      closeSheet();
+      render();
+      return;
+    }
+    sheetBack = caseBack;
+    openCaseSheet(caseId);
+  };
+  openSheet(`
+    ${sheetHead('user', caseChip(kase), 'Who opened this case?', backButton())}
+    <form class="form" id="requesterForm" novalidate>
+      ${requesterFields(kase.requester)}
+      <p class="form-error hidden" id="requesterError" role="alert"></p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary btn-md" data-action="sheet-back">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-md">${icon('check')}Save</button>
+      </div>
+    </form>`, {
+    label: 'Who opened this case',
     onMount(sheet) {
-      bindCaseDetail(sheet, kase, () => {
-        render();
-        openCaseSheet(kase.id);
+      bindRequesterFields(sheet);
+      sheet.querySelector('#requesterForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const req = readRequester(sheet);
+        if (req && !req.name) {
+          const errorEl = sheet.querySelector('#requesterError');
+          errorEl.textContent = 'Enter the name of the person who opened the case.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        setRequester(caseId, req);
+        backToCase();
+        toast(req ? `Opened by ${req.name}` : 'Opened by the client');
       });
     },
   });
+  sheetBack = backToCase;
+}
+
+// Opening a case fills the screen: details on the left, the follow-up chat on the right.
+function openCaseSheet(id) {
+  const kase = findCase(id);
+  if (!kase) return;
+  const back = sheetBack;
+  // Redrawing the same case keeps the details column where it was scrolled to.
+  const oldLeft = openCaseId === id ? sheetRoot.querySelector('.cf-left') : null;
+  const keepTop = oldLeft ? oldLeft.scrollTop : 0;
+  const actions = `
+    ${back ? `<button type="button" class="square-btn back" data-action="sheet-back" aria-label="Back" title="Back">${icon('arrowRight')}</button>` : ''}
+    <a class="square-btn" href="app.html#/case/${kase.id}" target="_blank" aria-label="Open in a new tab" title="Open in a new tab">${icon('arrowUpRight')}</a>
+    <button type="button" class="square-btn" data-action="close-sheet" aria-label="Close" title="Close">${icon('x')}</button>`;
+  openSheet(`
+    ${caseHeader(kase, actions)}
+    <div class="cf-body">
+      <div class="cf-left">${caseLeft(kase)}</div>
+      ${caseChat(kase)}
+    </div>`, {
+    label: `Case ${caseNo(kase)}`,
+    full: true,
+    onMount(sheet) {
+      bindCaseView(sheet, kase, () => {
+        render();
+        openCaseSheet(kase.id);
+      });
+      sheet.querySelector('.cf-left').scrollTop = keepTop;
+    },
+  });
   openCaseId = kase.id;
+  sheetBack = back;
+  currentSheet = { type: 'case', id: kase.id };
 }
 
 function renderCasePage(id) {
@@ -1994,20 +3163,16 @@ function renderCasePage(id) {
       <div class="empty">This case doesn't exist, or it was removed.</div>`;
     return;
   }
-  const parts = caseDetailParts(kase);
   viewEl.innerHTML = `
     <a class="back-link" href="#/home">${icon('arrowRight')}My dashboard</a>
-    <header class="page-head">
-      <div>
-        <p class="eyebrow">${idChip(caseNo(kase))} · ${esc(kase.category)}</p>
-        <h1 class="page-title">${esc(kase.title)}</h1>
+    <div class="case-full page">
+      ${caseHeader(kase)}
+      <div class="cf-body">
+        <div class="cf-left">${caseLeft(kase)}</div>
+        ${caseChat(kase)}
       </div>
-    </header>
-    <div class="case-page">
-      <section class="panel">${parts.main}</section>
-      <section class="panel">${parts.notes}</section>
     </div>`;
-  bindCaseDetail(viewEl, kase, () => renderCasePage(id));
+  bindCaseView(viewEl, kase, () => renderCasePage(id));
 }
 
 // ---------- Actions ----------
@@ -2051,10 +3216,34 @@ function toast(message) {
 
 // ---------- Wiring ----------
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-copy],[data-take],[data-case],[data-client],[data-view],[data-shortcut],[data-fset],[data-atab],[data-range],[data-logtype],[data-bg],[data-stop],[data-action]');
+  const el = e.target.closest('[data-copy],[data-take],[data-case],[data-client],[data-view],[data-fview],[data-day],[data-sgroup],[data-supplier],[data-open-supplier],[data-shortcut],[data-fset],[data-atab],[data-range],[data-logtype],[data-bg],[data-stop],[data-action]');
   if (!el || el.tagName === 'SELECT' || el.dataset.stop !== undefined) return;
   if (el.dataset.copy) return copyId(el.dataset.copy);
   if (el.dataset.take) return takeCase(el.dataset.take);
+  if (el.dataset.sgroup) {
+    state.suppliers = { group: el.dataset.sgroup, id: '' };
+    return render();
+  }
+  if (el.dataset.supplier) {
+    state.suppliers.id = el.dataset.supplier;
+    return render();
+  }
+  if (el.dataset.openSupplier) {
+    // From a case: the link goes to Suppliers, showing this supplier.
+    const supplier = findSupplier(el.dataset.openSupplier);
+    if (supplier) state.suppliers = { group: supplier.group, id: supplier.id };
+    if (state.route.name === 'suppliers') {
+      closeSheet();
+      render();
+    }
+    return;
+  }
+  if (el.dataset.day) return openDaySheet(el.dataset.day);
+  if (el.dataset.fview) {
+    // A new view starts without the previous view's filters.
+    Object.assign(state.files, { view: el.dataset.fview, name: '', from: '', to: '', type: '', priority: '', date: '', text: '' });
+    return render();
+  }
   if (el.dataset.bg !== undefined) {
     updateMember(ME, { bg: Number(el.dataset.bg) });
     applyTheme();
@@ -2101,6 +3290,23 @@ document.addEventListener('click', e => {
     case 'add-client': return openAddClientSheet();
     case 'edit-avatar': return openAvatarSheet();
     case 'close-sheet': return closeSheet();
+    case 'sheet-back': return sheetBack && sheetBack();
+    case 'show-files':
+      state.dash = 'files';
+      Object.assign(state.files, { view: 'calendar', name: '', from: '', to: '', type: '', priority: '', date: '', text: '' });
+      return render();
+    case 'my-dashboard':
+      // The link itself goes to #/home; already there, just switch back to My cases.
+      state.dash = 'mine';
+      if (state.route.name === 'home') render();
+      return;
+    case 'cal-today': return scrollCalendarToToday(true);
+    case 'add-booking': return openBookingSheet(el.dataset.supplierId);
+    case 'add-supplier': return openAddSupplierSheet(state.suppliers.group || SUPPLIER_GROUPS[0].id);
+    case 'edit-requester': return openRequesterSheet(el.dataset.caseId);
+    case 'clear-dates':
+      Object.assign(state.files, { from: '', to: '' });
+      return render();
     case 'sign-out': return signOut();
     case 'toggle-followup': {
       const form = el.closest('.case').querySelector('[data-followup-form]');
@@ -2140,9 +3346,18 @@ document.addEventListener('change', e => {
     toast(`${caseNo(findCase(id))} moved to ${labelOf(STATUSES, statusEl.value)}`);
     return render();
   }
+  const dateEl = e.target.closest('input[data-fdate]');
+  if (dateEl) {
+    state.files[dateEl.dataset.fdate] = dateEl.value;
+    return render();
+  }
 });
 
 document.addEventListener('input', e => {
+  if (e.target.matches('input[data-fname]')) {
+    state.files.name = e.target.value;
+    return renderList('files');
+  }
   const el = e.target.closest('input[data-ftext]');
   if (!el) return;
   state[el.dataset.ftext].text = el.value;
@@ -2212,6 +3427,52 @@ window.addEventListener('storage', e => {
   render();
 });
 
+// ---------- Staying put across a refresh ----------
+// Where you are in this tab (My cases or All files, views and filters, the supplier,
+// the open case or calendar day) is kept, so a refresh brings you straight back.
+const UI_KEY = 'gustavo_ui';
+
+function saveUi() {
+  try {
+    sessionStorage.setItem(UI_KEY, JSON.stringify({
+      hash: location.hash,
+      dash: state.dash,
+      home: state.home,
+      files: state.files,
+      all: state.all,
+      suppliers: state.suppliers,
+      activityTab: state.activityTab,
+      range: state.range,
+      logType: state.logType,
+      logPerson: state.logPerson,
+      sheet: currentSheet,
+    }));
+  } catch {
+    // Without storage a refresh just starts on the dashboard.
+  }
+}
+
+// Puts the saved state back; returns the sheet to reopen when it's the same page.
+function restoreUi() {
+  let saved = null;
+  try {
+    saved = JSON.parse(sessionStorage.getItem(UI_KEY) || 'null');
+  } catch {
+    return null;
+  }
+  if (!saved) return null;
+  for (const key of ['home', 'files', 'all', 'suppliers']) Object.assign(state[key], saved[key] || {});
+  for (const key of ['dash', 'activityTab', 'range', 'logType', 'logPerson']) {
+    if (saved[key] !== undefined) state[key] = saved[key];
+  }
+  return saved.hash === location.hash ? saved.sheet : null;
+}
+
+window.addEventListener('pagehide', saveUi);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveUi();
+});
+
 function init() {
   try {
     const saved = localStorage.getItem(VIEW_KEY);
@@ -2219,11 +3480,14 @@ function init() {
   } catch {
     // Start on "All open" when storage is unavailable.
   }
+  const sheet = restoreUi();
   document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
   refreshAvatars();
   applyTheme();
   state.route = parseRoute();
   render();
+  if (sheet && sheet.type === 'case') openCaseSheet(sheet.id);
+  else if (sheet && sheet.type === 'day') openDaySheet(sheet.key, sheet.dayType || '');
 }
 
 if (session) init();
