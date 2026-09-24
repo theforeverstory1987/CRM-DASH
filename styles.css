@@ -323,7 +323,9 @@ body {
 @media (max-width: 860px) {
   .login-shell { grid-template-columns: 1fr; }
 
+  /* Stacked on phones: keep the brand banner above the form. */
   .brand-panel {
+    order: -1;
     min-height: 260px;
     padding: 32px 16px 72px;
   }

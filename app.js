@@ -16,8 +16,8 @@ const IS_ADMIN = (findMember(ME) || {}).role === 'admin';
 
 const state = {
   route: { name: 'home' },
-  home: { view: 'all', priority: '', date: '', sort: 'due', text: '' },
-  all: { status: 'all', whose: '', priority: '', date: '', sort: 'due', text: '' },
+  home: { view: 'all', type: '', priority: '', date: '', sort: 'due', text: '' },
+  all: { status: 'all', whose: '', type: '', priority: '', date: '', sort: 'due', text: '' },
   activityTab: 'cases',
   range: 30,
   logType: 'all',
@@ -57,6 +57,8 @@ const ICONS = {
   shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
   calendar: '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M8 3v3M16 3v3M3 10h18"/>',
   layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
 };
 
 const STATUS_ICONS = { new: 'plus', in_progress: 'refresh', waiting_provider: 'briefcase', waiting_client: 'clock', done: 'check' };
@@ -113,20 +115,47 @@ function toneOf(member, seed) {
   return member && Number.isInteger(member.tone) ? member.tone : hashTone(seed);
 }
 
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+// White or near-black text, whichever reads better on the colour.
+function inkFor(hex) {
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+  return 0.299 * r + 0.587 * g + 0.114 * b > 170 ? '#111111' : '#ffffff';
+}
+
+// A colour picked with the colour picker paints inline; otherwise one of the tone classes.
+function paintOf(member, seed) {
+  if (member && HEX_COLOR.test(member.color || '')) {
+    return { cls: '', style: ` style="background:${member.color};color:${inkFor(member.color)}"` };
+  }
+  return { cls: `tone-${toneOf(member, seed)}`, style: '' };
+}
+
 function memberAvatar(id, size = '') {
   const member = findMember(id);
-  const tone = toneOf(member, id);
+  const { cls, style } = paintOf(member, id);
   let face;
   if (member && member.photo) face = `<span class="avatar ${size}"><img src="${esc(member.photo)}" alt=""></span>`;
-  else if (member && member.emoji) face = `<span class="avatar emoji tone-${tone} ${size}">${esc(member.emoji)}</span>`;
-  else return `<span class="avatar tone-${tone} ${size}" aria-hidden="true">${esc(memberInitials(member))}</span>`;
+  else if (member && member.emoji) face = `<span class="avatar emoji ${cls} ${size}"${style}>${esc(member.emoji)}</span>`;
+  else return `<span class="avatar ${cls} ${size}"${style} aria-hidden="true">${esc(memberInitials(member))}</span>`;
   // With a photo or icon, keep the initials in a small bubble so people stay recognisable.
   if (size === 'xs' || size === 'sm') return face.replace('<span class="avatar', '<span aria-hidden="true" class="avatar');
-  return `<span class="avatar-wrap ${size}" aria-hidden="true">${face}<span class="avatar-badge tone-${tone}">${esc(memberInitials(member))}</span></span>`;
+  return `<span class="avatar-wrap ${size}" aria-hidden="true">${face}<span class="avatar-badge ${cls}"${style}>${esc(memberInitials(member))}</span></span>`;
 }
 
 function caseNo(kase) {
   return `G-${kase.number}`;
+}
+
+// Flag images (not emoji, which Windows shows as two letters) from flagcdn.com.
+function flag(code) {
+  const country = COUNTRIES.find(([c]) => c === code);
+  if (!country) return '';
+  return `<img class="flag" src="https://flagcdn.com/${code.toLowerCase()}.svg" alt="${esc(country[1])}" title="${esc(country[1])}" width="20" height="14" loading="lazy">`;
+}
+
+function hashtag(category) {
+  return `<span class="hashtag">#${esc(category)}</span>`;
 }
 
 function clientNo(client) {
@@ -195,7 +224,7 @@ function fmtDue(kase) {
   }
   if (!kase.dueAt) return { label: '', text: 'No due date', cls: '' };
   if (new Date(kase.dueAt) < new Date()) return { label: 'Overdue', text: fmtDayTime(kase.dueAt), cls: 'overdue' };
-  return { label: 'Due', text: fmtDayTime(kase.dueAt), cls: dayDiff(kase.dueAt) === 0 ? 'today' : '' };
+  return { label: 'Requested', text: fmtDayTime(kase.dueAt), cls: dayDiff(kase.dueAt) === 0 ? 'today' : '' };
 }
 
 function dayLabel(iso) {
@@ -239,14 +268,17 @@ function stat({ label, value, sub = '', ic, featured = false, shortcut = '' }) {
     </${tag}>`;
 }
 
-function miniStat({ label, value, ic, tone = '', shortcut = '' }) {
-  const tag = shortcut ? 'button' : 'div';
-  const attrs = shortcut ? ` type="button" data-shortcut="${shortcut}" aria-label="${esc(label)}: ${value}. Show these cases"` : '';
+// A coloured dashboard tile: a link (href), a list shortcut, or an action button.
+function dashTile({ label, value, sub = '', ic, color, href = '', shortcut = '', action = '', active = false }) {
+  const tag = href ? 'a' : 'button';
+  const attrs = href ? ` href="${href}"`
+    : ` type="button"${shortcut ? ` data-shortcut="${shortcut}"` : ''}${action ? ` data-action="${action}"` : ''}`;
   return `
-    <${tag} class="mini-stat${tone ? ` mini-stat-${tone}` : ''}"${attrs}>
-      <span class="mini-stat-icon">${icon(ic)}</span>
-      <span class="mini-stat-value">${value}</span>
-      <span class="mini-stat-label">${label}</span>
+    <${tag} class="dash-tile tile-${color}${active ? ' active' : ''}"${attrs}${active ? ' aria-current="page"' : ''}>
+      <span class="dash-tile-icon">${icon(ic)}</span>
+      <span class="dash-tile-value">${value}</span>
+      <span class="dash-tile-label">${label}</span>
+      ${sub ? `<span class="dash-tile-sub">${sub}</span>` : ''}
     </${tag}>`;
 }
 
@@ -279,6 +311,7 @@ function selectWrap(id, optionsHtml) {
 
 // ---------- Case lists with filters ----------
 const STATUS_FILTERS = [['all', 'All open'], ['new', 'Open'], ['in_progress', 'Ongoing'], ['waiting_provider', 'Wait: provider'], ['waiting_client', 'Wait: client'], ['done', 'Done']];
+const TYPE_FILTERS = [['', 'Any request type'], ...CATEGORIES.map(c => [c, `#${c}`])];
 const PRIORITY_FILTERS = [['', 'Any priority'], ['hot', 'Urgent & high'], ['urgent', 'Urgent'], ['high', 'High'], ['normal', 'Normal'], ['low', 'Low']];
 const DATE_FILTERS = [['', 'Any date'], ['overdue', 'Overdue'], ['today', 'Due today'], ['week', 'Due this week'], ['later', 'Due later'], ['none', 'No due date']];
 const SORTS = [['due', 'Sort: due date'], ['priority', 'Sort: priority'], ['newest', 'Sort: newest']];
@@ -288,25 +321,11 @@ const HOME_VIEWS = [
   {
     section: 'My cases',
     items: [
-      { id: 'all', label: 'All open', icon: 'briefcase', hint: 'Assigned to you, or taken yourself', empty: 'Nothing on your plate. Take a case from the open pool, or open a new file with +.' },
-      { id: 'new', label: 'Open', icon: 'plus', hint: 'Not started yet', empty: 'No cases waiting to be started.' },
-      { id: 'in_progress', label: 'Ongoing', icon: 'refresh', hint: 'You’re working on these', empty: 'Nothing in progress right now.' },
-      { id: 'waiting_provider', label: 'Waiting on provider', icon: 'briefcase', hint: 'Waiting for the vendor to reply', empty: 'No cases waiting on a provider.' },
+      { id: 'all', label: 'All my cases', icon: 'briefcase', hint: 'Everything assigned to you or taken by you, open first', empty: 'Nothing on your plate. Open a new file with +.' },
+      { id: 'new', label: 'New cases', icon: 'plus', hint: 'Not started yet', empty: 'No new cases.' },
+      { id: 'urgent', label: 'Urgent', icon: 'flame', hint: 'Open cases marked urgent', empty: 'No urgent cases right now.' },
+      { id: 'waiting_provider', label: 'Waiting on provider', icon: 'briefcase', hint: 'Waiting for the provider to reply', empty: 'No cases waiting on a provider.' },
       { id: 'waiting_client', label: 'Waiting on client', icon: 'clock', hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.' },
-      { id: 'done', label: 'Done', icon: 'check', hint: 'Cases you finished', empty: 'Nothing finished yet.' },
-    ],
-  },
-  {
-    section: 'How they reached me',
-    items: [
-      { id: 'assigned', label: 'Assigned to me', icon: 'arrowIn', hint: 'Given to you by the admin', empty: 'No open cases assigned to you.' },
-      { id: 'taken', label: 'I took', icon: 'user', hint: 'Cases you picked up yourself', empty: 'You haven’t taken any open cases.' },
-    ],
-  },
-  {
-    section: 'Team',
-    items: [
-      { id: 'pool', label: 'Open pool', icon: 'inbox', hint: 'Nobody has taken these yet — take one to make it yours', empty: 'The pool is empty. Nice work.' },
     ],
   },
 ];
@@ -329,15 +348,11 @@ function homeViewCases(view) {
   const mine = myCases();
   switch (view) {
     case 'new':
-    case 'in_progress':
     case 'waiting_provider':
     case 'waiting_client':
-    case 'done':
       return mine.filter(k => k.status === view);
-    case 'assigned': return mine.filter(k => isOpen(k) && k.assignedBy !== ME);
-    case 'taken': return mine.filter(k => isOpen(k) && k.assignedBy === ME);
-    case 'pool': return db.cases.filter(k => !k.assignee && isOpen(k));
-    default: return mine.filter(isOpen);
+    case 'urgent': return mine.filter(k => isOpen(k) && k.priority === 'urgent');
+    default: return mine;
   }
 }
 
@@ -379,7 +394,7 @@ function matchesPriority(kase, filter) {
 function filteredCases(key) {
   const f = state[key];
   const term = f.text.trim().toLowerCase();
-  const showsDone = key === 'home' ? f.view === 'done' : f.status === 'done';
+  const showsDone = key !== 'home' && f.status === 'done';
   const sorters = {
     due: showsDone ? doneSort : dueSort,
     priority: (a, b) => (PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]) || dueSort(a, b),
@@ -389,10 +404,11 @@ function filteredCases(key) {
     ? homeViewCases(f.view)
     : scopedCases(key).filter(k => (f.status === 'all' ? isOpen(k) : k.status === f.status));
   return base
+    .filter(k => !f.type || k.category === f.type)
     .filter(k => matchesPriority(k, f.priority))
     .filter(k => matchesDate(k, f.date))
     .filter(k => matchesText(k, term))
-    .sort(sorters[f.sort] || dueSort);
+    .sort((a, b) => (isOpen(b) - isOpen(a)) || (sorters[f.sort] || dueSort)(a, b));
 }
 
 function statusCounts(key) {
@@ -409,18 +425,19 @@ function filterSelect(key, field, opts, value, label) {
 
 function isRefined(key) {
   const f = state[key];
-  return Boolean(f.priority || f.date || f.text.trim());
+  return Boolean(f.type || f.priority || f.date || f.text.trim());
 }
 
-// Search, priority, date and sort narrow whichever view is showing.
+// Name search, request type, priority, date and sort narrow whichever view is showing.
 function refineRow(key, leading = '') {
   const f = state[key];
   return `
     <div class="filter-row">
       ${leading}
-      <label class="search">${icon('search')}<input type="search" data-ftext="${key}" placeholder="Filter by title, client or ID" aria-label="Filter cases" value="${esc(f.text)}"></label>
+      <label class="search">${icon('search')}<input type="search" data-ftext="${key}" placeholder="Filter by client name, request or ID" aria-label="Filter cases" value="${esc(f.text)}"></label>
+      ${filterSelect(key, 'type', TYPE_FILTERS, f.type, 'Request type')}
       ${filterSelect(key, 'priority', PRIORITY_FILTERS, f.priority, 'Priority')}
-      ${filterSelect(key, 'date', DATE_FILTERS, f.date, 'Due date')}
+      ${filterSelect(key, 'date', DATE_FILTERS, f.date, 'Requested date')}
       ${filterSelect(key, 'sort', SORTS, f.sort, 'Sort')}
       ${isRefined(key) ? `<button type="button" class="link-btn" data-action="clear-refine" data-key="${key}">${icon('x')}Clear filters</button>` : ''}
     </div>`;
@@ -473,26 +490,30 @@ function caseCard(kase, key) {
   }
   const cls = [!isOpen(kase) && 'is-done', due.cls === 'overdue' && 'is-overdue'].filter(Boolean).join(' ');
   const lastUpdate = lastUpdateOf(kase);
+  // Hierarchy: client and flag, request type and what they asked for, requested and opened dates, then actions.
   return `
     <div class="case ${cls}" role="button" tabindex="0" data-case="${kase.id}">
       <span class="case-check" aria-hidden="true">${isOpen(kase) ? '' : icon('check')}</span>
       <span class="case-body">
         <span class="case-top">
-          <span class="case-title">${esc(kase.title)}</span>
+          <span class="case-client">${esc(client ? client.name : 'Unknown client')}${client ? flag(client.country) : ''}</span>
           <span class="case-when ${due.cls}">${due.label ? `<span class="lbl">${due.label}:</span> ` : ''}${esc(due.text)}</span>
         </span>
-        <span class="case-sub">${idChip(caseNo(kase))}<span>${esc(client ? client.name : 'Unknown client')} · ${esc(kase.category)}</span></span>
+        <span class="case-sub">
+          <span class="case-request">${hashtag(kase.category)}<span class="case-title">${esc(kase.title)}</span></span>
+          <span class="case-opened"><span class="lbl">Opened:</span> ${esc(fmtDayTime(kase.createdAt))}</span>
+        </span>
         ${lastUpdate ? `
         <span class="case-followup">${icon('layers')}<span class="quote-text">“${esc(lastUpdate.text)}”</span><span class="muted">— ${esc(firstName(memberName(lastUpdate.by)))}</span></span>` : ''}
         <span class="case-bottom">
-          <span class="tags">${channelTag(kase.channel, 'sm')}${hotTag(kase.priority, 'sm')}</span>
+          <span class="tags">${idChip(caseNo(kase))}${channelTag(kase.channel, 'sm')}${hotTag(kase.priority, 'sm')}</span>
           <span class="case-by">${who}</span>
         </span>
         <span class="case-quick" data-stop>
           <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
             ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
           </select>
-          ${client && client.email ? `<a class="icon-btn sm" data-action="email-client" href="mailto:${esc(client.email)}" title="Email ${esc(client.name)}" aria-label="Email ${esc(client.name)}">${icon('mail')}</a>` : ''}
+          ${client && client.email ? `<a class="btn-email" data-action="email-client" href="mailto:${esc(client.email)}" title="${esc(client.email)}">${icon('mail')}Email ${esc(firstName(client.name))}</a>` : ''}
           <button type="button" class="icon-btn sm" data-action="toggle-followup" title="Add a quick follow-up" aria-label="Add a quick follow-up">${icon('pencil')}</button>
         </span>
         <form class="quick-followup" data-followup-form="${kase.id}" data-list-key="${key}" data-stop hidden>
@@ -618,6 +639,8 @@ function render() {
     if (active) el.setAttribute('aria-current', 'page');
     else el.removeAttribute('aria-current');
   });
+  // The dashboard's own scrolling list; toggled before drawing so a redraw keeps its scroll position.
+  viewEl.classList.toggle('is-dash', route.name === 'home');
   if (route.name === 'activity') renderActivity();
   else if (route.name === 'settings') renderSettings();
   else if (route.name === 'new') renderNewFilePage({ clientId: route.params.get('client') || '' });
@@ -631,18 +654,37 @@ function refreshAvatars() {
 }
 
 // ---------- My dashboard ----------
+// Only the case list scrolls here, so keep its position when the page redraws in the same view.
+let homeListView = null;
+
 function renderHome() {
+  const oldList = document.getElementById('homeList');
+  const keepTop = oldList && homeListView === state.home.view ? oldList.scrollTop : 0;
   const mine = myCases();
-  const myOpen = mine.filter(isOpen);
-  const urgent = myOpen.filter(k => k.priority === 'urgent');
-  const ongoing = myOpen.filter(k => k.status === 'in_progress');
-  const waitProvider = myOpen.filter(k => k.status === 'waiting_provider');
-  const waitClient = myOpen.filter(k => k.status === 'waiting_client');
+  const reminders = myReminders().filter(r => !r.done);
+  const overdue = reminders.filter(r => isPast(r.at));
+  const notes = myNotes();
   const me = findMember(ME);
   const view = homeView(state.home.view);
 
   viewEl.innerHTML = `
     <div class="dash">
+      <h1 class="visually-hidden">My dashboard</h1>
+      <div class="quick-search" id="quickSearch">
+        <label class="quick-label" for="quickInput">${icon('search')}Quick search</label>
+        <input id="quickInput" type="search" autocomplete="off" placeholder="File ID, client name or ID">
+        <div class="quick-results" id="quickResults" hidden></div>
+      </div>
+
+      <section class="dash-tiles" aria-label="Overview">
+        ${dashTile({ label: 'My cases', value: mine.length, sub: `${mine.filter(isOpen).length} open`, ic: 'briefcase', color: 'blue', shortcut: 'view:all', active: true })}
+        ${dashTile({ label: 'All files', value: db.cases.length, sub: `${db.cases.filter(isOpen).length} open · whole team`, ic: 'layers', color: 'purple', href: '#/activity' })}
+        ${dashTile({ label: 'Reminders', value: reminders.length, ic: 'clock', color: 'orange', action: 'open-reminders',
+          sub: overdue.length ? `${overdue.length} overdue` : reminders[0] ? `Next: ${esc(fmtDayTime(reminders[0].at))}` : 'Add a reminder' })}
+        ${dashTile({ label: 'Sticky notes', value: notes.length, ic: 'pencil', color: 'green', action: 'open-notes',
+          sub: notes[0] ? esc(notes[0].text) : 'Add a note' })}
+      </section>
+
       <aside class="dash-nav" aria-label="Dashboard views">
         <div class="dash-me">
           ${memberAvatar(ME)}
@@ -657,7 +699,7 @@ function renderHome() {
             <p class="dash-label">${section.section}</p>
             ${section.items.map(item => {
               const count = homeViewCases(item.id).length;
-              const alert = item.id === 'pool' && count > 0;
+              const alert = item.id === 'urgent' && count > 0;
               return `
                 <button type="button" class="dash-item${item.id === view.id ? ' active' : ''}" data-view="${item.id}"${item.id === view.id ? ' aria-current="true"' : ''}>
                   ${icon(item.icon)}<span class="dash-item-label">${item.label}</span><span class="dash-count${alert ? ' alert' : ''}">${count}</span>
@@ -667,20 +709,6 @@ function renderHome() {
       </aside>
 
       <div class="dash-main">
-        <header class="dash-head">
-          <p class="eyebrow"><img class="eyebrow-logo" src="favicon.svg" alt="">Dashboard</p>
-          <h1 class="page-title dash-title">My <span class="soft">dashboard</span></h1>
-        </header>
-
-        <section class="stats stats-mini">
-          ${miniStat({ label: 'To handle', value: myOpen.length, ic: 'briefcase', shortcut: 'view:all' })}
-          ${miniStat({ label: 'All', value: mine.length, ic: 'layers' })}
-          ${miniStat({ label: 'Urgent', value: urgent.length, ic: 'flame', tone: 'urgent', shortcut: 'priority:urgent' })}
-          ${miniStat({ label: 'Ongoing', value: ongoing.length, ic: 'refresh', tone: 'progress', shortcut: 'view:in_progress' })}
-          ${miniStat({ label: 'On provider', value: waitProvider.length, ic: 'briefcase', tone: 'provider', shortcut: 'view:waiting_provider' })}
-          ${miniStat({ label: 'On client', value: waitClient.length, ic: 'clock', tone: 'client', shortcut: 'view:waiting_client' })}
-        </section>
-
         <section class="panel">
           <div class="panel-head">
             <h2>${esc(view.label)} <span class="count-badge" id="homeCount"></span></h2>
@@ -692,12 +720,181 @@ function renderHome() {
       </div>
     </div>`;
   renderList('home');
+  document.getElementById('homeList').scrollTop = keepTop;
+  homeListView = state.home.view;
+  bindQuickSearch();
+}
+
+// ---------- Quick search (dashboard) ----------
+function quickClientHit(client) {
+  const total = db.cases.filter(k => k.clientId === client.id).length;
+  return `
+    <div class="hit" role="button" tabindex="0" data-client="${client.id}">
+      ${avatar(client.name, client.id, 'sm')}
+      <span class="hit-main">
+        <span class="hit-name">${esc(client.name)}</span>
+        <span class="hit-sub">${esc(client.tier)} · ${total} case${total === 1 ? '' : 's'}</span>
+      </span>
+      ${idChip(clientNo(client))}
+    </div>`;
+}
+
+function bindQuickSearch() {
+  const box = document.getElementById('quickSearch');
+  const input = box.querySelector('input');
+  const results = box.querySelector('#quickResults');
+  const draw = () => {
+    const q = input.value.trim();
+    results.hidden = !q;
+    if (!q) return;
+    const cases = caseMatches(q).slice(0, 5);
+    const clients = clientMatches(q).slice(0, 5);
+    results.innerHTML = `
+      ${cases.length ? `<p class="results-title">Cases</p>${cases.map(caseHit).join('')}` : ''}
+      ${clients.length ? `<p class="results-title">Clients</p>${clients.map(quickClientHit).join('')}` : ''}
+      ${cases.length || clients.length ? '' : '<div class="empty">Nothing matches that.</div>'}
+      <button type="button" class="link-btn" data-action="search-all">${icon('search')}Search everything for “${esc(q)}”</button>`;
+  };
+  input.addEventListener('input', draw);
+  input.addEventListener('focus', draw);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      input.value = '';
+      draw();
+    } else if (e.key === 'Enter') {
+      const hits = caseMatches(input.value);
+      const exact = hits.find(k => String(k.number) === input.value.replace(/\D/g, ''));
+      if (exact) openCaseSheet(exact.id);
+      else if (input.value.trim()) openSearchTab(input.value.trim());
+    }
+  });
+  // Close the results when focus leaves the search (clicking a result keeps it inside).
+  box.addEventListener('focusout', e => {
+    if (!box.contains(e.relatedTarget)) results.hidden = true;
+  });
+}
+
+// ---------- Reminders and sticky notes ----------
+const NOTE_COLORS = ['yellow', 'pink', 'blue', 'green'];
+
+function noteColor(color) {
+  return NOTE_COLORS.includes(color) ? color : 'yellow';
+}
+
+function isPast(iso) {
+  return new Date(iso) < new Date();
+}
+
+function myReminders() {
+  return db.reminders.filter(r => r.by === ME).sort((a, b) => (a.done - b.done) || a.at.localeCompare(b.at));
+}
+
+function myNotes() {
+  return db.notes.filter(n => n.by === ME);
+}
+
+function reminderRow(r) {
+  const overdue = !r.done && isPast(r.at);
+  return `
+    <div class="reminder${r.done ? ' is-done' : ''}${overdue ? ' is-overdue' : ''}">
+      <button type="button" class="reminder-check" data-reminder-toggle="${r.id}" aria-label="${r.done ? 'Mark as not done' : 'Mark as done'}">${r.done ? icon('check') : ''}</button>
+      <span class="reminder-body">
+        <span class="reminder-text">${esc(r.text)}</span>
+        <span class="reminder-when">${overdue ? 'Overdue · ' : ''}${esc(fmtDayTime(r.at))}</span>
+      </span>
+      <button type="button" class="icon-btn sm" data-reminder-delete="${r.id}" aria-label="Delete reminder" title="Delete">${icon('x')}</button>
+    </div>`;
+}
+
+function openRemindersSheet() {
+  const list = myReminders();
+  openSheet(`
+    ${sheetHead('clock', 'Reminders', 'Your reminders')}
+    <form class="form" id="reminderForm" novalidate>
+      <div class="fld">
+        <label class="fld-label" for="rText">Remind me to…</label>
+        <input id="rText" class="control" autocomplete="off" placeholder="e.g. Call Emma about the cake">
+      </div>
+      <div class="inline-add">
+        <input id="rAt" type="datetime-local" class="control" value="${esc(defaultDue())}" aria-label="When">
+        <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add</button>
+      </div>
+    </form>
+    <div class="reminder-list">${list.length ? list.map(reminderRow).join('') : '<div class="empty">No reminders yet.</div>'}</div>`, {
+    label: 'Reminders',
+    onMount(sheet) {
+      sheet.querySelector('#reminderForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const text = sheet.querySelector('#rText').value;
+        const at = sheet.querySelector('#rAt').value;
+        if (!text.trim() || !at) return;
+        addReminder(text, new Date(at).toISOString(), ME);
+        render();
+        openRemindersSheet();
+        toast('Reminder added');
+      });
+      sheet.addEventListener('click', e => {
+        const toggle = e.target.closest('[data-reminder-toggle]');
+        const remove = e.target.closest('[data-reminder-delete]');
+        if (toggle) toggleReminder(toggle.dataset.reminderToggle);
+        else if (remove) deleteReminder(remove.dataset.reminderDelete);
+        else return;
+        render();
+        openRemindersSheet();
+      });
+      sheet.querySelector('#rText').focus();
+    },
+  });
+}
+
+function openNotesSheet(color = 'yellow') {
+  const notes = myNotes();
+  openSheet(`
+    ${sheetHead('pencil', 'Sticky notes', 'Your notes')}
+    <form class="form" id="noteForm" novalidate>
+      <textarea id="nText" class="control" rows="3" placeholder="Write a note…" aria-label="Note"></textarea>
+      <div class="inline-add">
+        <div class="note-colors" role="radiogroup" aria-label="Note colour">
+          ${NOTE_COLORS.map(c => `<label class="note-swatch sticky-${c}"><input type="radio" name="nColor" value="${c}"${c === color ? ' checked' : ''}><span class="visually-hidden">${c}</span></label>`).join('')}
+        </div>
+        <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add note</button>
+      </div>
+    </form>
+    <div class="note-grid">
+      ${notes.length ? notes.map(n => `
+        <div class="sticky sticky-${noteColor(n.color)}">
+          <p>${esc(n.text)}</p>
+          <span class="sticky-foot">${esc(fmtDayTime(n.at))}<button type="button" class="icon-btn sm" data-note-delete="${n.id}" aria-label="Delete note" title="Delete">${icon('x')}</button></span>
+        </div>`).join('') : '<div class="empty">No notes yet.</div>'}
+    </div>`, {
+    label: 'Sticky notes',
+    onMount(sheet) {
+      const form = sheet.querySelector('#noteForm');
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const text = sheet.querySelector('#nText').value;
+        if (!text.trim()) return;
+        addNote(text, form.nColor.value, ME);
+        render();
+        openNotesSheet(form.nColor.value);
+        toast('Note added');
+      });
+      sheet.addEventListener('click', e => {
+        const remove = e.target.closest('[data-note-delete]');
+        if (!remove) return;
+        deleteNote(remove.dataset.noteDelete);
+        render();
+        openNotesSheet(form.nColor.value);
+      });
+      sheet.querySelector('#nText').focus();
+    },
+  });
 }
 
 // Number cards jump straight to what they count.
 function applyShortcut(shortcut) {
   const [field, value] = shortcut.split(':');
-  state.home = { ...state.home, view: 'all', priority: '', date: '', text: '' };
+  state.home = { ...state.home, view: 'all', type: '', priority: '', date: '', text: '' };
   state.home[field] = value;
   saveHomeView();
   render();
@@ -965,7 +1162,11 @@ function dotChart() {
 }
 
 // ---------- Settings ----------
-const EMOJIS = ['🛎️', '🎩', '✈️', '🍷', '🌴', '⭐', '🦋', '🌙', '🗝️', '🥂', '💎', '🌸'];
+const EMOJIS = [
+  '🛎️', '🎩', '✈️', '🍷', '🌴', '⭐', '🦋', '🌙', '🗝️', '🥂', '💎', '🌸',
+  '🌍', '🏝️', '🛥️', '🏨', '🍾', '🎭', '🎟️', '🍣', '☕', '🚗', '🚁', '🌺',
+  '🦁', '🐬', '🔥', '⚡', '🎯', '👑', '🌈', '🍀', '🎵', '💼', '🧳', '🏆',
+];
 
 const BG_THEMES = [
   { id: 0, label: 'Default' },
@@ -979,11 +1180,32 @@ function bgThemeOf(member) {
   return member && Number.isInteger(member.bg) ? member.bg : 0;
 }
 
-// Applies the signed-in member's background colour to the whole app shell.
-function applyBgTheme() {
-  const bg = bgThemeOf(findMember(ME));
+// Also read by app.html's <head> so dark mode is on before the first paint.
+const THEME_KEY = 'gustavo_theme';
+
+// Applies the signed-in member's background colour and light/dark mode to the whole app.
+function applyTheme() {
+  const me = findMember(ME);
+  const bg = bgThemeOf(me);
+  const dark = Boolean(me && me.dark);
   document.body.classList.remove(...BG_THEMES.map(t => `bg-${t.id}`));
   if (bg) document.body.classList.add(`bg-${bg}`);
+  document.documentElement.classList.toggle('dark', dark);
+  document.querySelectorAll('[data-dark-toggle]').forEach(el => {
+    el.innerHTML = icon(dark ? 'sun' : 'moon');
+    el.setAttribute('aria-pressed', String(dark));
+  });
+  try {
+    localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
+  } catch {
+    // Without storage the page just starts light, then switches.
+  }
+}
+
+function setDark(dark) {
+  updateMember(ME, { dark });
+  applyTheme();
+  render();
 }
 
 function renderSettings() {
@@ -1040,6 +1262,13 @@ function renderSettings() {
           <button type="button" class="btn btn-secondary btn-md" data-action="edit-avatar">${icon('pencil')}Change</button>
         </div>
         <div class="setting-row">
+          <div><b>Appearance</b><p>Light or dark mode for the whole app.</p></div>
+          <div class="pills" role="group" aria-label="Appearance">
+            <button type="button" class="${me.dark ? '' : 'active'}" data-action="light-mode">${icon('sun')}Light</button>
+            <button type="button" class="${me.dark ? 'active' : ''}" data-action="dark-mode">${icon('moon')}Dark</button>
+          </div>
+        </div>
+        <div class="setting-row">
           <div><b>Background colour</b><p>Pick a background tint for your workspace.</p></div>
           <div class="tone-row">
             ${BG_THEMES.map(t => `<button type="button" class="bg-swatch bg-swatch-${t.id}${t.id === bg ? ' active' : ''}" data-bg="${t.id}" aria-label="${t.label} background" title="${t.label}"></button>`).join('')}
@@ -1064,7 +1293,8 @@ function renderSettings() {
 
 function openAvatarSheet() {
   const me = findMember(ME);
-  const tone = toneOf(me, ME);
+  const custom = HEX_COLOR.test(me.color || '') ? me.color : '';
+  const tone = custom ? null : toneOf(me, ME);
   openSheet(`
     ${sheetHead('user', 'Your icon', 'Choose how you appear')}
     <div class="form">
@@ -1105,10 +1335,23 @@ function openAvatarSheet() {
         </div>
       </div>
       <div class="fld">
+        <span class="fld-label">Solid</span>
+        <div class="tone-row">
+          ${[10, 11, 12, 13, 14].map(t => `<button type="button" class="tone-${t}${t === tone ? ' active' : ''}" data-tone="${t}" aria-label="Solid colour ${t - 9}"></button>`).join('')}
+        </div>
+      </div>
+      <div class="fld">
         <span class="fld-label">Gradient</span>
         <div class="tone-row">
           ${[5, 6, 7, 8, 9].map(t => `<button type="button" class="tone-${t}${t === tone ? ' active' : ''}" data-tone="${t}" aria-label="Gradient ${t - 4}"></button>`).join('')}
         </div>
+      </div>
+      <div class="fld">
+        <span class="fld-label">Any colour</span>
+        <label class="color-pick${custom ? ' active' : ''}">
+          <input type="color" id="pColor" value="${custom || '#7b61ff'}">
+          <span>${custom ? `Your colour · ${custom.toUpperCase()}` : 'Pick any colour'}</span>
+        </label>
       </div>
       <div class="form-actions">
         <button type="button" class="btn btn-primary btn-md" data-action="close-sheet">Done</button>
@@ -1126,9 +1369,11 @@ function openAvatarSheet() {
         const b = e.target.closest('[data-emoji],[data-tone],[data-avatar-reset]');
         if (!b) return;
         if (b.dataset.emoji) apply({ emoji: b.dataset.emoji, photo: null });
-        else if (b.dataset.tone) apply({ tone: Number(b.dataset.tone) });
+        else if (b.dataset.tone) apply({ tone: Number(b.dataset.tone), color: null });
         else apply({ emoji: null, photo: null });
       });
+      // "change" fires once the picker closes, so the sheet isn't redrawn mid-pick.
+      sheet.querySelector('#pColor').addEventListener('change', e => apply({ color: e.target.value }));
       sheet.querySelector('#nameForm').addEventListener('submit', e => {
         e.preventDefault();
         const name = sheet.querySelector('#pName').value.trim() || me.name;
@@ -1341,7 +1586,7 @@ function openClientSheet(id) {
     <div class="client-card">
       ${avatar(client.name, client.id, 'lg')}
       <div class="client-card-body">
-        <div class="client-card-name">${esc(client.name)} ${tierTag(client.tier)}</div>
+        <div class="client-card-name">${esc(client.name)}${flag(client.country)} ${tierTag(client.tier)}</div>
         <div class="client-card-meta">${[client.phone, client.email].filter(Boolean).map(esc).join(' · ') || 'No contact details'}</div>
         ${client.notes ? `<div class="client-card-notes">${esc(client.notes)}</div>` : ''}
       </div>
@@ -1575,6 +1820,10 @@ function openAddClientSheet({ onSaved } = {}) {
         <div class="fld"><label class="fld-label" for="cPhone">Phone</label><input id="cPhone" class="control" type="tel" autocomplete="off"></div>
         <div class="fld"><label class="fld-label" for="cEmail">Email</label><input id="cEmail" class="control" type="email" autocomplete="off"></div>
       </div>
+      <div class="fld">
+        <label class="fld-label" for="cCountry">Country</label>
+        ${selectWrap('cCountry', options([['', 'Choose a country…'], ...COUNTRIES], ''))}
+      </div>
       <div class="fld"><span class="fld-label">Membership</span>${segRadio('tier', TIERS.map(t => ({ id: t, label: t })), 'Standard')}</div>
       <div class="fld">
         <label class="fld-label" for="cNotes">Preferences &amp; notes</label>
@@ -1604,6 +1853,7 @@ function openAddClientSheet({ onSaved } = {}) {
           name: nameInput.value,
           phone: sheet.querySelector('#cPhone').value,
           email: sheet.querySelector('#cEmail').value,
+          country: sheet.querySelector('#cCountry').value,
           tier: form.tier.value,
           notes: sheet.querySelector('#cNotes').value,
         }, ME);
@@ -1631,7 +1881,7 @@ function caseDetailParts(kase) {
       <div class="client-card">
         ${avatar(client.name, client.id, 'lg')}
         <div class="client-card-body">
-          <div class="client-card-name">${esc(client.name)} ${tierTag(client.tier)} ${idChip(clientNo(client))}</div>
+          <div class="client-card-name">${esc(client.name)}${flag(client.country)} ${tierTag(client.tier)} ${idChip(clientNo(client))}</div>
           <div class="client-card-meta">${[client.phone, client.email].filter(Boolean).map(esc).join(' · ') || 'No contact details'}</div>
           ${client.notes ? `<div class="client-card-notes">${esc(client.notes)}</div>` : ''}
         </div>
@@ -1807,7 +2057,7 @@ document.addEventListener('click', e => {
   if (el.dataset.take) return takeCase(el.dataset.take);
   if (el.dataset.bg !== undefined) {
     updateMember(ME, { bg: Number(el.dataset.bg) });
-    applyBgTheme();
+    applyTheme();
     render();
     return toast('Background updated');
   }
@@ -1841,6 +2091,12 @@ document.addEventListener('click', e => {
     case 'new-file': return openNewFileTab();
     case 'new-file-client': return openNewFileTab(el.dataset.clientId);
     case 'search': return openSearchTab();
+    case 'search-all': return openSearchTab(document.getElementById('quickInput').value.trim());
+    case 'open-reminders': return openRemindersSheet();
+    case 'open-notes': return openNotesSheet();
+    case 'light-mode': return setDark(false);
+    case 'dark-mode': return setDark(true);
+    case 'toggle-dark': return setDark(!(findMember(ME) || {}).dark);
     case 'advanced-search': return openAdvancedSearch();
     case 'add-client': return openAddClientSheet();
     case 'edit-avatar': return openAvatarSheet();
@@ -1853,7 +2109,7 @@ document.addEventListener('click', e => {
       return;
     }
     case 'clear-refine':
-      Object.assign(state[el.dataset.key], { priority: '', date: '', text: '' });
+      Object.assign(state[el.dataset.key], { type: '', priority: '', date: '', text: '' });
       return render();
     case 'clear-sample':
       if (confirm('Remove all sample clients, cases and activity? This cannot be undone.')) {
@@ -1965,7 +2221,7 @@ function init() {
   }
   document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
   refreshAvatars();
-  applyBgTheme();
+  applyTheme();
   state.route = parseRoute();
   render();
 }
