@@ -4184,3 +4184,7 @@ html.dark .car-pic { color: #f1f2f4; }
 @media (max-width: 860px) {
   .sheet-overlay:not(.full) .sheet { animation-name: slideUp; }
 }
+
+/* The case window fills the whole screen, edge to edge. */
+.sheet-overlay.full { padding: 0; }
+.sheet.case-full { width: 100vw; max-width: none; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
