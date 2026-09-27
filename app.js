@@ -16,12 +16,12 @@ const IS_ADMIN = (findMember(ME) || {}).role === 'admin';
 
 const state = {
   route: { name: 'home' },
-  // The dashboard shows My cases or All files; the tiles switch between them in place.
+  // The dashboard shows My tasks or All files; the tiles switch between them in place.
   dash: 'mine',
-  home: { view: 'all', layout: 'squares', handled: 'all', created: '', status: '' },
+  home: { view: 'all', created: '', status: '' },
   all: { status: 'all', whose: '', type: '', priority: '', date: '', sort: 'due', text: '' },
   suppliers: { group: 'transfers', id: '' },
-  files: { view: 'calendar', handled: 'all', status: 'new', tier: 'VIP', name: '', from: '', to: '', type: '', priority: '', date: '', sort: 'due', text: '' },
+  files: { view: 'calendar', handled: 'all', status: 'new', tier: 'Centurion', name: '', from: '', to: '', type: '', priority: '', date: '', sort: 'due', text: '' },
   activityTab: 'cases',
   range: 30,
   logType: 'all',
@@ -292,8 +292,13 @@ function channelTag(channel, cls = '') {
   return `<span class="tag ${cls}">${icon(channel === 'email' ? 'mail' : 'phone')}${esc(labelOf(CHANNELS, channel))}</span>`;
 }
 
+// A card type as a class name: "World Elite" → tier-world-elite.
+function tierClass(tier) {
+  return `tier-${(tier || '').toLowerCase().replace(/\s+/g, '-')}`;
+}
+
 function tierTag(tier) {
-  return tier && tier !== 'Standard' ? `<span class="tag sm tier-${tier.toLowerCase()}">${esc(tier)}</span>` : '';
+  return tier ? `<span class="tag sm ${tierClass(tier)}">${esc(tier)}</span>` : '';
 }
 
 function stat({ label, value, sub = '', ic, featured = false }) {
@@ -340,12 +345,13 @@ const DATE_FILTERS = [['', 'Any date'], ['overdue', 'Overdue'], ['today', 'Due t
 const SORTS = [['due', 'Sort: due date'], ['priority', 'Sort: priority'], ['newest', 'Sort: newest']];
 
 // The dashboard's side menu: one view at a time, like mail folders.
+// No section label: the page title already says "My tasks".
 const HOME_VIEWS = [
   {
-    section: 'My cases',
+    section: '',
     items: [
-      { id: 'all', label: 'All my cases', icon: 'briefcase', hint: 'Everything assigned to you or taken by you, open first', empty: 'Nothing on your plate. Open a new file with +.' },
-      { id: 'new', label: 'New cases', icon: 'folder', hint: 'Not started yet', empty: 'No new cases.' },
+      { id: 'all', label: 'All my tasks', icon: 'briefcase', hint: 'Everything assigned to you or taken by you, open first', empty: 'Nothing on your plate. Open a new file with +.' },
+      { id: 'new', label: 'New tasks', icon: 'folder', hint: 'Not started yet', empty: 'No new tasks.' },
       { id: 'urgent', label: 'Urgent', icon: 'flame', hint: 'Open cases marked urgent', empty: 'No urgent cases right now.' },
       { id: 'waiting_provider', label: 'Waiting on supplier', icon: 'store', hint: 'Waiting for the supplier to reply', empty: 'No cases waiting on a supplier.' },
       { id: 'waiting_client', label: 'Waiting on client', icon: 'clock', hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.' },
@@ -353,10 +359,6 @@ const HOME_VIEWS = [
   },
 ];
 const VIEW_KEY = 'gustavo_home_view';
-
-// How My cases shows its cases: [id, label, icon].
-const HOME_LAYOUTS = [['squares', 'Squares', 'grid'], ['list', 'List', 'list'], ['calendar', 'Calendar', 'calendar']];
-const LAYOUT_KEY = 'gustavo_home_layout';
 
 function homeView(id) {
   for (const s of HOME_VIEWS) for (const v of s.items) if (v.id === id) return v;
@@ -488,7 +490,7 @@ function matchesPriority(kase, filter) {
 
 function filteredCases(key) {
   const f = state[key];
-  // My cases: the side menu picks the cases, narrowed by when they were opened and status; open first, then by date.
+  // My tasks: the side menu picks the cases, narrowed by when they were opened and status; open first, then by date.
   if (key === 'home') {
     return homeViewCases(f.view)
       .filter(k => matchesCreated(k, f.created) && (!f.status || k.status === f.status))
@@ -567,10 +569,10 @@ function renderList(key) {
   const emptyText = refined ? 'No cases match these filters.'
     : key === 'home' ? homeView(state.home.view).empty
       : key === 'files' ? fileView(state.files.view).empty : 'No cases here.';
-  // The dashboard shows squares (My cases can switch to a list); other lists keep one-line bars.
-  const card = key === 'files' || (key === 'home' && state.home.layout !== 'list') ? caseTile : caseCard;
+  // The dashboard (My tasks and All files) shows plain rows under column names; other lists keep one-line bars.
+  const rows = key === 'files' || key === 'home';
   listEl.innerHTML = list.length
-    ? list.map(k => card(k, key)).join('')
+    ? (rows ? taskHead() : '') + list.map(k => (rows ? taskRow : caseCard)(k, key)).join('')
     : `<div class="empty">${emptyText}</div>`;
 }
 
@@ -683,48 +685,45 @@ function caseCard(kase, key) {
     </div>`;
 }
 
-// A case's date on a square: 25.09.26 (day, month, two-digit year).
+// A case's date: 25.09.26 (day, month, two-digit year).
 function dotDate(iso) {
   const d = new Date(iso);
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(-2)}`;
 }
 
-// A case on the dashboard, kept light: file ID (the request's picture in the corner), client and flag,
-// the headline and the date; along the bottom, the status (a coloured dot, changeable there) and two
-// round buttons: + for a follow-up (with how many so far) and ✉ to email the client.
-// Clicking anywhere else on the square opens the case.
-function caseTile(kase, key) {
+// The column names over the dashboard's rows, said once instead of on every row; they stay put while the rows scroll.
+function taskHead() {
+  return `
+    <div class="task-head" aria-hidden="true">
+      <span>No.</span><span>Client</span><span>Card type</span><span>Due date</span><span>Status</span><span></span>
+    </div>`;
+}
+
+// A case on the dashboard, one clean row: file ID, client, card type, due date (red when overdue) and
+// the status (a coloured dot, changeable there); at the end, "+ Follow-up" adds one without opening the case.
+// Clicking anywhere else on the row opens the case.
+function taskRow(kase, key) {
   const client = findClient(kase.clientId);
   const cls = [`st-${kase.status}`, !isOpen(kase) && 'is-done'].filter(Boolean).join(' ');
-  const n = kase.updates.length;
   const late = isOpen(kase) && kase.dueAt && new Date(kase.dueAt) < new Date();
-  const firstNameOf = client ? firstName(client.name) : 'the client';
   return `
-    <div class="case-tile ${cls}" data-bar="${kase.id}" data-list-key="${key}" data-case="${kase.id}">
-      <div class="tile-body" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case #${caseNo(kase)}">
-        <span class="tile-no">#${caseNo(kase)}</span>
-        <span class="tile-pic" aria-hidden="true">${emojiPic(requestKind(kase).icon)}</span>
-        <span class="tile-client"><span class="tile-name">${esc(client ? client.name : 'Unknown client')}</span>${client ? flag(client.country) : ''}</span>
-        <span class="tile-title">${esc(kase.title)}</span>
-        <span class="tile-date${late ? ' overdue' : ''}">${icon('calendar')}${kase.dueAt ? dotDate(kase.dueAt) : 'No date'}</span>
+    <div class="task-row ${cls}" data-bar="${kase.id}" data-list-key="${key}" data-case="${kase.id}">
+      <div class="task-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case #${caseNo(kase)}">
+        <span class="task-no">#${caseNo(kase)}</span>
+        <span class="task-name">${esc(client ? client.name : 'Unknown client')}</span>
+        <span class="task-tier">${client ? tierTag(client.tier) : ''}</span>
+        <span class="task-due${late ? ' overdue' : ''}">${kase.dueAt ? dotDate(kase.dueAt) : '–'}</span>
       </div>
-      <div class="tile-foot">
-        <span class="tile-status" data-stop>
-          <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
-            ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
-          </select>
-        </span>
-        <button type="button" class="tile-icon add" data-action="toggle-followup" title="Add a follow-up" aria-label="Add a follow-up (${n} so far)">${icon('plus')}${n ? `<span class="tile-icon-count">${n}</span>` : ''}</button>
-        ${client && client.email
-          ? `<a class="tile-icon" href="${esc(caseMailto(kase, client.email))}" title="Email ${esc(firstNameOf)}" aria-label="Email ${esc(firstNameOf)}" data-stop>${icon('mail')}</a>`
-          : `<span class="tile-icon is-off" title="No email for this client" aria-label="No email for this client" data-stop>${icon('mail')}</span>`}
-      </div>
+      <span class="task-status" data-stop>
+        <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
+          ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
+        </select>
+      </span>
+      ${followupAddButton()}
       <form class="quick-followup" data-followup-form="${kase.id}" data-list-key="${key}" data-stop hidden>
         <input type="text" placeholder="Write a follow-up…" aria-label="New follow-up for #${caseNo(kase)}">
-        <span class="quick-followup-actions">
-          <button type="button" class="btn btn-secondary btn-md" data-action="toggle-followup">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add</button>
-        </span>
+        <button type="button" class="btn btn-secondary btn-md" data-action="toggle-followup">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add</button>
       </form>
     </div>`;
 }
@@ -799,7 +798,7 @@ function describe(entry) {
     case 'client_added':
       return {
         html: `${who} ${v('added client')} <b>${esc(client ? client.name : 'a client')}</b>`,
-        extra: client && client.tier !== 'Standard' ? `<div class="tags">${tierTag(client.tier)}</div>` : '',
+        extra: client && client.tier ? `<div class="tags">${tierTag(client.tier)}</div>` : '',
       };
     default:
       return { html: who, extra: '' };
@@ -864,11 +863,12 @@ function refreshAvatars() {
 // Only the case list scrolls here, so keep its position when the page redraws in the same view.
 let homeListView = null;
 
-// The page title, like the Search page's: "My cases" or "All files".
-function dashHead(soft, title) {
+// The page title, like the Search page's: "My tasks" or "All files"; `tools` (My tasks' filters) sit at the other end.
+function dashHead(soft, title, tools = '') {
   return `
     <header class="page-head dash-head">
       <h1 class="page-title"><span class="soft">${soft}</span> ${title}</h1>
+      ${tools}
       ${phoneExtras()}
     </header>`;
 }
@@ -904,16 +904,7 @@ function dashExtras() {
     </nav>`;
 }
 
-// Squares, List or Calendar, at the top of My cases.
-function layoutSwitch() {
-  return `
-    <div class="layout-switch" role="group" aria-label="Show cases as">
-      ${HOME_LAYOUTS.map(([id, label, ic]) => `
-        <button type="button" class="${state.home.layout === id ? 'active' : ''}" data-layout="${id}" aria-pressed="${state.home.layout === id}">${icon(ic)}${label}</button>`).join('')}
-    </div>`;
-}
-
-// My cases' two filters: when the case was opened, and its status.
+// My tasks' two filters: when the case was opened, and its status.
 const CREATED_FILTERS = [['', 'Opened: any time'], ['today', 'Opened today'], ['week', 'Opened in the last 7 days'], ['month', 'Opened in the last 30 days'], ['older', 'Opened over 30 days ago']];
 const STATUS_OPTIONS = [['', 'Any status'], ...STATUSES.map(s => [s.id, s.label])];
 
@@ -936,16 +927,14 @@ function homeFilters() {
 }
 
 function renderHome() {
-  const layout = state.home.layout;
-  const isCal = layout === 'calendar';
-  const place = `${state.home.view}:${layout}`;
-  const old = document.querySelector('#homeScroll, #homeList');
+  const place = state.home.view;
+  const old = document.getElementById('homeList');
   const keepTop = old && homeListView === place ? old.scrollTop : 0;
   const me = findMember(ME);
   const view = homeView(state.home.view);
 
   viewEl.innerHTML = `
-    ${dashHead('My', 'cases')}
+    ${dashHead('My', 'tasks', homeFilters())}
     <div class="dash">
       <div class="dash-left">
       <aside class="dash-nav" aria-label="Dashboard views">
@@ -959,7 +948,7 @@ function renderHome() {
         </div>
         ${HOME_VIEWS.map(section => `
           <div class="dash-section">
-            <p class="dash-label">${section.section}</p>
+            ${section.section ? `<p class="dash-label">${section.section}</p>` : ''}
             ${section.items.map(item => {
               const count = homeViewCases(item.id).length;
               const alert = item.id === 'urgent' && count > 0;
@@ -975,19 +964,13 @@ function renderHome() {
 
       <div class="dash-main">
         <section class="panel">
-          <div class="panel-head">
-            <h2 class="visually-hidden">${esc(view.label)}</h2>
-            ${layoutSwitch()}
-            ${isCal ? '' : homeFilters()}
-          </div>
-          ${isCal
-            ? `<div class="cal-scroll" id="homeScroll">${filesCalendar()}</div>`
-            : `<div class="case-list${layout === 'squares' ? ' case-grid' : ''}" id="homeList"></div>`}
+          <h2 class="visually-hidden">${esc(view.label)}</h2>
+          <div class="case-list task-list" id="homeList"></div>
         </section>
       </div>
     </div>`;
-  if (!isCal) renderList('home');
-  document.querySelector('#homeScroll, #homeList').scrollTop = keepTop;
+  renderList('home');
+  document.getElementById('homeList').scrollTop = keepTop;
   homeListView = place;
 }
 
@@ -1033,7 +1016,7 @@ function renderFiles() {
           </div>
           ${isCal
             ? `<div class="cal-scroll" id="filesScroll">${filesCalendar()}</div>`
-            : `${filesControls(view.id)}<div class="case-list case-grid" id="filesList"></div>`}
+            : `${filesControls(view.id)}<div class="case-list task-list" id="filesList"></div>`}
         </section>
       </div>
     </div>`;
@@ -1124,19 +1107,14 @@ function dayKey(value) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// All files' calendar shows the whole team's cases; My cases' shows yours, in the chosen view.
-// Each keeps its own Done / Not done filter.
-function calendarKey() {
-  return state.dash === 'files' ? 'files' : 'home';
-}
-
+// The calendar is All files': the whole team's cases, with its own Done / Not done filter.
 function calendarPool() {
-  return calendarKey() === 'files' ? db.cases : homeViewCases(state.home.view);
+  return db.cases;
 }
 
 // Cases due on one day, after the Done / Not done filter.
 function casesOnDay(key) {
-  const handled = state[calendarKey()].handled;
+  const handled = state.files.handled;
   return calendarPool().filter(k => k.dueAt && dayKey(k.dueAt) === key && matchesHandled(k, handled));
 }
 
@@ -1144,7 +1122,7 @@ function casesOnDay(key) {
 function calendarCases() {
   const { start, end } = calendarRange();
   const last = endOfDay(end);
-  const handled = state[calendarKey()].handled;
+  const handled = state.files.handled;
   return calendarPool().filter(k => k.dueAt && new Date(k.dueAt) >= start && new Date(k.dueAt) <= last && matchesHandled(k, handled));
 }
 
@@ -1201,13 +1179,12 @@ function filesCalendar() {
   }).join('');
 
   const earlier = openBeforeCalendar();
-  const key = calendarKey();
-  const handled = state[key].handled;
+  const handled = state.files.handled;
   return `
     <div class="cal-bar">
       <span class="cal-range">${icon('calendar')}${esc(`${shortDateFmt.format(start)} – ${shortDateFmt.format(end)}`)}</span>
       <div class="pills sm" role="group" aria-label="Show">
-        ${HANDLED_FILTERS.map(([v, l]) => `<button type="button" class="${handled === v ? 'active' : ''}" data-fset="${key}.handled" data-value="${v}">${l}</button>`).join('')}
+        ${HANDLED_FILTERS.map(([v, l]) => `<button type="button" class="${handled === v ? 'active' : ''}" data-fset="files.handled" data-value="${v}">${l}</button>`).join('')}
       </div>
       <button type="button" class="link-btn" data-action="cal-today">${icon('arrowRight')}Today</button>
       ${earlier.length && handled !== 'done' ? `<button type="button" class="cal-overdue" data-day="overdue">${icon('flame')}${earlier.length} still open from earlier days</button>` : ''}
@@ -1497,7 +1474,6 @@ function openNotesSheet(color = 'yellow') {
 function saveHomeView() {
   try {
     localStorage.setItem(VIEW_KEY, state.home.view);
-    localStorage.setItem(LAYOUT_KEY, state.home.layout);
   } catch {
     // Remembering the view is a nicety; ignore blocked storage.
   }
@@ -2359,7 +2335,7 @@ function caseHit(kase) {
 }
 
 function rankTag(tier) {
-  return `<span class="tag sm${tier !== 'Standard' ? ` tier-${tier.toLowerCase()}` : ''}">${esc(tier)}</span>`;
+  return `<span class="tag sm ${tierClass(tier)}">${esc(tier)}</span>`;
 }
 
 function clientResultRow(client) {
@@ -2573,7 +2549,7 @@ function newFileFormHtml(draft) {
           <button type="button" class="link-btn" id="newClientLink">${icon('userPlus')}New client</button>
         </div>
         ${clients.length
-          ? selectWrap('fClient', options([['', 'Choose a client…'], ...clients.map(c => [c.id, `${c.name} · ${clientNo(c)}${c.tier !== 'Standard' ? ` · ${c.tier}` : ''}`])], draft.clientId || ''))
+          ? selectWrap('fClient', options([['', 'Choose a client…'], ...clients.map(c => [c.id, `${c.name} · ${clientNo(c)}${c.tier ? ` · ${c.tier}` : ''}`])], draft.clientId || ''))
           : '<p class="fld-empty">No clients yet. Add one first with “New client”.</p>'}
       </div>
       ${requesterFields(draft.requester)}
@@ -2711,7 +2687,7 @@ function openAddClientSheet({ onSaved } = {}) {
         ${selectWrap('cCountry', options([['', 'Choose a country…'], ...COUNTRIES], ''))}
       </div>
       <div class="fld"><span class="fld-label">Gender</span>${segRadio('gender', [{ id: '', label: 'Not set' }, ...GENDERS], '')}</div>
-      <div class="fld"><span class="fld-label">Card type</span>${segRadio('tier', TIERS.map(t => ({ id: t, label: t })), 'Standard')}</div>
+      <div class="fld"><span class="fld-label">Card type</span>${segRadio('tier', TIERS.map(t => ({ id: t, label: t })), TIERS[0])}</div>
       <div class="fld">
         <label class="fld-label" for="cNotes">Preferences &amp; notes</label>
         <textarea id="cNotes" class="control" rows="3" placeholder="Allergies, favourite hotels, seat preferences…"></textarea>
@@ -2775,7 +2751,7 @@ function contactRows(person, kase) {
 }
 
 // ---------- A case, full screen ----------
-// Laid out like the sketch: New case / My cases / All cases along the top, the case box and the
+// Laid out like the sketch: New case / My tasks / All cases along the top, the case box and the
 // client box on the left, the follow-ups on the right.
 
 // When a case last changed, and who changed it: its newest follow-up or logged event.
@@ -2787,7 +2763,7 @@ function lastUpdateInfo(kase) {
 }
 
 function rankBadge(tier) {
-  return `<span class="rank-badge tier-${esc((tier || 'Standard').toLowerCase())}">${icon('shield')}${esc(tier || 'Standard')}</span>`;
+  return `<span class="rank-badge ${tierClass(tier || TIERS[0])}">${icon('shield')}${esc(tier || TIERS[0])}</span>`;
 }
 
 const GENDERS = [{ id: 'female', label: 'Female' }, { id: 'male', label: 'Male' }];
@@ -2803,7 +2779,7 @@ function caseWindowTop(actions = '') {
     <header class="cw-top">
       <nav class="cw-nav" aria-label="Cases">
         <button type="button" class="cw-nav-btn primary" data-action="new-file">${icon('plus')}New case</button>
-        <button type="button" class="cw-nav-btn" data-action="go-mine">${icon('briefcase')}My cases</button>
+        <button type="button" class="cw-nav-btn" data-action="go-mine">${icon('briefcase')}My tasks</button>
         <button type="button" class="cw-nav-btn" data-action="go-all">${icon('layers')}All cases</button>
       </nav>
       ${actions ? `<div class="cf-head-actions">${actions}</div>` : ''}
@@ -3369,7 +3345,10 @@ document.addEventListener('error', e => {
 }, true);
 
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-copy],[data-take],[data-case],[data-client],[data-view],[data-layout],[data-fview],[data-day],[data-expand],[data-sgroup],[data-supplier],[data-open-supplier],[data-fset],[data-atab],[data-range],[data-logtype],[data-bg],[data-stop],[data-action]');
+  // The rail stays on screen beside a case or side window, so going somewhere from it closes the window
+  // (even when it's the page you're already on).
+  if (e.target.closest('.rail [data-route], .tabbar [data-route]')) closeSheet();
+  const el = e.target.closest('[data-copy],[data-take],[data-case],[data-client],[data-view],[data-fview],[data-day],[data-expand],[data-sgroup],[data-supplier],[data-open-supplier],[data-fset],[data-atab],[data-range],[data-logtype],[data-bg],[data-stop],[data-action]');
   if (!el || el.tagName === 'SELECT' || el.dataset.stop !== undefined) return;
   if (el.dataset.copy) return copyId(el.dataset.copy);
   if (el.dataset.take) return takeCase(el.dataset.take);
@@ -3419,11 +3398,6 @@ document.addEventListener('click', e => {
     saveHomeView();
     return render();
   }
-  if (el.dataset.layout) {
-    state.home.layout = el.dataset.layout;
-    saveHomeView();
-    return render();
-  }
   if (el.dataset.fset) {
     const [key, field] = el.dataset.fset.split('.');
     state[key][field] = el.dataset.value;
@@ -3461,14 +3435,14 @@ document.addEventListener('click', e => {
       Object.assign(state.files, { view: 'calendar', name: '', from: '', to: '', type: '', priority: '', date: '', text: '' });
       return render();
     case 'my-dashboard':
-      // The link itself goes to #/home; already there, just switch back to My cases.
+      // The link itself goes to #/home; already there, just switch back to My tasks.
       state.dash = 'mine';
       if (state.route.name === 'home') render();
       return;
     case 'cal-today': return scrollCalendarToToday(true);
     case 'go-mine':
     case 'go-all':
-      // From a case window: back to the dashboard, on My cases or on All files' full list.
+      // From a case window: back to the dashboard, on My tasks or on All files' full list.
       state.dash = el.dataset.action === 'go-all' ? 'files' : 'mine';
       if (state.dash === 'files') Object.assign(state.files, { view: 'all', name: '', from: '', to: '', type: '', priority: '', date: '', text: '' });
       closeSheet();
@@ -3602,7 +3576,7 @@ window.addEventListener('storage', e => {
 });
 
 // ---------- Staying put across a refresh ----------
-// Where you are in this tab (My cases or All files, views and filters, the supplier,
+// Where you are in this tab (My tasks or All files, views and filters, the supplier,
 // the open case or calendar day) is kept, so a refresh brings you straight back.
 const UI_KEY = 'gustavo_ui';
 
@@ -3651,12 +3625,12 @@ function init() {
   try {
     const saved = localStorage.getItem(VIEW_KEY);
     if (saved && homeView(saved).id === saved) state.home.view = saved;
-    const layout = localStorage.getItem(LAYOUT_KEY);
-    if (HOME_LAYOUTS.some(([id]) => id === layout)) state.home.layout = layout;
   } catch {
     // Start on "All open" when storage is unavailable.
   }
   const sheet = restoreUi();
+  // A card type saved before Centurion / Platinum / World Elite falls back to the top one.
+  if (!TIERS.includes(state.files.tier)) state.files.tier = TIERS[TIERS.length - 1];
   document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
   refreshAvatars();
   applyTheme();

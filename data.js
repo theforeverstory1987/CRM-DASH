@@ -22,12 +22,12 @@ const COUNTRIES = [
 // Sample clients: id, name, phone, email, tier, country, notes, days ago.
 // The ids are from before the Israeli names, so older saves can be renamed (see migrate).
 const SAMPLE_CLIENTS = [
-  ['emma', 'Yael Mizrahi', '+972 52 555 0142', 'yael.mizrahi@example.com', 'VIP', 'IL', 'Window tables. Shellfish allergy.', 120],
+  ['emma', 'Yael Mizrahi', '+972 52 555 0142', 'yael.mizrahi@example.com', 'Centurion', 'IL', 'Window tables. Shellfish allergy.', 120],
   ['james', 'Eitan Ben-David', '+44 7700 900187', 'eitan.bendavid@example.com', 'Platinum', 'GB', 'Flies private. Aisle seat when flying commercial.', 95],
-  ['aiko', 'Tamar Avraham', '+972 54 555 0119', 'tamar.avraham@example.com', 'Gold', 'IL', 'Vegetarian. Loves spa hotels.', 60],
+  ['aiko', 'Tamar Avraham', '+972 54 555 0119', 'tamar.avraham@example.com', 'World Elite', 'IL', 'Vegetarian. Loves spa hotels.', 60],
   ['marco', 'Omer Katz', '+972 50 555 0163', 'omer.katz@example.com', 'Platinum', 'IL', 'Opera and basketball. Always 2 seats.', 45],
-  ['olivia', 'Shira Friedman', '+1 212 555 0128', 'shira.friedman@example.com', 'Gold', 'US', 'White flowers only.', 20],
-  ['noah', 'Itai Levi', '+972 53 555 0176', 'itai.levi@example.com', 'Standard', 'IL', 'Referred by Eitan Ben-David.', 3],
+  ['olivia', 'Shira Friedman', '+1 212 555 0128', 'shira.friedman@example.com', 'World Elite', 'US', 'White flowers only.', 20],
+  ['noah', 'Itai Levi', '+972 53 555 0176', 'itai.levi@example.com', 'World Elite', 'IL', 'Referred by Eitan Ben-David.', 3],
 ];
 
 // What the sample data said before the Israeli names; saves that still have it get the new wording.
@@ -114,7 +114,10 @@ const STATUSES = [
   { id: 'done', label: 'Done', short: 'Done' },
 ];
 
-const TIERS = ['Standard', 'Gold', 'Platinum', 'VIP'];
+// Card types: the card the client holds, from the first level up.
+const TIERS = ['World Elite', 'Platinum', 'Centurion'];
+// Card types from before, and what they are now.
+const OLD_TIERS = { Standard: 'World Elite', Gold: 'World Elite', VIP: 'Centurion' };
 
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
@@ -196,6 +199,11 @@ function migrate(data) {
       c.gender = (data.demo && SAMPLE_GENDERS[c.id]) || '';
       data.migrated = true;
     }
+    // Card types are now the card the client holds: Standard and Gold become World Elite, VIP becomes Centurion.
+    if (OLD_TIERS[c.tier] || !c.tier) {
+      c.tier = OLD_TIERS[c.tier] || TIERS[0];
+      data.migrated = true;
+    }
   }
   if (!data.suppliers) {
     data.suppliers = DEFAULT_SUPPLIERS.map(s => ({ ...s }));
@@ -255,7 +263,7 @@ function addClient(input, by) {
     email: (input.email || '').trim(),
     country: input.country || '',
     gender: input.gender || '',
-    tier: input.tier || 'Standard',
+    tier: input.tier || TIERS[0],
     notes: (input.notes || '').trim(),
     createdAt: new Date().toISOString(),
   };

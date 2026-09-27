@@ -1,15 +1,16 @@
 /* Gustavo app (after sign-in). Light only; builds on styles.css. */
 
+/* Everything sits on white; boxes are drawn with a thin grey outline. */
 .app-body {
-  --frame: #f6f5f3;
-  --bg: #f6f5f3;
+  --frame: #ffffff;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f3efeb;
-  --surface-3: #e9e4de;
-  --card: #fbf9f7;
-  --card-border: #efeae5;
-  --border: #ece7e2;
-  --border-strong: #ddd7d0;
+  --surface-2: #f5f5f7;
+  --surface-3: #ebebef;
+  --card: #fafafb;
+  --card-border: #ececf0;
+  --border: #e6e6ea;
+  --border-strong: #d6d6dc;
   --text: #111111;
   --text-muted: #6b6b70;
   --text-faint: #a1a1a6;
@@ -48,6 +49,8 @@
   --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
   --sheet-bg: #ffffff;
   --shadow-card: 0 1px 2px rgba(17, 17, 17, 0.04), 0 8px 24px rgba(17, 17, 17, 0.05);
+  /* Only a few places lift off the page: the tasks box and anything that floats over it. */
+  --shadow-soft: 0 1px 2px rgba(17, 17, 17, 0.03), 0 12px 32px -12px rgba(17, 17, 17, 0.08);
   color-scheme: light;
   background: var(--frame);
   color: var(--text);
@@ -94,6 +97,7 @@ html.dark .app-body {
   --danger: #ff7a90;
   --sheet-bg: #1a1d23;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.5);
   color-scheme: dark;
 }
 
@@ -104,7 +108,7 @@ html.dark .app-body.bg-3 { --frame: #211317; --bg: #211317; --card: #2a191e; }
 html.dark .app-body.bg-4 { --frame: #161618; --bg: #161618; --card: #1d1d20; }
 
 /* Spots that put white text on the text colour, which is light in dark mode. */
-html.dark .tag.tier-vip,
+html.dark .tag.tier-centurion,
 html.dark .transition .tag.to.st-waiting_provider { color: var(--frame); }
 html.dark .hbar-track { background: repeating-linear-gradient(-45deg, var(--surface-3) 0 2px, var(--surface-2) 2px 7px); }
 html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
@@ -766,9 +770,10 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 .tag.pr-urgent,
 .tag.alert { border-color: rgba(255, 77, 26, 0.5); color: var(--red-text); }
 .tag.pr-high { border-color: rgba(249, 115, 22, 0.5); color: var(--orange-text); }
-.tag.tier-vip { background: var(--text); border-color: var(--text); color: #fff; }
-.tag.tier-platinum { background: var(--surface-2); border-color: transparent; color: var(--text); }
-.tag.tier-gold { background: var(--orange-soft); border-color: transparent; color: var(--orange-text); }
+/* Card types: Centurion black like the card, Platinum silver, World Elite outlined. */
+.tag.tier-centurion { background: var(--text); border-color: var(--text); color: #fff; }
+.tag.tier-platinum { background: var(--surface-3); border-color: transparent; color: var(--text); }
+.tag.tier-world-elite { background: transparent; border-color: var(--border-strong); color: var(--text); }
 
 /* ---------- Copyable IDs ---------- */
 .id-chip {
@@ -3589,9 +3594,9 @@ a.contact-value:hover { color: var(--primary); }
 }
 
 .rank-badge .ico { width: 16px; height: 16px; }
-.rank-badge.tier-vip { background: var(--text); color: var(--surface); }
+.rank-badge.tier-centurion { background: var(--text); color: var(--surface); }
 .rank-badge.tier-platinum { background: var(--surface-3); }
-.rank-badge.tier-gold { background: var(--orange-soft); color: var(--orange-text); }
+.rank-badge.tier-world-elite { background: transparent; box-shadow: inset 0 0 0 1px var(--border-strong); }
 
 .cf-left .case-bookings { margin: 0; }
 
@@ -4134,84 +4139,118 @@ a.contact-value:hover { color: var(--primary); }
 .layout-switch button.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-card); }
 .layout-switch button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 
-/* Rows are sized to the squares, not squeezed into the scrolling area. */
-.case-list.case-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  grid-auto-rows: max-content;
-  align-content: start;
-  gap: 14px;
+
+/* ---------- Clean and airy: everything on white, no boxes or dividing lines; space does the separating ---------- */
+.content { padding: 28px 48px 64px; }
+.dash { grid-template-columns: 240px minmax(0, 1fr); gap: 56px; }
+.dash-left { gap: 32px; }
+
+/* The rail has no dividing line; its buttons are outlined and the blue + keeps its glow. */
+.rail { border-right: 0; }
+.rail-btn { box-shadow: none; }
+.rail-btn:hover { box-shadow: 0 6px 16px rgba(17, 17, 17, 0.07); }
+.rail-new { box-shadow: 0 8px 20px rgba(0, 103, 255, 0.28); }
+
+/* The rail never disappears: a case or side window opens beside it, not over it. */
+@media (min-width: 861px) {
+  .sheet-overlay { left: 92px; }
+  .sheet.case-full { width: 100%; }
 }
 
-.case-grid > .empty { grid-column: 1 / -1; }
+/* The dashboard's side menu, Reminders and Sticky notes, and the list sit straight on the page. */
+.dash-nav,
+.dash-main > .panel { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.dash-me { padding: 0 4px 6px 10px; border-bottom: 0; }
 
-/* A light square: file ID (the request's picture in the corner), client and flag, headline and date;
-   along the bottom, the status as a coloured dot and two round buttons (+ follow-up, ✉ email). */
-.case-tile {
-  position: relative;
-  min-width: 0;
-  aspect-ratio: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px;
-  overflow: hidden;
-  border-radius: 26px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
+/* My tasks' filters sit at the end of the title row, as soft grey pills. */
+.dash-head .home-filters { margin-left: auto; flex-wrap: nowrap; }
+.dash-head .control-sm { border-color: transparent; background-color: var(--surface-2); }
+.dash-head .control-sm.set { background-color: var(--primary-soft); }
+
+/* ---------- My tasks and All files: one row per case ---------- */
+/* Columns: No. / Client / Card type / Due date / Status / + Follow-up. The list is one grid and every row
+   shares its columns, so they line up; the client gets the most room and the spare space is shared out. */
+.case-list.task-list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 2fr) minmax(max-content, 1fr) minmax(max-content, 1fr) minmax(max-content, 1fr) max-content;
+  grid-auto-rows: max-content;
+  align-content: start;
+  column-gap: 32px;
+  row-gap: 4px;
+}
+
+.task-head,
+.task-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.task-list > .empty { grid-column: 1 / -1; }
+
+/* The column names stay at the top while the rows scroll under them. */
+.task-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 36px;
+  background: var(--bg);
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.task-head span:nth-child(3) { grid-column: 3; }
+.task-head span:nth-child(4) { grid-column: 4; }
+.task-head span:nth-child(5) { grid-column: 5; }
+.task-head span:nth-child(6) { grid-column: 6; }
+
+/* No lines between rows: a soft grey shows under the one you point at. */
+.task-row {
+  --dot: var(--text-faint);
+  border-radius: 18px;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
-.case-tile.is-done { opacity: 0.6; }
+.task-row:hover { background: var(--surface-2); }
+.task-row.is-done { opacity: 0.6; }
+.task-row.st-new { --dot: var(--primary); }
+.task-row.st-in_progress { --dot: var(--purple); }
+.task-row.st-waiting_provider { --dot: var(--amber); }
+.task-row.st-waiting_client { --dot: var(--teal); }
+.task-row.st-done { --dot: var(--green-vivid); }
 
-.tile-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 5px; overflow: hidden; border-radius: 12px; }
-.tile-body:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
-
-.tile-pic { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--surface-2); font-size: 24px; line-height: 1; }
-.tile-pic .emoji3d { width: 28px; height: 28px; vertical-align: 0; }
-.tile-pic .photo-pic { width: 100%; height: 100%; border-radius: inherit; }
-
-/* The first two lines stay clear of the picture. */
-.tile-no,
-.tile-client { padding-right: 44px; }
-.tile-no { margin-bottom: 2px; font-size: 13px; font-weight: 700; letter-spacing: 0.03em; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.tile-client { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.tile-name { overflow: hidden; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; }
-
-.tile-title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  font-size: 14px;
-  line-height: 1.4;
-  font-weight: 500;
-  color: color-mix(in srgb, var(--text) 80%, transparent);
-  overflow-wrap: anywhere;
+/* The first four columns are one button that opens the case. */
+.task-main {
+  grid-column: 1 / 5;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  min-width: 0;
+  min-height: 64px;
+  border-radius: 12px;
 }
 
-.tile-date { display: inline-flex; align-items: center; gap: 6px; margin-top: 2px; font-size: 13px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
-.tile-date .ico { width: 14px; height: 14px; }
-.tile-date.overdue { color: var(--red-text); font-weight: 600; }
+.task-main:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 
-.tile-foot { display: flex; align-items: center; gap: 8px; }
+.task-no { font-size: 14px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.task-name { min-width: 0; overflow: hidden; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; }
+.task-tier { display: flex; }
+.task-due { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.task-due.overdue { color: var(--red-text); font-weight: 600; }
 
 /* The status reads as a coloured dot and a word; it's still a menu to change it. */
-.case-tile { --dot: var(--text-faint); }
-.case-tile.st-new { --dot: var(--primary); }
-.case-tile.st-in_progress { --dot: var(--purple); }
-.case-tile.st-waiting_provider { --dot: var(--amber); }
-.case-tile.st-waiting_client { --dot: var(--teal); }
-.case-tile.st-done { --dot: var(--green-vivid); }
+.task-status { position: relative; display: flex; align-items: center; justify-self: start; min-width: 0; }
 
-.tile-status { position: relative; display: flex; align-items: center; min-width: 0; margin-right: auto; }
-
-.tile-status::before {
+.task-status::before {
   content: "";
   position: absolute;
-  left: 10px;
+  left: 12px;
   z-index: 1;
   width: 8px;
   height: 8px;
@@ -4220,103 +4259,53 @@ a.contact-value:hover { color: var(--primary); }
   pointer-events: none;
 }
 
-.case-tile .tile-status .status-select {
+.task-row .task-status .status-select {
   max-width: 100%;
   height: 32px;
-  padding: 0 26px 0 24px;
+  padding: 0 28px 0 27px;
   border-color: transparent;
   background-color: color-mix(in srgb, var(--dot) 12%, transparent);
-  background-position: right 8px center;
+  background-position: right 9px center;
   color: var(--text);
   font-size: 13px;
   font-weight: 600;
 }
 
-.case-tile .tile-status .status-select:hover { background-color: color-mix(in srgb, var(--dot) 20%, transparent); }
+.task-row .task-status .status-select:hover { background-color: color-mix(in srgb, var(--dot) 20%, transparent); }
 
-.tile-icon {
-  position: relative;
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--text);
-  text-decoration: none;
-  cursor: pointer;
+/* + Follow-up: adds one without opening the case, on a line that opens under the row. */
+.task-row .followup-add { justify-self: end; margin-left: 0; background: var(--primary-soft); color: var(--primary); }
+.task-row .followup-add .ico { color: currentColor; }
+.task-row .followup-add:hover { background: var(--primary); color: #fff; }
+.task-row .quick-followup { grid-column: 1 / -1; margin: 0 0 14px; cursor: default; }
+.task-row .quick-followup input { height: 44px; border-radius: 12px; font-size: 15px; }
+
+/* Narrower windows: a slimmer side menu, the due date under the client's name, and just + for a follow-up. */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .content { padding: 28px 28px 64px; }
+  .dash { grid-template-columns: 220px minmax(0, 1fr); gap: 32px; }
+  .case-list.task-list { grid-template-columns: max-content minmax(0, 1fr) max-content 0 max-content max-content; column-gap: 18px; }
+  .task-head,
+  .task-row { padding: 0 12px; }
+  .task-head span:nth-child(4) { display: none; }
+  .task-main { grid-template-rows: auto auto; row-gap: 2px; padding: 12px 0; }
+  .task-no,
+  .task-tier { grid-row: 1 / 3; }
+  .task-name { grid-column: 2; grid-row: 1; }
+  .task-due { grid-column: 2; grid-row: 2; font-size: 13px; color: var(--text-muted); }
+  .task-row .followup-add { width: 32px; padding: 0; justify-content: center; font-size: 0; }
 }
 
-.tile-icon .ico { width: 17px; height: 17px; }
-.tile-icon.add { background: var(--primary); color: #fff; }
-.tile-icon.add .ico { stroke-width: 2.2; }
-.tile-icon:hover { background: var(--primary-soft); color: var(--primary); }
-.tile-icon.add:hover { background: var(--primary-hover); color: #fff; }
-.tile-icon:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.tile-icon.is-off { color: var(--text-faint); cursor: default; }
-.tile-icon.is-off:hover { background: var(--surface-2); color: var(--text-faint); }
-
-.tile-icon-count {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  border: 2px solid var(--surface);
-  background: var(--text);
-  color: var(--surface);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* Follow-up opens a box over the whole square; Cancel closes it. */
-.case-tile .quick-followup {
-  position: absolute;
-  inset: 0;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-  gap: 10px;
-  margin: 0;
-  padding: 14px;
-  border-radius: inherit;
-  background: var(--surface);
-  cursor: default;
-}
-
-.case-tile .quick-followup[hidden] { display: none; }
-.case-tile .quick-followup input { flex: none; height: 44px; font-size: 15px; }
-.quick-followup-actions { display: flex; gap: 8px; }
-.quick-followup-actions .btn { flex: 1; justify-content: center; }
-
-/* ---------- Light boxes: the side menu, Reminders and Sticky notes, and the cases sit in white boxes
-   on a soft background; inside the cases box, thin lines split the squares ---------- */
-.case-list.case-grid { gap: 0; }
-
-/* Each square draws its left and top line; the list clips the ones on the outer edge. */
-.case-tile {
-  margin: -1px 0 0 -1px;
-  padding: 18px 20px;
-  border: 0;
-  border-left: 1px solid var(--border);
-  border-top: 1px solid var(--border);
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.case-tile:hover { background: color-mix(in srgb, var(--primary) 3%, transparent); }
-.tile-pic { top: 16px; right: 18px; }
-.case-tile .quick-followup { background: var(--surface); }
-
+/* Phones: file ID, client and card type on top, then the date; status and + Follow-up underneath. */
 @media (max-width: 860px) {
-  .case-list.case-grid { overflow: clip; }
+  .content { padding: 20px 16px calc(116px + env(safe-area-inset-bottom)); }
+  .dash-head { flex-wrap: wrap; }
+  .dash-head .home-filters { order: 3; width: 100%; margin-left: 0; }
+  .dash-head .home-filters .control-sm { flex: 1 1 0; min-width: 0; }
+  .case-list.task-list { display: flex; flex-direction: column; gap: 4px; }
+  .task-head { display: none; }
+  .task-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px 12px; }
+  .task-main { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 0; }
+  .task-name { flex: 1 1 0; }
+  .task-due { order: 1; flex-basis: 100%; }
 }

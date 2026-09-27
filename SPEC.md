@@ -8,7 +8,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 - **Where it runs:** locally (`serve.ps1`), and as a published page: https://claude.ai/artifact/X6p9N9xU3AnTKEJHcpQ6Xy
 - **Code:** https://github.com/theforeverstory1987/CRM-DASH
 - **Interface language:** English. Sample client names are Israeli.
-- **Fonts:** headings (page titles like *My cases*, section and window titles) use **Playfair Display**, a classic luxury serif (a grey first word, then black); everything else, numbers included, uses Inter.
+- **Fonts:** headings (page titles like *My tasks*, section and window titles) use **Playfair Display**, a classic luxury serif (a grey first word, then black); everything else, numbers included, uses Inter.
 
 ---
 
@@ -18,7 +18,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 |---|---|
 | **Case / file** | One client request. Number `G-1001`, always shown as **`#G-1001`** in a large chip. |
 | **Client** | The person the case is for. Number `C-2001`. Has a **card type** (rank). |
-| **Card type / rank** | Client tier: `Standard`, `Gold`, `Platinum`, `VIP`. |
+| **Card type / rank** | The card the client holds: `Centurion` (black), `Platinum` (silver), `World Elite` (outlined). Older saves: Standard and Gold became World Elite, VIP became Centurion. |
 | **Secondary contact** | Whoever opened the case on the client's behalf (an assistant, family). Name, phone, email. Empty when the client opened it. Also shown as "Opened by". |
 | **Follow-up** | A note on a case: what happened, what's next. The most important information on a case. |
 | **Request type** | One of: Restaurant, Hotel, Flights, Transfers, Massage, Yacht, Events, Tickets, Shopping, Gifts, Other. Shown as a hashtag (`#Tickets`). |
@@ -50,29 +50,27 @@ This spec describes what the product does today and the rules it follows. [Pract
   2. **+ New case**: opens in a new tab.
   3. Search, Activity, **Suppliers**, Advanced search, Settings. The round buttons are spaced 16px apart (closer on short windows) with bigger icons.
   4. At the bottom: dark mode and log out.
+- **The rail never disappears.** It stays on screen on every page, and case windows and side windows open beside it, never over it. Going somewhere from the rail closes the open window. No line between the rail and the page.
 - **Tab bar** (phones): Me, Search, **+**, Activity, Suppliers, Settings.
-- **Light boxes:** every page sits on one soft off-white background (or the tint picked in Settings) with no frame around it. Side menus, sections and the cases area are white rounded boxes with a gentle shadow; inside the cases box, thin lines split the squares into one grid.
-- **Side windows** (notes, reminders, search, your icon, add client…) always open on the **left**, next to the menu. On phones they come up from the bottom.
+- **Clean and airy:** every page sits on white (or the tint picked in Settings) with no frame around it. On the dashboard nothing is boxed in and there are no dividing lines: the side menu, Reminders and Sticky notes, and the list sit straight on the page, and space does the separating. Generous spacing; nothing crowded.
+- **Side windows** (notes, reminders, search, your icon, add client…) always open on the **left**, next to the rail. On phones they come up from the bottom.
 - **Keyboard:** `/` search, `N` new case, `Esc` closes a panel or window.
-- **Refresh keeps you in place:** after a refresh you're back where you were (My cases or All files, the view and filters, the supplier, and any open case or calendar day). This is kept per browser tab.
+- **Refresh keeps you in place:** after a refresh you're back where you were (My tasks or All files, the view and filters, the supplier, and any open case or calendar day). This is kept per browser tab.
 
 ---
 
 ## 4. Dashboard
 
-Top row, exactly as tall as the profile picture at the top of the rail (48px): the page title (**My cases**, grey "My" and bold "cases", like Search's title). On phones, small Reminders and Sticky notes buttons sit beside it, each with a number badge.
+Top row, exactly as tall as the profile picture at the top of the rail (48px): the page title (**My tasks**, grey "My" and bold "tasks", like Search's title). On phones, small Reminders and Sticky notes buttons sit beside it, each with a number badge.
 
-### 4.1 My cases
-- **Side menu:** your profile, then *All my cases*, *New cases* (folder icon), *Urgent*, *Waiting on supplier*, *Waiting on client*, each with a count. The *Urgent* count uses the alert colour. The main area has no heading of its own; the side menu shows which view you're on.
-- **Squares / List / Calendar** at the top of the main area. The choice is remembered.
-  - **Squares** (default): the cases as square cards (§5).
-  - **List:** the one-line bars (§5).
-  - **Calendar:** the calendar (§4.3) with only your cases in the chosen view, and its own All / Not done / Done filter.
-- **Filters** beside Squares / List / Calendar (not on the calendar): *Opened* (any time, today, last 7 days, last 30 days, over 30 days ago) and *Status*. Cases show open first, then by date.
-- **Reminders and Sticky notes:** a second floating box under the side menu, each with its count (reminders turn red when one is overdue). On phones they're round buttons beside the title.
+### 4.1 My tasks
+- **Side menu:** your profile, then *All my tasks*, *New tasks* (folder icon), *Urgent*, *Waiting on supplier*, *Waiting on client*, each with a count, with no section label over them (the page title already says it). The *Urgent* count uses the alert colour. The main area has no heading of its own; the side menu shows which view you're on.
+- **List only:** the cases as rows (§5). No squares and no calendar here (the calendar is in All files).
+- **Filters** at the end of the title row, as soft grey pills: *Opened* (any time, today, last 7 days, last 30 days, over 30 days ago) and *Status*. Cases show open first, then by date.
+- **Reminders and Sticky notes:** under the side menu, each with its count (reminders turn red when one is overdue). On phones they're round buttons beside the title.
 
 ### 4.2 All files
-The whole team's cases, opened from **All cases** in a case window. The profile picture in the rail goes back to My cases. Squares, not bars, in its lists.
+The whole team's cases, opened from **All cases** in a case window. The profile picture in the rail goes back to My tasks. Its lists use the same rows as My tasks (§5).
 
 Side menu, in this order:
 
@@ -106,22 +104,24 @@ Side menu, in this order:
 
 ---
 
-## 5. Case lists: squares and bars
+## 5. Case lists: rows and bars
 
-**Squares** (My cases, All files): a grid of square cards, as many across as fit.
+**Rows** (My tasks, All files): one clean row per case, under column names said once at the top (they stay put while the rows scroll). No squares.
 
-Top to bottom:
+> **No. | Client | Card type | Due date | Status | + Follow-up**
 
-1. **#File ID**, small and light, with the request's picture (§8) in the top-right corner.
-2. **Client name + flag** (the only bold line).
-3. **Headline** (the case title, grey, up to 2 lines).
-4. **Date** as 25.09.26 (red when overdue).
-5. **Along the bottom:** the **status** as a softly tinted pill with a coloured dot, still a menu to change it; a round blue **+** for a follow-up (with a small count of follow-ups so far) that opens a box over the square (*Add* or Enter saves, *Cancel* closes); and a round grey **✉** that emails the client with the subject pre-filled (§9), greyed out when the client has no email.
+1. **#File ID**, light grey.
+2. **Client name** (the only bold text). No flag here.
+3. **Card type**: Centurion, Platinum or World Elite (see §1).
+4. **Due date** as 25.09.26 (red when overdue).
+5. **Status** as a softly tinted pill with a coloured dot, still a menu to change it.
+6. **+ Follow-up** (soft blue, solid when you point at it) opens a line under the row to add one without opening the case (*Add* or Enter saves, *Cancel* closes). Email is in the case window.
 
-- **Look:** inside the white cases box, split from each other by thin lines; the request picture sits on a soft rounded tile; done cases are dimmed. At least 240px wide, as many across as fit.
-- **Clicking anywhere else on the square** opens the case in the full-screen window (§6).
+- **Look:** no lines between rows; about 64px tall each with space between them, and a soft grey under the row you point at. Plenty of space between columns; the spare width is shared out so the row reads evenly. Done cases are dimmed.
+- **Narrower windows:** the due date moves under the client's name and Follow-up shrinks to a round **+**. **Phones:** file ID, client and card type on top, the date under them, then the status and + Follow-up.
+- **Clicking anywhere else on the row** opens the case in the case window (§6).
 
-**Bars** (My cases' List, Activity): **compact one-line bars**:
+**Bars** (Activity): **compact one-line bars**:
 
 > **Client name + flag | #File ID | headline | status (change it right there) | + Follow-up | ⌄**
 
@@ -137,9 +137,9 @@ Top to bottom:
 
 ## 6. The case window
 
-Opening a case fills the screen (a phone uses the whole screen). A case also has its own page (`app.html#/case/<id>`, "open in new tab") with the same layout.
+Opening a case fills the screen beside the rail, which stays visible (a phone uses the whole screen). A case also has its own page (`app.html#/case/<id>`, "open in new tab") with the same layout.
 
-- **Top bar:** **+ New case**, **My cases**, **All cases** (these leave the case), plus *Back* when opened from a calendar day, *Open in new tab*, and *Close*.
+- **Top bar:** **+ New case**, **My tasks**, **All cases** (these leave the case), plus *Back* when opened from a calendar day, *Open in new tab*, and *Close*.
 - **Left column, case box**
   - **File ID** (big chip), **Add reminder**, **File status** (a dropdown) and the **supplier name(s)** from its bookings
   - The case's reminders: time and text, with a ✓ to mark each done
@@ -314,7 +314,7 @@ Kept in `localStorage` under `gustavo_data_v1`:
 Other keys:
 - `crm_session`: who's signed in
 - `gustavo_theme`: light or dark
-- `gustavo_home_view`: the My cases view
+- `gustavo_home_view`: the My tasks view
 - `gustavo_ui` (in the tab's `sessionStorage`): where you were, restored after a refresh
 
 **Sample data:** 6 Israeli clients and 46 cases spread over the month (past, done, today and upcoming), plus sample bookings, notes and reminders. Older saves get new sample additions once through migrations, and anything the user entered is never overwritten.
