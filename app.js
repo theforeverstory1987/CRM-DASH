@@ -213,6 +213,8 @@ function caseChip(kase, size = '') {
 }
 
 const isOpen = kase => kase.status !== 'done';
+// Needs attention: a case that was just opened and has nothing done on it yet. It's a pink flag, not a status.
+const needsAttention = kase => kase.status === 'new' && !kase.updates.length;
 const PRIORITY_RANK = { urgent: 0, high: 1, normal: 2, low: 3 };
 const dueSort = (a, b) => (a.dueAt || '9999').localeCompare(b.dueAt || '9999');
 const doneSort = (a, b) => (b.completedAt || '').localeCompare(a.completedAt || '');
@@ -346,7 +348,7 @@ function selectWrap(id, optionsHtml) {
 }
 
 // ---------- Case lists with filters ----------
-const STATUS_FILTERS = [['all', 'All open'], ['new', 'Needs attention'], ['in_progress', 'Ongoing'], ['waiting_provider', 'Wait: supplier'], ['waiting_client', 'Wait: client'], ['done', 'Done']];
+const STATUS_FILTERS = [['all', 'All open'], ['new', 'Open'], ['in_progress', 'Ongoing'], ['waiting_provider', 'Wait: supplier'], ['waiting_client', 'Wait: client'], ['done', 'Done']];
 const TYPE_FILTERS = [['', 'Any request type'], ...CATEGORIES.map(c => [c, `#${c}`])];
 const PRIORITY_FILTERS = [['', 'Any priority'], ['hot', 'Urgent & high'], ['urgent', 'Urgent'], ['high', 'High'], ['normal', 'Normal'], ['low', 'Low']];
 const DATE_FILTERS = [['', 'Any date'], ['overdue', 'Overdue'], ['today', 'Due today'], ['week', 'Due this week'], ['later', 'Due later'], ['none', 'No due date']];
@@ -359,7 +361,7 @@ const HOME_VIEWS = [
     section: '',
     items: [
       { id: 'all', label: 'All my tasks', icon: 'briefcase', hint: 'Everything assigned to you or taken by you, open first', empty: 'Nothing on your plate. Open a new file with +.' },
-      { id: 'new', label: 'Needs attention', icon: 'flag', hint: 'Just opened, with no follow-ups or actions yet', empty: 'Nothing needs attention right now.' },
+      { id: 'new', label: 'Needs attention', icon: 'flag', hint: 'Just opened, with nothing done yet: opens them in their own tab', empty: 'Nothing needs attention right now.' },
       { id: 'urgent', label: 'Urgent', icon: 'flame', hint: 'Open cases marked urgent', empty: 'No urgent cases right now.' },
       { id: 'waiting_provider', label: 'Waiting on supplier', icon: 'store', hint: 'Waiting for the supplier to reply', empty: 'No cases waiting on a supplier.' },
       { id: 'waiting_client', label: 'Waiting on client', icon: 'clock', hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.' },
@@ -384,7 +386,7 @@ function myCases() {
 function homeViewCases(view) {
   const mine = myCases();
   switch (view) {
-    case 'new':
+    case 'new': return mine.filter(needsAttention);
     case 'waiting_provider':
     case 'waiting_client':
       return mine.filter(k => k.status === view);
@@ -717,11 +719,11 @@ function taskHead() {
     </div>`;
 }
 
-// A case on the dashboard, one clean row: file ID (pointing at it shows a copy button), the client with their card
-// type under the name, Info (the request's picture and type, with its headline under it), due date (red when
-// overdue) and the status (a soft gradient, changeable there); at the end, two icon buttons: add a follow-up
-// without opening the case, and email the client.
-// Clicking the rest of the row opens the case, growing out of the row into the big case screen.
+// A case on the dashboard, one clean row: file ID (a pink flag before it while the case needs attention; pointing
+// at it shows a copy button), the client with their card type under the name, Info (the request's picture and type,
+// with its headline under it), due date (red when overdue) and the status (a small coloured square, changeable
+// there); at the end, two icon buttons: add a follow-up without opening the case, and email the client.
+// Clicking the rest of the row opens the case; the Reminders thread dropped on it sets a reminder for it.
 function taskRow(kase, key) {
   const client = findClient(kase.clientId);
   const cls = [`st-${kase.status}`, !isOpen(kase) && 'is-done'].filter(Boolean).join(' ');
@@ -730,9 +732,9 @@ function taskRow(kase, key) {
   const n = kase.updates.length;
   const firstNameOf = client ? firstName(client.name) : 'the client';
   return `
-    <div class="task-row ${cls}" data-bar="${kase.id}" data-list-key="${key}">
+    <div class="task-row ${cls}" data-bar="${kase.id}" data-list-key="${key}" data-thread-case="${kase.id}">
       <div class="task-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
-        <span class="task-no">${no}<button type="button" class="task-copy" data-copy="${no}" title="Copy ${no}" aria-label="Copy ${no}">${icon('copy')}</button></span>
+        <span class="task-no"><span class="task-flag">${needsAttention(kase) ? `<span title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}</span>${no}<button type="button" class="task-copy" data-copy="${no}" title="Copy ${no}" aria-label="Copy ${no}">${icon('copy')}</button></span>
         <span class="task-client"><span class="task-name">${esc(client ? client.name : 'Unknown client')}</span>${client ? tierTag(client.tier) : ''}</span>
         <span class="task-info"><span class="task-pic" aria-hidden="true">${emojiPic(requestKind(kase).icon)}</span><span class="task-info-text"><span class="task-type">${esc(kase.category)}</span><span class="task-title">${esc(kase.title)}</span></span></span>
         <span class="task-due${late ? ' overdue' : ''}">${kase.dueAt ? dotDate(kase.dueAt) : '–'}</span>
@@ -957,7 +959,7 @@ function phoneExtras() {
   const badge = (n, cls) => (n ? `<span class="btn-count ${cls}">${n}</span>` : '');
   return `
     <div class="dash-phone-btns">
-      <button type="button" class="rail-btn" data-action="open-reminders" aria-label="Reminders: ${c.reminders}">${icon('clock')}${badge(c.reminders, c.overdue ? 'alert' : 'orange')}</button>
+      <button type="button" class="rail-btn" data-action="open-reminders" data-thread aria-label="Reminders: ${c.reminders}">${icon('clock')}${badge(c.reminders, c.overdue ? 'alert' : 'orange')}</button>
       <button type="button" class="rail-btn" data-action="open-notes" aria-label="Sticky notes: ${c.notes}">${icon('pencil')}${badge(c.notes, 'green')}</button>
     </div>`;
 }
@@ -967,7 +969,7 @@ function dashExtras() {
   const c = reminderNoteCounts();
   return `
     <nav class="dash-nav dash-extras" aria-label="Reminders and sticky notes">
-      <button type="button" class="dash-item" data-action="open-reminders">
+      <button type="button" class="dash-item" data-action="open-reminders" data-thread title="Click for your reminders, or pull a thread onto a case to set one for it">
         ${icon('clock')}<span class="dash-item-label">Reminders</span><span class="dash-count${c.overdue ? ' alert' : ''}" title="${c.overdue ? `${c.overdue} overdue` : ''}">${c.reminders}</span>
       </button>
       <button type="button" class="dash-item" data-action="open-notes">
@@ -989,13 +991,14 @@ function matchesCreated(kase, filter) {
   return filter === 'older' ? opened < since : opened >= since;
 }
 
+// My tasks' tools, at the top of the list: Calendar first, then when the case was opened, and its status.
 function homeFilters() {
   const f = state.home;
   return `
     <div class="home-filters">
+      <button type="button" class="cal-toggle${f.cal ? ' active' : ''}" data-action="toggle-cal" aria-pressed="${f.cal}">${icon('calendar')}Calendar</button>
       ${filterSelect('home', 'created', CREATED_FILTERS, f.created, 'When the case was opened')}
       ${filterSelect('home', 'status', STATUS_OPTIONS, f.status, 'Status')}
-      <button type="button" class="cal-toggle${f.cal ? ' active' : ''}" data-action="toggle-cal" aria-pressed="${f.cal}">${icon('calendar')}Calendar</button>
     </div>`;
 }
 
@@ -1067,7 +1070,8 @@ function renderHome() {
   const view = homeView(state.home.view);
 
   viewEl.innerHTML = `
-    ${dashHead('My', 'tasks', homeFilters())}
+    ${caseTabs()}
+    <h1 class="visually-hidden">My tasks</h1>
     <div class="dash">
       <div class="dash-left">
       <aside class="dash-nav" aria-label="Dashboard views">
@@ -1084,11 +1088,13 @@ function renderHome() {
             ${section.section ? `<p class="dash-label">${section.section}</p>` : ''}
             ${section.items.map(item => {
               const count = homeViewCases(item.id).length;
-              // Urgent and Needs attention show their counts in red, as a flag, when there are any.
-              const alert = (item.id === 'urgent' || item.id === 'new') && count > 0;
+              // Urgent's count is red when there are any; Needs attention's is pink, like its flag.
+              const mark = count > 0 && item.id === 'urgent' ? ' alert' : count > 0 && item.id === 'new' ? ' flagged' : '';
+              // Needs attention opens its cases in their own tab rather than filtering the list.
+              const current = item.id === view.id && item.id !== 'new';
               return `
-                <button type="button" class="dash-item${item.id === view.id ? ' active' : ''}" data-view="${item.id}"${item.id === view.id ? ' aria-current="true"' : ''}>
-                  ${icon(item.icon)}<span class="dash-item-label">${item.label}</span><span class="dash-count${alert ? ' alert' : ''}">${count}</span>
+                <button type="button" class="dash-item${item.id === 'new' ? ' is-flag' : ''}${current ? ' active' : ''}" data-view="${item.id}"${current ? ' aria-current="true"' : ''}>
+                  ${icon(item.icon)}<span class="dash-item-label">${item.label}</span><span class="dash-count${mark}">${count}</span>
                 </button>`;
             }).join('')}
           </div>`).join('')}
@@ -1103,6 +1109,7 @@ function renderHome() {
       <div class="dash-main">
         <section class="panel">
           <h2 class="visually-hidden">${esc(view.label)}</h2>
+          <div class="home-tools">${homeFilters()}${phoneExtras()}</div>
           ${state.home.cal ? dateSlider() : ''}
           <div class="case-list task-list" id="homeList"></div>
         </section>
@@ -2948,37 +2955,70 @@ function budgetText(budget) {
 
 // ---------- Case tabs ----------
 // A case you open stays as a tab at the top (client and file ID), next to Home: leave one you're working on,
-// look at the rest, and jump back. Pointing at a tab shows its × to close it.
+// look at the rest, and jump back. Needs attention opens as a tab too ('view:new'), holding its cases.
+// Pointing at a tab shows its × to close it.
 function addCaseTab(id) {
   if (!state.tabs.includes(id)) state.tabs.push(id);
 }
 
-// `activeId` is the case showing; none means Home. Nothing shows on a page while no case is open in a tab.
-function caseTabs(activeId = '', actions = '') {
-  state.tabs = state.tabs.filter(id => findCase(id));
-  if (!state.tabs.length) return '';
-  const tabs = state.tabs.map(id => {
+const isViewTab = id => id.startsWith('view:');
+
+// One tab: a case's client and file ID, or a view's flag, name and count.
+function caseTab(id, active) {
+  let label;
+  let name;
+  if (isViewTab(id)) {
+    const view = homeView(id.slice(5));
+    name = view.label;
+    label = `${icon(view.icon)}${esc(name)}<span>${homeViewCases(view.id).length}</span>`;
+  } else {
     const kase = findCase(id);
     const client = findClient(kase.clientId);
-    const name = client ? client.name : 'Unknown client';
-    const active = id === activeId;
-    return `
-      <span class="case-tab${active ? ' active' : ''}">
-        <button type="button" class="case-tab-open" data-tab-open="${id}"${active ? ' aria-current="page"' : ''}>${esc(name)}<span>#${caseNo(kase)}</span></button>
-        <button type="button" class="case-tab-x" data-tab-close="${id}" title="Close tab" aria-label="Close the tab for ${esc(name)}, #${caseNo(kase)}">${icon('x')}</button>
-      </span>`;
-  }).join('');
+    name = `${client ? client.name : 'Unknown client'}, #${caseNo(kase)}`;
+    label = `${esc(client ? client.name : 'Unknown client')}<span>#${caseNo(kase)}</span>`;
+  }
+  return `
+    <span class="case-tab${active ? ' active' : ''}${isViewTab(id) ? ' view-tab' : ''}">
+      <button type="button" class="case-tab-open" data-tab-open="${id}"${active ? ' aria-current="page"' : ''}>${label}</button>
+      <button type="button" class="case-tab-x" data-tab-close="${id}" title="Close tab" aria-label="Close the tab for ${esc(name)}">${icon('x')}</button>
+    </span>`;
+}
+
+// `activeId` is the tab showing (a case, or a view tab); none means Home. Nothing shows while no tab is open.
+function caseTabs(activeId = '', actions = '') {
+  state.tabs = state.tabs.filter(id => isViewTab(id) || findCase(id));
+  if (!state.tabs.length) return '';
   return `
     <nav class="case-tabs" aria-label="Open cases">
       <button type="button" class="case-tab home${activeId ? '' : ' active'}" data-action="tab-home"${activeId ? '' : ' aria-current="page"'}>${icon('home')}Home</button>
-      ${tabs}
+      ${state.tabs.map(id => caseTab(id, id === activeId)).join('')}
       ${actions ? `<span class="case-tabs-actions">${actions}</span>` : ''}
     </nav>`;
 }
 
-function caseWindowTop(kase, actions = '') {
-  addCaseTab(kase.id);
-  return `<header class="cw-top">${caseTabs(kase.id, actions)}</header>`;
+// `tab` is the view tab the case shows in (Needs attention); without one the case has its own tab.
+function caseWindowTop(kase, actions = '', tab = '') {
+  addCaseTab(tab || kase.id);
+  return `<header class="cw-top">${caseTabs(tab || kase.id, actions)}</header>`;
+}
+
+// Needs attention in its own tab: its cases down the left, one of them open on the right (the first by default).
+function openViewTab(view, id = '') {
+  const tab = `view:${view}`;
+  const list = cardsOf(tab);
+  if (!list.length) {
+    state.tabs = state.tabs.filter(t => t !== tab);
+    if (currentSheet && currentSheet.tab === tab) closeSheet();
+    else render();
+    return toast(homeView(view).empty);
+  }
+  openCaseSheet(id || list[0].id, { list: tab, tab });
+}
+
+// Opens whatever a tab holds.
+function openTab(id, list = '') {
+  if (isViewTab(id)) return openViewTab(id.slice(5));
+  return openCaseSheet(id, { list });
 }
 
 // The case: file ID, reminder, status and supplier; the description; date and location; what they need and the budget.
@@ -3413,6 +3453,7 @@ function openRequesterSheet(caseId) {
   // Coming back to the case keeps the case's own back button (to a calendar day, say) and its cards on the left.
   const caseBack = sheetBack;
   const caseList = (currentSheet && currentSheet.list) || '';
+  const caseTabId = (currentSheet && currentSheet.tab) || '';
   const backToCase = () => {
     if (state.route.name === 'case') {
       closeSheet();
@@ -3420,7 +3461,7 @@ function openRequesterSheet(caseId) {
       return;
     }
     sheetBack = caseBack;
-    openCaseSheet(caseId, { list: caseList });
+    openCaseSheet(caseId, { list: caseList, tab: caseTabId });
   };
   openSheet(`
     ${sheetHead('user', caseChip(kase), 'Secondary contact', backButton())}
@@ -3455,8 +3496,9 @@ function openRequesterSheet(caseId) {
 }
 
 // Opening a case fills the screen: the case and client boxes, and the follow-ups. Opened from a dashboard list
-// (`list`: 'home' or 'files'), that list's cases stay down the left as cards; each one opens in its own tab.
-function openCaseSheet(id, { list = '' } = {}) {
+// (`list`: 'home', 'files', or a view tab's 'view:new'), that list's cases stay down the left as cards; each one
+// opens in its own tab, except inside a view tab (`tab`), where they all show in that one tab.
+function openCaseSheet(id, { list = '', tab = '' } = {}) {
   const kase = findCase(id);
   if (!kase) return;
   const back = sheetBack;
@@ -3474,13 +3516,13 @@ function openCaseSheet(id, { list = '' } = {}) {
     <a class="square-btn" href="app.html#/case/${kase.id}" target="_blank" aria-label="Open in a new tab" title="Open in a new tab">${icon('arrowUpRight')}</a>`;
   // The tabs run across the top; under them, the cards (when opened from a list) and the case.
   const body = caseWindowBody(kase);
-  openSheet(`${caseWindowTop(kase, actions)}${list ? `<div class="cw-split">${switchCards(list, kase.id)}<div class="cw-main">${body}</div></div>` : body}`, {
+  openSheet(`${caseWindowTop(kase, actions, tab)}${list ? `<div class="cw-split">${switchCards(list, kase.id)}<div class="cw-main">${body}</div></div>` : body}`, {
     label: `Case ${caseNo(kase)}`,
     full: true,
     onMount(sheet) {
       bindCaseView(sheet, kase, () => {
         render();
-        openCaseSheet(kase.id, { list });
+        openCaseSheet(kase.id, { list, tab });
       });
       sheet.querySelector('.cw-left').scrollTop = keepTop;
       const cards = sheet.querySelector('.cw-cards');
@@ -3491,15 +3533,21 @@ function openCaseSheet(id, { list = '' } = {}) {
   });
   openCaseId = kase.id;
   sheetBack = back;
-  currentSheet = { type: 'case', id: kase.id, list };
+  currentSheet = { type: 'case', id: kase.id, list, tab };
   if (nested) stepIntoSheet();
   if (switching) fadeIn(sheetRoot.querySelector('.cw-main, .cw-body'));
 }
 
+// The cases of a list: a dashboard list ('home', 'files') or a view tab's ('view:new').
+function cardsOf(key) {
+  if (isViewTab(key)) return homeViewCases(key.slice(5)).sort((a, b) => dueSort(a, b));
+  return filteredCases(key);
+}
+
 // The list a case was opened from, as cards down the left of the case window; the open case is lit up.
 function switchCards(key, activeId) {
-  const list = filteredCases(key);
-  const label = key === 'files' ? fileView(state.files.view).label : homeView(state.home.view).label;
+  const list = cardsOf(key);
+  const label = isViewTab(key) ? homeView(key.slice(5)).label : key === 'files' ? fileView(state.files.view).label : homeView(state.home.view).label;
   return `
     <aside class="cw-cards" aria-label="${esc(label)}">
       <p class="cw-cards-head"><b>${esc(label)}</b><span>${list.length}</span></p>
@@ -3511,8 +3559,8 @@ function switchCard(kase, active) {
   const client = findClient(kase.clientId);
   const late = isOpen(kase) && kase.dueAt && new Date(kase.dueAt) < new Date();
   return `
-    <button type="button" class="cw-card st-${kase.status}${active ? ' active' : ''}${isOpen(kase) ? '' : ' is-done'}" data-case-switch="${kase.id}"${active ? ' aria-current="true"' : ''}>
-      <span class="cw-card-top"><span>#${caseNo(kase)}</span><span class="${late ? 'overdue' : ''}">${kase.dueAt ? dotDate(kase.dueAt) : ''}</span></span>
+    <button type="button" class="cw-card st-${kase.status}${active ? ' active' : ''}${isOpen(kase) ? '' : ' is-done'}" data-case-switch="${kase.id}" data-thread-case="${kase.id}"${active ? ' aria-current="true"' : ''}>
+      <span class="cw-card-top"><span>${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}#${caseNo(kase)}</span><span class="${late ? 'overdue' : ''}">${kase.dueAt ? dotDate(kase.dueAt) : ''}</span></span>
       <span class="cw-card-name">${esc(client ? client.name : 'Unknown client')}</span>
       <span class="cw-card-title">${esc(kase.category)} · ${esc(kase.title)}</span>
       <span class="tag sm st-${kase.status}">${esc((STATUSES.find(s => s.id === kase.status) || {}).short || kase.status)}</span>
@@ -3561,7 +3609,7 @@ function takeCase(id) {
   assignCase(id, ME, ME);
   const reopen = openCaseId === id;
   render();
-  if (reopen) openCaseSheet(id, { list: (currentSheet && currentSheet.list) || '' });
+  if (reopen) openCaseSheet(id, { list: (currentSheet && currentSheet.list) || '', tab: (currentSheet && currentSheet.tab) || '' });
   toast(`You took ${caseNo(kase)}`);
 }
 
@@ -3651,33 +3699,39 @@ document.addEventListener('click', e => {
     return go(filesHash(el.dataset.fview));
   }
   if (el.dataset.tabOpen) {
-    // A case tab: show that case (over the dashboard, its cards stay down the left).
+    // A tab: show its case (over the dashboard, its cards stay down the left), or a view tab's cases.
     const id = el.dataset.tabOpen;
-    if (state.route.name === 'case') return (location.hash = `#/case/${id}`);
-    if (openCaseId === id) return;
-    return openCaseSheet(id, { list: ['home', 'files'].includes(state.route.name) ? state.route.name : '' });
+    if (state.route.name === 'case') return (location.hash = isViewTab(id) ? homeHash(state.home.view) : `#/case/${id}`);
+    if (currentSheet && (currentSheet.tab || currentSheet.id) === id) return;
+    return openTab(id, ['home', 'files'].includes(state.route.name) ? state.route.name : '');
   }
   if (el.dataset.tabClose) {
-    // Closing a tab: the case showing moves to the next tab, or back to Home when it was the last one.
+    // Closing a tab: what it showed moves to the next tab, or back to Home when it was the last one.
     const id = el.dataset.tabClose;
     const at = state.tabs.indexOf(id);
     state.tabs = state.tabs.filter(t => t !== id);
-    const showing = state.route.name === 'case' ? state.route.id : openCaseId;
-    const list = (currentSheet && currentSheet.list) || '';
-    if (showing !== id) return openCaseId ? openCaseSheet(openCaseId, { list }) : render();
+    const showing = state.route.name === 'case' ? state.route.id : currentSheet ? currentSheet.tab || currentSheet.id : '';
+    const list = (currentSheet && !currentSheet.tab && currentSheet.list) || '';
+    if (showing !== id) return openCaseId ? openCaseSheet(openCaseId, { list: (currentSheet && currentSheet.list) || '', tab: (currentSheet && currentSheet.tab) || '' }) : render();
     const next = state.tabs[Math.min(at, state.tabs.length - 1)];
-    if (state.route.name === 'case') return (location.hash = next ? `#/case/${next}` : homeHash(state.home.view));
-    if (next) return openCaseSheet(next, { list });
+    if (state.route.name === 'case') return (location.hash = next && !isViewTab(next) ? `#/case/${next}` : homeHash(state.home.view));
+    if (next) return openTab(next, list || (['home', 'files'].includes(state.route.name) ? state.route.name : ''));
     return closeSheet();
   }
-  // A card down the left opens its case in a new tab; the case you were on stays open in its own tab.
-  if (el.dataset.caseSwitch) return openCaseSheet(el.dataset.caseSwitch, { list: (currentSheet && currentSheet.list) || '' });
+  // A card down the left opens its case in a new tab, and the case you were on stays open in its own tab;
+  // inside a view tab (Needs attention) the cards just switch the case that tab shows.
+  if (el.dataset.caseSwitch) {
+    const { list = '', tab = '' } = currentSheet || {};
+    return openCaseSheet(el.dataset.caseSwitch, { list, tab });
+  }
   if (el.dataset.case) {
     // From a dashboard row, the list's cases come along as cards down the left.
     const row = el.closest('.task-row');
     return openCaseSheet(el.dataset.case, row ? { list: row.dataset.listKey } : {});
   }
   if (el.dataset.client) return openClientSheet(el.dataset.client);
+  // Needs attention opens its cases in their own tab, the first one big and the rest down the left.
+  if (el.dataset.view === 'new') return openViewTab('new');
   if (el.dataset.view) {
     state.home.view = el.dataset.view;
     saveHomeView();
@@ -3802,7 +3856,11 @@ document.addEventListener('submit', e => {
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') return closeSheet();
+  if (e.key === 'Escape') {
+    // A reminder popped up by the thread goes first, then any open window.
+    if (document.querySelector('.rem-pop')) return closeReminderPop();
+    return closeSheet();
+  }
   // Shortcuts: "/" searches, "n" opens a new file — unless you're typing.
   const typing = e.target.closest('input, textarea, select, [contenteditable="true"]');
   if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && !sheetRoot.firstElementChild) {
@@ -3820,6 +3878,120 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     e.target.click();
   }
+});
+
+// ---------- Reminder thread ----------
+// Pull a thread out of Reminders and let go on a case (its row, or its card beside an open case): a reminder for
+// that case pops up right there. A plain click on Reminders still opens them.
+let thread = null;
+// The click that ends a pull shouldn't also press whatever is under it.
+let swallowClick = false;
+
+// A thread that sags a little, like a real one.
+function threadPath(x1, y1, x2, y2) {
+  const sag = Math.min(90, Math.hypot(x2 - x1, y2 - y1) / 4);
+  return `M${x1},${y1} Q${(x1 + x2) / 2},${Math.max(y1, y2) + sag} ${x2},${y2}`;
+}
+
+document.addEventListener('pointerdown', e => {
+  const start = e.target.closest('[data-thread]');
+  if (!start || e.button !== 0) return;
+  const r = start.getBoundingClientRect();
+  thread = { x: r.left + 16, y: r.top + r.height / 2, fromX: e.clientX, fromY: e.clientY, svg: null, target: null };
+});
+
+document.addEventListener('pointermove', e => {
+  if (!thread) return;
+  if (!thread.svg) {
+    // A small wobble is still a click.
+    if (Math.hypot(e.clientX - thread.fromX, e.clientY - thread.fromY) < 6) return;
+    document.body.insertAdjacentHTML('beforeend', '<svg class="thread" aria-hidden="true"><path/><circle class="thread-knot" r="4"/><circle class="thread-end" r="6"/></svg>');
+    thread.svg = document.body.lastElementChild;
+    thread.svg.querySelector('.thread-knot').setAttribute('cx', thread.x);
+    thread.svg.querySelector('.thread-knot').setAttribute('cy', thread.y);
+    document.body.classList.add('threading');
+  }
+  thread.svg.querySelector('path').setAttribute('d', threadPath(thread.x, thread.y, e.clientX, e.clientY));
+  const end = thread.svg.querySelector('.thread-end');
+  end.setAttribute('cx', e.clientX);
+  end.setAttribute('cy', e.clientY);
+  const over = document.elementFromPoint(e.clientX, e.clientY);
+  const target = over && over.closest('[data-thread-case]');
+  if (target !== thread.target) {
+    if (thread.target) thread.target.classList.remove('thread-over');
+    if (target) target.classList.add('thread-over');
+    thread.target = target;
+  }
+  thread.svg.classList.toggle('on-case', Boolean(target));
+});
+
+function endThread(e) {
+  if (!thread) return;
+  const { svg, target } = thread;
+  thread = null;
+  if (!svg) return;
+  svg.remove();
+  document.body.classList.remove('threading');
+  swallowClick = true;
+  setTimeout(() => { swallowClick = false; }, 0);
+  if (!target) return;
+  target.classList.remove('thread-over');
+  if (e.type === 'pointerup') openReminderPop(target.dataset.threadCase, e.clientX, e.clientY);
+}
+
+document.addEventListener('pointerup', endThread);
+document.addEventListener('pointercancel', endThread);
+document.addEventListener('click', e => {
+  if (!swallowClick) return;
+  swallowClick = false;
+  e.preventDefault();
+  e.stopPropagation();
+}, true);
+
+// A small reminder card that pops up where the thread was let go, already about that case.
+function openReminderPop(caseId, x, y) {
+  const kase = findCase(caseId);
+  if (!kase) return;
+  closeReminderPop();
+  const client = findClient(kase.clientId);
+  document.body.insertAdjacentHTML('beforeend', `
+    <form class="rem-pop" role="dialog" aria-label="Reminder for #${caseNo(kase)}" novalidate>
+      <p class="rem-pop-head">${icon('clock')}<b>Reminder</b><span>#${caseNo(kase)}${client ? ` · ${esc(client.name)}` : ''}</span></p>
+      <input class="control" data-rem-text aria-label="Remind me to" value="${esc(`Follow up on #${caseNo(kase)}${client ? ` with ${firstName(client.name)}` : ''}`)}">
+      <input class="control" type="datetime-local" data-rem-at aria-label="When" value="${esc(defaultDue())}">
+      <div class="rem-pop-actions">
+        <button type="button" class="btn btn-secondary btn-md" data-rem-cancel>Cancel</button>
+        <button type="submit" class="btn btn-primary btn-md">${icon('check')}Save</button>
+      </div>
+    </form>`);
+  const pop = document.body.lastElementChild;
+  // Beside where the thread was let go, kept on screen.
+  pop.style.left = `${Math.max(12, Math.min(x + 14, innerWidth - pop.offsetWidth - 12))}px`;
+  pop.style.top = `${Math.max(12, Math.min(y - pop.offsetHeight / 2, innerHeight - pop.offsetHeight - 12))}px`;
+  fadeIn(pop);
+  const textEl = pop.querySelector('[data-rem-text]');
+  textEl.focus();
+  textEl.select();
+  pop.querySelector('[data-rem-cancel]').addEventListener('click', closeReminderPop);
+  pop.addEventListener('submit', e => {
+    e.preventDefault();
+    const at = pop.querySelector('[data-rem-at]').value;
+    if (!textEl.value.trim() || !at) return;
+    addReminder(textEl.value, new Date(at).toISOString(), ME, kase.id);
+    closeReminderPop();
+    render();
+    toast(`Reminder for #${caseNo(kase)} set for ${fmtDayTime(new Date(at).toISOString())}`);
+  });
+}
+
+function closeReminderPop() {
+  const pop = document.querySelector('.rem-pop');
+  if (pop) pop.remove();
+}
+
+// Pressing anywhere else puts the reminder away.
+document.addEventListener('pointerdown', e => {
+  if (!e.target.closest('.rem-pop')) closeReminderPop();
 });
 
 // Chart tooltips: a white bubble above the pointer.
@@ -3924,7 +4096,7 @@ function init() {
   }
   applyRoute();
   render();
-  if (sheet && sheet.type === 'case') openCaseSheet(sheet.id, { list: sheet.list || '' });
+  if (sheet && sheet.type === 'case') openCaseSheet(sheet.id, { list: sheet.list || '', tab: sheet.tab || '' });
   else if (sheet && sheet.type === 'day') openDaySheet(sheet.key, sheet.dayType || '');
   // Back steps from before a refresh whose windows didn't come back.
   const extra = sheetLevel() - (sheetRoot.firstElementChild ? 1 : 0);

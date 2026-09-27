@@ -4268,11 +4268,12 @@ html.dark .tier-centurion .card-pic { box-shadow: inset 0 0 0 1px rgba(255, 255,
 .task-due.overdue { color: var(--red-text); font-weight: 600; }
 
 /* ---------- Status: a white pill on a gentle shadow, told apart by a small coloured square ----------
-   Needs attention is flagged in red; orange ongoing, pink waiting on the supplier, amber waiting on the client, green done. */
-.st-new { --st-color: var(--red); }
-.st-in_progress { --st-color: #ff7a1a; }
-.st-waiting_provider { --st-color: #ff3d8b; }
-.st-waiting_client { --st-color: #f5b000; }
+   Blue open, violet ongoing, orange waiting on the supplier, turquoise waiting on the client, green done.
+   (Needs attention isn't a status: it's the pink flag before the file ID.) */
+.st-new { --st-color: var(--primary); }
+.st-in_progress { --st-color: #7c5cff; }
+.st-waiting_provider { --st-color: #ff7a1a; }
+.st-waiting_client { --st-color: #14b8c4; }
 .st-done { --st-color: #17b26a; }
 
 .status-select.st-new,
@@ -4782,25 +4783,191 @@ html,
 html::-webkit-scrollbar,
 .app-body *::-webkit-scrollbar { display: none; }
 
-/* ---------- Needs attention: a case just opened with nothing done on it yet, flagged in red ---------- */
-.status-select.st-new {
-  color: var(--red-text);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 21V4' stroke='%23ff3350' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M5 4h13l-2.8 4.5L18 13H5z' fill='%23ff3350'/%3E%3C/svg%3E");
-  background-size: 14px, 13px 13px;
-  background-position: right 9px center, left 10px center;
+/* ---------- Needs attention: a pink flag, not a status ---------- */
+.app-body { --flag: #ff3d8b; }
+
+/* A slot before every file ID, so the numbers line up whether or not a flag is in it. */
+.task-flag { display: inline-grid; place-items: center; width: 16px; margin-right: 4px; color: var(--flag); }
+.task-flag .ico { width: 15px; height: 15px; fill: var(--flag); }
+.cw-card-top .task-flag { width: auto; margin-right: 5px; vertical-align: -2px; }
+
+/* In the side menu: a pink flag, and a pink count while any case needs attention. */
+.dash-item.is-flag .ico { color: var(--flag); }
+.dash-count.flagged { background: color-mix(in srgb, var(--flag) 14%, transparent); color: #d61f6c; }
+
+/* Its tab: the flag, the name and how many are waiting. */
+.view-tab .case-tab-open { display: inline-flex; align-items: center; gap: 6px; }
+.view-tab .case-tab-open .ico { width: 16px; height: 16px; color: var(--flag); fill: var(--flag); }
+.view-tab.active .case-tab-open .ico { color: #fff; fill: #fff; }
+
+/* ---------- My tasks: no title; the tools sit at the top of the list, Calendar first ---------- */
+.home-tools { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 2px 4px 0; }
+.home-tools .home-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.home-tools .control-sm { border-color: transparent; box-shadow: var(--shadow-lift); }
+.home-tools .control-sm.set { background-color: var(--primary-soft); }
+.home-tools .dash-phone-btns { margin-left: auto; }
+
+/* ---------- Reminder thread: pulled out of Reminders and let go on a case ---------- */
+[data-thread] { touch-action: none; }
+[data-thread]:active { cursor: grabbing; }
+body.threading,
+body.threading * { cursor: grabbing !important; user-select: none; }
+
+.thread { position: fixed; inset: 0; z-index: 90; width: 100vw; height: 100vh; overflow: visible; pointer-events: none; }
+.thread path { fill: none; stroke: var(--primary); stroke-width: 2; stroke-linecap: round; }
+.thread .thread-knot { fill: var(--primary); }
+.thread .thread-end { fill: var(--surface); stroke: var(--primary); stroke-width: 2; }
+.thread.on-case path { stroke-width: 2.6; }
+.thread.on-case .thread-end { fill: var(--primary); }
+
+/* The case the thread is over. */
+.task-row.thread-over,
+.cw-card.thread-over { box-shadow: 0 0 0 2px var(--primary), 0 10px 26px rgba(0, 103, 255, 0.18); }
+.thread-over .task-no,
+.thread-over .cw-card-top { color: var(--primary); }
+
+/* The reminder that pops up where the thread was let go. */
+.rem-pop {
+  position: fixed;
+  z-index: 95;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 12px 44px rgba(16, 24, 40, 0.18);
 }
 
-.tag.st-new { color: var(--red-text); }
+.rem-pop-head { display: flex; align-items: center; gap: 8px; margin: 0 0 2px; font-size: 14px; }
+.rem-pop-head .ico { width: 18px; height: 18px; color: var(--primary); }
+.rem-pop-head span { overflow: hidden; color: var(--text-muted); font-weight: 500; white-space: nowrap; text-overflow: ellipsis; }
+.rem-pop .control { min-height: 44px; padding: 10px 12px; font-size: 14px; }
+.rem-pop-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
-.tag.st-new::before {
-  width: 12px;
-  height: 12px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 21V4' stroke='%23ff3350' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M5 4h13l-2.8 4.5L18 13H5z' fill='%23ff3350'/%3E%3C/svg%3E") center / contain no-repeat;
+/* ---------- White page, no outlines anywhere: fields, buttons, chips and boxes sit on a gentle shadow ---------- */
+.control,
+.app-body .btn-secondary,
+.btn-email,
+.id-chip,
+.tag,
+.pills > button,
+.search,
+.date-input,
+.check-group span,
+.chat-reply,
+.chat-input,
+.chat-bubble,
+.stat,
+.when-tile,
+.cf-section,
+.round-btn,
+.quick-followup input,
+.cw-request,
+.case-full.page { border-color: transparent; box-shadow: var(--shadow-lift); }
+
+.control,
+.chat-input,
+.quick-followup input { background: var(--surface); }
+.control-sm.set,
+.tag.pr-high,
+.tag.pr-urgent,
+.tag.alert { border-color: transparent; }
+.empty { border-color: transparent; background: none; }
+
+/* No dividing lines inside a case either. */
+.cw-meta,
+.opened-by,
+.case-quick,
+.chat-form { border-top: 0; }
+.dash-me { border-bottom: 0; }
+
+/* A field you're typing in still shows where you are. */
+.control:focus,
+.chat-input:focus-within,
+.quick-followup input:focus { border-color: var(--primary); }
+
+@media (max-width: 860px) {
+  .home-tools { flex-wrap: wrap; }
+  .home-tools .home-filters { flex: 1 1 auto; flex-wrap: nowrap; min-width: 0; }
+  .home-tools .home-filters .control-sm { flex: 1 1 0; min-width: 0; }
 }
 
-/* Its row and its card down the left of a case carry a red edge, like a flag. */
-.task-row.st-new,
-.cw-card.st-new { box-shadow: inset 3px 0 0 var(--red), var(--shadow-lift); }
-.task-row.st-new:hover,
-.cw-card.st-new:hover { box-shadow: inset 3px 0 0 var(--red), 0 2px 4px rgba(16, 24, 40, 0.06), 0 10px 26px rgba(16, 24, 40, 0.1); }
-.cw-card.st-new.active { box-shadow: inset 3px 0 0 var(--red), 0 8px 20px -6px rgba(0, 103, 255, 0.4); }
+/* ---------- Everything on one white background, with no shadows: parts are told apart by very light lines ---------- */
+.app-body { --shadow-lift: none; --shadow-soft: none; --shadow-card: none; --hairline: #eceef3; }
+html.dark .app-body { --shadow-lift: none; --shadow-soft: none; --shadow-card: none; --hairline: #262a33; }
+
+/* The side menu is one flat column, not floating boxes: a light line down its right edge and between its parts. */
+.dash-left { gap: 14px; }
+.dash-nav,
+.dash-nav.dash-extras { padding: 4px 0; border: 0; border-radius: 0; background: none; }
+.dash-me { padding-bottom: 14px; border-bottom: 1px solid var(--hairline); }
+.dash-section + .dash-section { padding-top: 12px; border-top: 1px solid var(--hairline); }
+.dash-extras { padding-top: 14px; border-top: 1px solid var(--hairline); }
+.dash-item.active { box-shadow: none; }
+
+@media (min-width: 861px) {
+  .dash-left { padding-right: 20px; border-right: 1px solid var(--hairline); }
+}
+
+/* The list: plain rows split by a light line, a very light blue under the one you point at. */
+.dash-main > .panel { border-color: transparent; }
+.case-list.task-list { row-gap: 0; }
+.task-head { border-bottom: 1px solid var(--hairline); }
+.task-row { border-radius: 0; background: none; }
+.task-row + .task-row { border-top: 1px solid var(--hairline); }
+.task-row:hover { background: var(--surface-2); box-shadow: none; }
+
+/* Fields, buttons, chips, tabs and boxes get a light line instead of a shadow. */
+.control,
+.control-sm,
+.app-body .btn-secondary,
+.btn-email,
+.id-chip,
+.tag,
+.pills > button,
+.search,
+.date-input,
+.check-group span,
+.chat-reply,
+.chat-input,
+.chat-bubble,
+.stat,
+.panel,
+.supplier-box,
+.when-tile,
+.cf-section,
+.round-btn,
+.quick-followup input,
+.cw-request,
+.case-full.page,
+.status-select.st-new,
+.status-select.st-in_progress,
+.status-select.st-waiting_provider,
+.status-select.st-waiting_client,
+.status-select.st-done { border-color: var(--hairline); }
+
+.cal-toggle,
+.case-tab,
+.date-slider,
+.square-btn,
+.cw-card,
+.cw-box,
+.cw-body .case-chat,
+.cw-facts .cw-field { border: 1px solid var(--hairline); }
+
+.case-tab:hover,
+.cw-card:hover { box-shadow: none; border-color: var(--border-strong); }
+.case-tab.active,
+.cal-toggle.active,
+.pills > button.active { border-color: var(--primary); box-shadow: none; }
+.cw-card.active { border-color: transparent; box-shadow: none; }
+.dash-main > .panel .dash-phone-btns .rail-btn { border: 0; }
+
+/* The dashboard's own list box stays without a line: the rows already have theirs. */
+.dash-main > .panel { border: 0; }
+.home-tools .control-sm,
+.dash-head .control-sm { border-color: var(--hairline); }
+.cw-box,
+.cw-body .case-chat { box-shadow: none; }

@@ -109,8 +109,9 @@ const PRIORITIES = [
 ];
 
 const STATUSES = [
-  // A case that was just opened and has nothing done on it yet; its first follow-up moves it on to In progress.
-  { id: 'new', label: 'Needs attention', short: 'Needs attention' },
+  // Just opened. While it has no follow-ups it also carries the pink Needs attention flag; its first follow-up
+  // moves it on to In progress.
+  { id: 'new', label: 'Open', short: 'Open' },
   { id: 'in_progress', label: 'In progress', short: 'Ongoing' },
   { id: 'waiting_provider', label: 'Waiting on supplier', short: 'On supplier' },
   { id: 'waiting_client', label: 'Waiting on client', short: 'On client' },
@@ -184,7 +185,7 @@ function migrate(data) {
       k.category = retype[1];
       data.migrated = true;
     }
-    // "New" now means "Needs attention": nothing done yet. A case that already has follow-ups is under way.
+    // An open case with follow-ups is under way (the first follow-up moves a case to In progress).
     if (k.status === 'new' && k.updates.length) {
       k.status = 'in_progress';
       data.migrated = true;
@@ -365,7 +366,7 @@ function addCaseUpdate(caseId, text, by) {
   if (!kase || !text.trim()) return;
   kase.updates.push({ id: uid(), at: new Date().toISOString(), by, text: text.trim() });
   logActivity('note_added', by, { caseId, text: text.trim() });
-  // Something has been done now, so the case no longer needs attention.
+  // Something has been done now: the case is under way and no longer needs attention.
   if (kase.status === 'new') setCaseStatus(caseId, 'in_progress', by);
   saveData();
 }
