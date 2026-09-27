@@ -3,7 +3,7 @@
 const DATA_KEY = 'gustavo_data_v1';
 
 // Request types, shown as hashtags (#Restaurant). One word each so the hashtag reads cleanly.
-const CATEGORIES = ['Restaurant', 'Hotel', 'Flights', 'Transfers', 'Massage', 'Yacht', 'Events', 'Tickets', 'Shopping', 'Gifts', 'Other'];
+const CATEGORIES = ['Restaurant', 'Hotel', 'Flights', 'Airport VIP', 'Transfers', 'Attractions', 'Massage', 'Yacht', 'Events', 'Tickets', 'Shopping', 'Gifts', 'Other'];
 
 // Older request types, mapped to the new ones.
 const OLD_CATEGORIES = { Dining: 'Restaurant', Travel: 'Flights', Lifestyle: 'Shopping' };
@@ -24,10 +24,10 @@ const COUNTRIES = [
 const SAMPLE_CLIENTS = [
   ['emma', 'Yael Mizrahi', '+972 52 555 0142', 'yael.mizrahi@example.com', 'Centurion', 'IL', 'Window tables. Shellfish allergy.', 120],
   ['james', 'Eitan Ben-David', '+44 7700 900187', 'eitan.bendavid@example.com', 'Platinum', 'GB', 'Flies private. Aisle seat when flying commercial.', 95],
-  ['aiko', 'Tamar Avraham', '+972 54 555 0119', 'tamar.avraham@example.com', 'World Elite', 'IL', 'Vegetarian. Loves spa hotels.', 60],
+  ['aiko', 'Tamar Avraham', '+972 54 555 0119', 'tamar.avraham@example.com', 'Fly Card', 'IL', 'Vegetarian. Loves spa hotels.', 60],
   ['marco', 'Omer Katz', '+972 50 555 0163', 'omer.katz@example.com', 'Platinum', 'IL', 'Opera and basketball. Always 2 seats.', 45],
-  ['olivia', 'Shira Friedman', '+1 212 555 0128', 'shira.friedman@example.com', 'World Elite', 'US', 'White flowers only.', 20],
-  ['noah', 'Itai Levi', '+972 53 555 0176', 'itai.levi@example.com', 'World Elite', 'IL', 'Referred by Eitan Ben-David.', 3],
+  ['olivia', 'Shira Friedman', '+1 212 555 0128', 'shira.friedman@example.com', 'Fly Card', 'US', 'White flowers only.', 20],
+  ['noah', 'Itai Levi', '+972 53 555 0176', 'itai.levi@example.com', 'Fly Card', 'IL', 'Referred by Eitan Ben-David.', 3],
 ];
 
 // What the sample data said before the Israeli names; saves that still have it get the new wording.
@@ -40,6 +40,8 @@ const OLD_SAMPLE_TEXT = {
 
 // Request types for the sample data, so older saves pick them up too.
 const SAMPLE_TYPES = { c6: 'Yacht', c9: 'Transfers', c11: 'Massage' };
+// Sample cases that moved to a request type added later (Airport VIP), when they still have the old one.
+const SAMPLE_RETYPED = { c45: ['Flights', 'Airport VIP'], c46: ['Flights', 'Airport VIP'] };
 
 // Who opened a case when it wasn't the client: an assistant, a family member. Sample ones by case id.
 const SAMPLE_REQUESTERS = {
@@ -107,7 +109,8 @@ const PRIORITIES = [
 ];
 
 const STATUSES = [
-  { id: 'new', label: 'New', short: 'New' },
+  // A case that was just opened and has nothing done on it yet; its first follow-up moves it on to In progress.
+  { id: 'new', label: 'Needs attention', short: 'Needs attention' },
   { id: 'in_progress', label: 'In progress', short: 'Ongoing' },
   { id: 'waiting_provider', label: 'Waiting on supplier', short: 'On supplier' },
   { id: 'waiting_client', label: 'Waiting on client', short: 'On client' },
@@ -115,9 +118,9 @@ const STATUSES = [
 ];
 
 // Card types: the card the client holds, from the first level up.
-const TIERS = ['World Elite', 'Platinum', 'Centurion'];
+const TIERS = ['Fly Card', 'Platinum', 'Centurion'];
 // Card types from before, and what they are now.
-const OLD_TIERS = { Standard: 'World Elite', Gold: 'World Elite', VIP: 'Centurion' };
+const OLD_TIERS = { Standard: 'Fly Card', Gold: 'Fly Card', 'World Elite': 'Fly Card', VIP: 'Centurion' };
 
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
@@ -176,6 +179,16 @@ function migrate(data) {
   for (const k of data.cases) {
     if (SAMPLE_TYPES[k.id] && OLD_CATEGORIES[k.category]) k.category = SAMPLE_TYPES[k.id];
     else if (OLD_CATEGORIES[k.category]) k.category = OLD_CATEGORIES[k.category];
+    const retype = data.demo && SAMPLE_RETYPED[k.id];
+    if (retype && k.category === retype[0]) {
+      k.category = retype[1];
+      data.migrated = true;
+    }
+    // "New" now means "Needs attention": nothing done yet. A case that already has follow-ups is under way.
+    if (k.status === 'new' && k.updates.length) {
+      k.status = 'in_progress';
+      data.migrated = true;
+    }
     const retitle = RETITLED_SAMPLES[k.id];
     if (retitle && k.title === retitle[0]) {
       [, k.title, k.category] = retitle;
@@ -199,7 +212,7 @@ function migrate(data) {
       c.gender = (data.demo && SAMPLE_GENDERS[c.id]) || '';
       data.migrated = true;
     }
-    // Card types are now the card the client holds: Standard and Gold become World Elite, VIP becomes Centurion.
+    // Card types are now the card the client holds: Standard, Gold and World Elite become Fly Card, VIP becomes Centurion.
     if (OLD_TIERS[c.tier] || !c.tier) {
       c.tier = OLD_TIERS[c.tier] || TIERS[0];
       data.migrated = true;
@@ -352,6 +365,8 @@ function addCaseUpdate(caseId, text, by) {
   if (!kase || !text.trim()) return;
   kase.updates.push({ id: uid(), at: new Date().toISOString(), by, text: text.trim() });
   logActivity('note_added', by, { caseId, text: text.trim() });
+  // Something has been done now, so the case no longer needs attention.
+  if (kase.status === 'new') setCaseStatus(caseId, 'in_progress', by);
   saveData();
 }
 
@@ -553,8 +568,8 @@ function supplierSampleRows(dayAt) {
     ['c42', 'Comedy night, 8 tickets', 'james', 'Tickets', 'phone', 'normal', 'new', null, null, 'sofia', 5, dayAt(21, 21)],
     ['c43', 'TV show taping, 4 studio seats', 'aiko', 'Events', 'email', 'low', 'done', 'noa', 'noa', 'noa', 140, dayAt(-6, 18), 100],
     ['c44', 'Festival passes, 3 days', 'olivia', 'Tickets', 'email', 'normal', 'in_progress', 'sofia', 'sofia', 'sofia', 26, dayAt(27, 12)],
-    ['c45', 'VIP terminal at Ben Gurion, departure', 'marco', 'Flights', 'phone', 'high', 'in_progress', 'admin', 'admin', 'admin', 20, dayAt(4, 6)],
-    ['c46', 'Airport VIP arrival, family of 5', 'aiko', 'Flights', 'email', 'normal', 'done', 'noa', 'daniel', 'daniel', 180, dayAt(-3, 14), 120],
+    ['c45', 'VIP terminal at Ben Gurion, departure', 'marco', 'Airport VIP', 'phone', 'high', 'in_progress', 'admin', 'admin', 'admin', 20, dayAt(4, 6)],
+    ['c46', 'Airport VIP arrival, family of 5', 'aiko', 'Airport VIP', 'email', 'normal', 'done', 'noa', 'daniel', 'daniel', 180, dayAt(-3, 14), 120],
   ];
 }
 

@@ -17,11 +17,12 @@ This spec describes what the product does today and the rules it follows. [Pract
 | Term | Meaning |
 |---|---|
 | **Case / file** | One client request. Number `G-1001`, always shown as **`#G-1001`** in a large chip. |
+| **Needs attention** | The status of a case that was just opened and has **nothing done on it yet** (no follow-ups, no actions), flagged in red. Its **first follow-up moves it to In progress** by itself (logged like any status change, and said in the toast). Saved cases that were "New" but already had follow-ups became In progress. |
 | **Client** | The person the case is for. Number `C-2001`. Has a **card type** (rank). |
-| **Card type / rank** | The card the client holds: `Centurion` (black), `Platinum` (silver), `World Elite` (outlined). Older saves: Standard and Gold became World Elite, VIP became Centurion. |
+| **Card type / rank** | The card the client holds: `Centurion`, `Platinum`, `Fly Card`. Shown as a little credit card with its name in capitals: Centurion black, Platinum silver, Fly Card light blue. Older saves: Standard, Gold and World Elite became Fly Card, VIP became Centurion. |
 | **Secondary contact** | Whoever opened the case on the client's behalf (an assistant, family). Name, phone, email. Empty when the client opened it. Also shown as "Opened by". |
 | **Follow-up** | A note on a case: what happened, what's next. The most important information on a case. |
-| **Request type** | One of: Restaurant, Hotel, Flights, Transfers, Massage, Yacht, Events, Tickets, Shopping, Gifts, Other. Shown as a hashtag (`#Tickets`). |
+| **Request type** | One of: Restaurant, Hotel, Flights, Airport VIP, Transfers, Attractions, Massage, Yacht, Events, Tickets, Shopping, Gifts, Other. Shown as a hashtag (`#Tickets`), and in the dashboard's Info column with its picture. |
 | **Request picture** | The icon for what the request is (🏀 NBA, 🎤 show, ✈️ flight, a black Rolls-Royce photo for transfers…), 3D pictures and one photo. See §8. |
 | **Supplier** | A company we buy from (ticket agency, car service, airport VIP, restaurant). |
 | **Booking** | A purchase from a supplier for a case: quantity, price, invoice. |
@@ -48,12 +49,14 @@ This spec describes what the product does today and the rules it follows. [Pract
 - **Side rail** (desktop), top to bottom:
   1. **Your profile picture**: fills the whole circle with a white stroke inside it (no ring around it). The only place that shows your initials, in a corner badge with a white outline.
   2. **+ New case**: opens in a new tab.
-  3. Search, Activity, **Suppliers**, Advanced search, Settings. The round buttons are spaced 16px apart (closer on short windows) with bigger icons.
+  3. Search, Activity, **Suppliers**, Advanced search, Settings. The buttons are plain icons with no circle or outline, spaced 16px apart (closer on short windows); a soft square shows under the one you point at, and a light blue one under the page you're on. The **+** is a solid blue square.
   4. At the bottom: dark mode and log out.
-- **The rail never disappears.** It stays on screen on every page, and case windows and side windows open beside it, never over it. Going somewhere from the rail closes the open window. No line between the rail and the page.
+- **The rail never disappears.** It stays on screen on every page, and case windows and side windows open beside it, never over it. Going somewhere from the rail closes the open window.
 - **Tab bar** (phones): Me, Search, **+**, Activity, Suppliers, Settings.
-- **Clean and airy:** every page sits on white (or the tint picked in Settings) with no frame around it. On the dashboard nothing is boxed in and there are no dividing lines: the side menu, Reminders and Sticky notes, and the list sit straight on the page, and space does the separating. Generous spacing; nothing crowded.
-- **Side windows** (notes, reminders, search, your icon, add client…) always open on the **left**, next to the rail. On phones they come up from the bottom.
+- **Look:** **one white page with no lines**: no stroke by the rail, no outlines, no dividing lines between rows. Things lift off the page on a **gentle shadow**: the side menus, each case row (a white card), the calendar strip, the controls, and the boxes inside a case. There are **no grey fills**; the few soft fills (pointing at something, a picture tile) are a very light blue. Windows open over a light white veil, not a grey one. **Small corners everywhere (6–8px), no round pills or big curves**; only profile pictures and dots stay round. **No scrollbars show** (so they don't cut the screen into strips); everything still scrolls. **Screens change with one short, soft fade** (0.15s): a case window fades in and out, another page fades in, and moving between cases fades just the case; nothing slides, grows or scales. Generous spacing; nothing crowded.
+- **Case tabs:** every case you open stays as a tab across the top (**client name and file ID**, `Tamar Avraham #G-1025`), after a **Home** tab. Home goes back to the dashboard and keeps the tabs, so you can leave a case you're working on and look at the rest; clicking a tab brings its case back. Pointing at a tab shows its **×** to close it (on touch screens it always shows); closing the case you're on moves to the next tab, or to Home after the last. The tabs show on the dashboard, Activity, Suppliers and Settings while any are open, and are kept per browser tab (a refresh keeps them).
+- **Side windows** (notes, reminders, your icon, add client…) always open on the **left**, next to the rail. On phones they come up from the bottom.
+- **Back always returns to the screen before.** Every screen has its own address: My tasks (`#/home`, a view as `?view=new`), All files (`#/files?view=…`), Activity's tab (`?tab=reports`) and the supplier category (`#/suppliers?group=…`), and My tasks' calendar (`?cal=1`, a day as `&day=2026-09-28`). Opening a window adds a Back step too, so Back closes it; a case opened from a calendar day goes Back to the day first. The back button inside a window does the same as the browser's.
 - **Keyboard:** `/` search, `N` new case, `Esc` closes a panel or window.
 - **Refresh keeps you in place:** after a refresh you're back where you were (My tasks or All files, the view and filters, the supplier, and any open case or calendar day). This is kept per browser tab.
 
@@ -64,13 +67,13 @@ This spec describes what the product does today and the rules it follows. [Pract
 Top row, exactly as tall as the profile picture at the top of the rail (48px): the page title (**My tasks**, grey "My" and bold "tasks", like Search's title). On phones, small Reminders and Sticky notes buttons sit beside it, each with a number badge.
 
 ### 4.1 My tasks
-- **Side menu:** your profile, then *All my tasks*, *New tasks* (folder icon), *Urgent*, *Waiting on supplier*, *Waiting on client*, each with a count, with no section label over them (the page title already says it). The *Urgent* count uses the alert colour. The main area has no heading of its own; the side menu shows which view you're on.
-- **List only:** the cases as rows (§5). No squares and no calendar here (the calendar is in All files).
-- **Filters** at the end of the title row, as soft grey pills: *Opened* (any time, today, last 7 days, last 30 days, over 30 days ago) and *Status*. Cases show open first, then by date.
+- **Side menu:** your profile, then *All my tasks*, *Needs attention* (flag icon), *Urgent*, *Waiting on supplier*, *Waiting on client*, each with a count, then *All files* (the whole team's cases), with no section label over them (the page title already says it). The *Urgent* and *Needs attention* counts are red when there are any. The main area has no heading of its own; the side menu shows which view you're on.
+- **List** of rows (§5), and a **Calendar** button that opens a **sliding strip of days** over the list (§4.4). No squares.
+- **Filters** at the end of the title row, floating on a shadow: *Opened* (any time, today, last 7 days, last 30 days, over 30 days ago), *Status*, and *Calendar*. Cases show open first, then by date.
 - **Reminders and Sticky notes:** under the side menu, each with its count (reminders turn red when one is overdue). On phones they're round buttons beside the title.
 
 ### 4.2 All files
-The whole team's cases, opened from **All cases** in a case window. The profile picture in the rail goes back to My tasks. Its lists use the same rows as My tasks (§5).
+The whole team's cases, opened from *All files* at the bottom of My tasks' side menu. The profile picture in the rail goes back to My tasks. Its lists use the same rows as My tasks (§5).
 
 Side menu, in this order:
 
@@ -102,24 +105,29 @@ Side menu, in this order:
   - The cases, grouped by type, with time, client, flag, card type, headline, details, status, priority and who's handling each.
   - Clicking a case opens it, and **Back** returns to the day.
 
+### 4.4 My tasks' calendar strip
+- **Calendar** (in the title row) opens a strip over the list: the month on top with ← → arrows, then **only the days that have cases** in the view (with its filters), in date order: the weekday (or *Today*), the date, and the first two times (`+2` for more). Past days are faded.
+- It opens on today (or the first day after it); the month follows the first day showing as the strip slides.
+- **Picking a day** shows only that day's cases in the list, the day lit up in light blue with its times on blue; picking it again, or *All dates*, shows every day. The open strip and the picked day are in the address, so Back steps back through them.
+
 ---
 
 ## 5. Case lists: rows and bars
 
 **Rows** (My tasks, All files): one clean row per case, under column names said once at the top (they stay put while the rows scroll). No squares.
 
-> **No. | Client | Card type | Due date | Status | + Follow-up**
+> **No. | Client (card type under it) | Info (request type, headline under it) | Due date | Status | follow-up · email**
 
-1. **#File ID**, light grey.
-2. **Client name** (the only bold text). No flag here.
-3. **Card type**: Centurion, Platinum or World Elite (see §1).
+1. **#File ID**, light grey. Pointing at it shows a small **copy** button that copies `#G-1025` (on touch screens it always shows).
+2. **Client name** (the only bold text), and under it the **card type**: the little card and its name, Centurion, Platinum or Fly Card (see §1). No flag here.
+3. **Info**: the request's picture (§8) on a soft tile, the **request type** such as "Transfers", "Restaurant", "Airport VIP" or "Attractions", and under it in grey the case's headline ("Transfer from Paris airport to the hotel").
 4. **Due date** as 25.09.26 (red when overdue).
-5. **Status** as a softly tinted pill with a coloured dot, still a menu to change it.
-6. **+ Follow-up** (soft blue, solid when you point at it) opens a line under the row to add one without opening the case (*Add* or Enter saves, *Cancel* closes). Email is in the case window.
+5. **Status** as a white pill on a gentle shadow with a **small coloured square** (§14), still a menu to change it.
+6. **Two icon buttons:** **add a follow-up** (a speech bubble with a plus, with a small count of follow-ups so far) opens a line under the row to add one without opening the case (*Add* or Enter saves, *Cancel* closes); **email** opens a new email to the client with the case number and request in the subject (greyed out when the client has no email).
 
-- **Look:** no lines between rows; about 64px tall each with space between them, and a soft grey under the row you point at. Plenty of space between columns; the spare width is shared out so the row reads evenly. Done cases are dimmed.
-- **Narrower windows:** the due date moves under the client's name and Follow-up shrinks to a round **+**. **Phones:** file ID, client and card type on top, the date under them, then the status and + Follow-up.
-- **Clicking anywhere else on the row** opens the case in the case window (§6).
+- **Look:** each row is a **white card on a gentle shadow**, with space between cards and no lines; about 66px tall; pointing at one lifts it a little more. Plenty of space between columns; the client and Info get the spare width. Done cases are dimmed.
+- **Narrower windows:** a slimmer side menu and tighter columns. **Phones:** file ID and client (with the card) on top, then Info and the date, then the status and the two buttons.
+- **Clicking anywhere else on the row** opens the case in the case screen (§6), with the list's cases as cards down the left; Home, Esc or Back closes it.
 
 **Bars** (Activity): **compact one-line bars**:
 
@@ -137,9 +145,9 @@ Side menu, in this order:
 
 ## 6. The case window
 
-Opening a case fills the screen beside the rail, which stays visible (a phone uses the whole screen). A case also has its own page (`app.html#/case/<id>`, "open in new tab") with the same layout.
+A case opens as a window that fills the screen beside the rail, which stays visible (a phone uses the whole screen); Back or Home closes it. **Opened from My tasks or All files it's split:** the list's cases run down the left as cards (file ID and date, client, request type and headline, status), the open one lit up in light blue, and the case fills the right; clicking a card **opens that case in a new tab**, and the case you were on stays open in its own tab, so you can jump straight back (a case that already has a tab just comes forward). A case also has its own page (`app.html#/case/<id>`, the *Open in new tab* button), titled with the file ID and client (`#G-1025 · Tamar Avraham`), with the same layout.
 
-- **Top bar:** **+ New case**, **My tasks**, **All cases** (these leave the case), plus *Back* when opened from a calendar day, *Open in new tab*, and *Close*.
+- **Top bar:** the **case tabs** (Home and the open cases), plus *Back* when opened from a calendar day and *Open in new tab*. New case is the rail's **+**.
 - **Left column, case box**
   - **File ID** (big chip), **Add reminder**, **File status** (a dropdown) and the **supplier name(s)** from its bookings
   - The case's reminders: time and text, with a ✓ to mark each done
@@ -152,7 +160,7 @@ Opening a case fills the screen beside the rail, which stays visible (a phone us
   - Take this case (when it's in the open pool), and *Assign to* for admins
   - **Edit case**: changes the headline, date, location, budget and description
 - **Left column, client box**
-  - **Client name** and flag, **gender**, **card type** (rank badge)
+  - **Client name** and flag, **gender**, **card type** (the card picture and its name, larger)
   - **ID** (`C-2001`), with how many open and total cases the client has
   - **Phone** with **Call**, and **email** with **Send email** (pre-filled subject), always visible
   - **Secondary contact** (Add/Change): name, phone with Call, email with Send
@@ -165,7 +173,7 @@ Opening a case fills the screen beside the rail, which stays visible (a phone us
 
 - **Timeline:** oldest at the top, newest at the bottom. It opens scrolled to the newest message, with day separators ("Today", "Yesterday", "Tuesday, September 22").
 - **Bubbles:** your follow-ups are blue on the right. Other people's are white on the left, with their name and picture. Every message shows its time.
-- **Case events** appear as small centred lines between messages ("Daniel opened the case", "You took the case", "You changed the status: New → Waiting on client").
+- **Case events** appear as small centred lines between messages ("Daniel opened the case", "You took the case", "You changed the status: Needs attention → Waiting on client").
 - **Smart quick replies** are one tap to fill the box. Ones that carry a status also move the case when sent, and a note below the box says so ("Sending also moves the case to Waiting on supplier · Keep the status").
   - *Working on it* → In progress
   - *Called the client, no answer*
@@ -219,7 +227,7 @@ Pictures are Microsoft's Fluent 3D emoji (MIT licence, 256px), loaded from jsDel
   - Client (or add a new client), and **Opened by**: the client, or someone else (their name is required, phone and email optional)
   - What they need, request type, date needed, **location**, **budget** and currency
   - Came in by (phone or email), priority (low, normal, high, urgent), who handles it (me, the open pool, or a teammate for admins), and details
-- **Statuses:** New → Ongoing (*In progress*) → On supplier (*Waiting on supplier*) / On client (*Waiting on client*) → Done. *Done* stamps the completion time.
+- **Statuses:** Needs attention (red flag; the first follow-up moves it on) → Ongoing (*In progress*) → On supplier (*Waiting on supplier*) / On client (*Waiting on client*) → Done. *Done* stamps the completion time.
 - **Email to a client** (or a secondary contact) opens the mail app with the subject **`#G-1004 · NBA: Knicks vs. Celtics, 2 courtside seats`**.
 - **Clicking an ID chip** copies it (`#G-1004`, `C-2004`).
 - **Every change is logged:** created, assigned, taken, status changed, follow-up. That log feeds the chat events, *Last updated* and Activity.
@@ -261,7 +269,7 @@ Pictures are Microsoft's Fluent 3D emoji (MIT licence, 256px), loaded from jsDel
   - *Reports & log*: files per day, team workload heatmap, open cases by priority, files by category, and the full activity log.
 - **Settings:**
   - Your icon: photo, emoji or initials; colours; name and initials.
-  - Light or dark mode, and a background tint.
+  - Light or dark mode. (The page is always white in light mode; there is no background tint.)
   - Sample data: clear or restore.
   - Log out.
 
@@ -271,18 +279,19 @@ Pictures are Microsoft's Fluent 3D emoji (MIT licence, 256px), loaded from jsDel
 
 - **Colours**
   - **Primary blue:** `#0067ff` (the brand, buttons, selection, upcoming days)
-  - **Status colours** are used on status pills, status dropdowns, and the left edge of every case bar:
+  - **Status colours** show as a small square (on a white pill with a gentle shadow, on status dropdowns and tags) and on the left edge of every case bar:
 
     | Status | Colour |
     |---|---|
-    | New | blue `#0067ff` |
-    | **Ongoing** | **purple `#8a3ffc`** |
-    | **Waiting on supplier** | **orange `#ff8a00`** |
-    | Waiting on client | turquoise `#0891b2` |
-    | **Done / closed** | **green `#22c55e`** |
+    | **Needs attention** | **red `#ff3350`, shown as a small red flag, with red text; its row and card get a red edge** |
+    | **Ongoing** | **orange `#ff7a1a`** |
+    | Waiting on supplier | pink `#ff3d8b` |
+    | Waiting on client | amber `#f5b000` |
+    | Done / closed | green `#17b26a` |
 
   - **Red `#ff3350`:** **urgent** (an urgent open case's bar edge is red, and the urgent tag is solid red) and the alert colour: overdue, calendar days not all done, missing invoices, errors.
   - **Softer orange:** high priority
+  - **One blue everywhere:** the **+** button's blue (`#0067ff`) with its soft glow is the only strong blue: the active pill tab (Activity's tabs, the filter pills), the Calendar button when open, the case tab you're on, and the picked day's times. Its light version (`#e8f0ff`) marks the side menu's current view, the card that's open, and the picked day.
 - **Dark mode** covers the whole app.
 - **Dates and times**
   - Card dates look like **`23.9`**, with **`Sun 19:00`** under them.
@@ -302,7 +311,7 @@ Kept in `localStorage` under `gustavo_data_v1`:
 
 | Collection | Fields |
 |---|---|
-| `team` | id, name, initials, title, role, and icon settings (photo, emoji, tone, colour, bg, dark) |
+| `team` | id, name, initials, title, role, and icon settings (photo, emoji, tone, colour, dark; `bg` is left over from the old background tint and no longer used) |
 | `clients` | id, number, name, phone, email, country, gender, tier, notes, createdAt |
 | `cases` | id, number, title, clientId, category, channel, priority, status, dueAt, location, budget `{amount, currency}`, details, requester `{name, phone, email}` or null, createdAt, createdBy, assignee, assignedBy, completedAt, updates `[{id, at, by, text}]` |
 | `suppliers` | id, name, group, phone, email |

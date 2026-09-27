@@ -25,8 +25,8 @@
   --ink-text: #111111;
   --ink-muted: #6b6b70;
 
-  --radius: 14px;
-  --radius-lg: 22px;
+  --radius: 6px;
+  --radius-lg: 8px;
   --font: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
 }
 
@@ -46,7 +46,7 @@ body {
 /* ---------- Buttons ---------- */
 .btn {
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
   font-size: 16px;
@@ -158,7 +158,7 @@ body {
 .app-icon {
   width: 64px;
   height: 64px;
-  border-radius: 16px;
+  border-radius: 8px;
   box-shadow: 0 6px 18px rgba(0, 103, 255, 0.25);
   flex-shrink: 0;
 }
@@ -229,7 +229,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 .toggle-password:hover { background: var(--primary-soft); }
@@ -257,7 +257,7 @@ body {
   position: relative;
   width: 46px;
   height: 28px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--ink-border);
   transition: background-color 0.2s ease;
 }
@@ -268,7 +268,7 @@ body {
   left: 3px;
   width: 22px;
   height: 22px;
-  border-radius: 50%;
+  border-radius: 4px;
   background: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s ease;
@@ -324,7 +324,7 @@ body {
 
   .signin-eyebrow { margin-bottom: 26px; }
   .signin-lede { font-size: 18px; margin-bottom: 26px; }
-  .app-icon { width: 52px; height: 52px; border-radius: 13px; }
+  .app-icon { width: 52px; height: 52px; border-radius: 8px; }
 }
 
 

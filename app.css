@@ -1,15 +1,15 @@
 /* Gustavo app (after sign-in). Light only; builds on styles.css. */
 
-/* Everything sits on white; boxes are drawn with a thin grey outline. */
+/* The page is always white, with no grey fills: soft fills are a very light blue, and boxes float on a soft shadow. */
 .app-body {
   --frame: #ffffff;
   --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f5f5f7;
-  --surface-3: #ebebef;
-  --card: #fafafb;
-  --card-border: #ececf0;
-  --border: #e6e6ea;
+  --surface-2: #f4f8ff;
+  --surface-3: #e6eefd;
+  --card: #fafcff;
+  --card-border: #e5ebf5;
+  --border: #e7eaf0;
   --border-strong: #d6d6dc;
   --text: #111111;
   --text-muted: #6b6b70;
@@ -44,24 +44,18 @@
   --green: #15803d;
   --green-soft: #e9f7ee;
   --danger: #d10f2d;
-  --radius-card: 26px;
+  --radius-card: 8px;
   /* Headings: Playfair Display, a classic luxury serif; everything else stays Inter. */
   --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
   --sheet-bg: #ffffff;
   --shadow-card: 0 1px 2px rgba(17, 17, 17, 0.04), 0 8px 24px rgba(17, 17, 17, 0.05);
   /* Only a few places lift off the page: the tasks box and anything that floats over it. */
-  --shadow-soft: 0 1px 2px rgba(17, 17, 17, 0.03), 0 12px 32px -12px rgba(17, 17, 17, 0.08);
+  --shadow-soft: 0 1px 3px rgba(16, 24, 40, 0.06), 0 10px 30px rgba(16, 24, 40, 0.08);
   color-scheme: light;
   background: var(--frame);
   color: var(--text);
   font-size: 15px;
 }
-
-.app-body.bg-1 { --frame: #f2f7ff; --bg: #f2f7ff; --surface-2: #eaf2ff; --card: #f7faff; }
-.app-body.bg-2 { --frame: #f2faf4; --bg: #f2faf4; --surface-2: #ecf7ef; --card: #f6fbf7; }
-.app-body.bg-3 { --frame: #fff3f4; --bg: #fff3f4; --surface-2: #fdedef; --card: #fff7f8; }
-.app-body.bg-4 { --frame: #f2f2f4; --bg: #f2f2f4; --surface-2: #ececef; --card: #f7f7f8; }
-.app-body.bg-1, .app-body.bg-2, .app-body.bg-3, .app-body.bg-4 { background: var(--frame); }
 
 /* Dark mode: the same tokens with dark values (set on <html> so it applies before first paint). */
 html.dark .app-body {
@@ -101,14 +95,7 @@ html.dark .app-body {
   color-scheme: dark;
 }
 
-/* Background tints, dark versions. */
-html.dark .app-body.bg-1 { --frame: #111a2b; --bg: #111a2b; --card: #172033; }
-html.dark .app-body.bg-2 { --frame: #111d17; --bg: #111d17; --card: #17251d; }
-html.dark .app-body.bg-3 { --frame: #211317; --bg: #211317; --card: #2a191e; }
-html.dark .app-body.bg-4 { --frame: #161618; --bg: #161618; --card: #1d1d20; }
-
 /* Spots that put white text on the text colour, which is light in dark mode. */
-html.dark .tag.tier-centurion,
 html.dark .transition .tag.to.st-waiting_provider { color: var(--frame); }
 html.dark .hbar-track { background: repeating-linear-gradient(-45deg, var(--surface-3) 0 2px, var(--surface-2) 2px 7px); }
 html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
@@ -159,7 +146,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   display: grid;
   place-items: center;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
@@ -212,7 +199,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   top: 50%;
   transform: translateY(-50%);
   padding: 7px 11px;
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: 0 8px 20px rgba(17, 17, 17, 0.1);
@@ -368,7 +355,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   display: inline-grid;
   place-items: center;
   border: none;
-  border-radius: 50%;
+  border-radius: 6px;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
@@ -385,7 +372,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   gap: 8px 16px;
   margin-bottom: 20px;
   padding: 12px 18px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--orange-50);
   border: 1px solid var(--orange-100);
   font-size: 14px;
@@ -426,7 +413,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   height: 44px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
+  border-radius: 6px;
   background: var(--orange-50);
   border: 1px solid var(--orange-100);
   color: var(--orange-600);
@@ -476,7 +463,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   align-items: center;
   height: 24px;
   padding: 0 9px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface-2);
   color: var(--text);
   font-size: 12px;
@@ -552,7 +539,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   padding: 0 8px;
   display: inline-grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface-2);
   color: var(--text);
   font-size: 12px;
@@ -562,7 +549,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 
 .empty {
   padding: 26px 16px;
-  border-radius: 20px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px dashed var(--border-strong);
   color: var(--text-muted);
@@ -586,7 +573,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   height: 40px;
   padding: 0 16px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface);
   color: var(--text);
   font: inherit;
@@ -622,7 +609,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   height: 42px;
   padding: 0 40px 0 16px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b70' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center / 16px;
   color: var(--text);
   font: inherit;
@@ -644,7 +631,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   height: 42px;
   padding: 0 16px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface);
   color: var(--text-muted);
 }
@@ -661,7 +648,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   font-size: 15px;
 }
 
-.search.lg { height: 54px; flex: none; border-radius: 18px; background: var(--surface-2); border-color: transparent; }
+.search.lg { height: 54px; flex: none; border-radius: 8px; background: var(--surface-2); border-color: transparent; }
 .search.lg:focus-within { background: var(--surface); border-color: var(--primary); }
 
 .seg-radio {
@@ -670,7 +657,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   padding: 5px;
   max-width: 100%;
   overflow-x: auto;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface-2);
   scrollbar-width: none;
 }
@@ -687,7 +674,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 .seg-radio span {
   display: block;
   padding: 9px 14px;
-  border-radius: 999px;
+  border-radius: 6px;
   color: var(--text-muted);
   font-size: 14px;
   font-weight: 600;
@@ -726,7 +713,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   align-items: center;
   height: 40px;
   padding: 0 16px;
-  border-radius: 999px;
+  border-radius: 6px;
   border: 1px solid var(--border-strong);
   font-size: 14px;
   font-weight: 500;
@@ -749,7 +736,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   gap: 7px;
   height: 34px;
   padding: 0 13px;
-  border-radius: 999px;
+  border-radius: 6px;
   border: 1px solid var(--border-strong);
   background: transparent;
   color: var(--text-muted);
@@ -770,10 +757,6 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 .tag.pr-urgent,
 .tag.alert { border-color: rgba(255, 77, 26, 0.5); color: var(--red-text); }
 .tag.pr-high { border-color: rgba(249, 115, 22, 0.5); color: var(--orange-text); }
-/* Card types: Centurion black like the card, Platinum silver, World Elite outlined. */
-.tag.tier-centurion { background: var(--text); border-color: var(--text); color: #fff; }
-.tag.tier-platinum { background: var(--surface-3); border-color: transparent; color: var(--text); }
-.tag.tier-world-elite { background: transparent; border-color: var(--border-strong); color: var(--text); }
 
 /* ---------- Copyable IDs ---------- */
 .id-chip {
@@ -812,7 +795,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   grid-template-columns: 26px minmax(0, 1fr);
   gap: 14px;
   padding: 18px 20px;
-  border-radius: 24px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
   cursor: pointer;
@@ -883,7 +866,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 .hashtag {
   flex-shrink: 0;
   padding: 2px 10px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--primary-soft);
   color: var(--primary);
   font-size: 13px;
@@ -927,7 +910,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   height: 34px;
   padding: 0 14px;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface);
   color: var(--text);
   font-size: 13px;
@@ -1012,7 +995,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   height: 34px;
   padding: 0 30px 0 14px;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b70' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 14px;
   color: var(--text-muted);
   font: inherit;
@@ -1045,7 +1028,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   height: 34px;
   padding: 0 14px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface-2);
   color: var(--text);
   font: inherit;
@@ -1116,7 +1099,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   align-items: center;
   gap: 12px;
   padding: 14px 14px 14px 18px;
-  border-radius: 22px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -1158,7 +1141,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   height: 40px;
   padding: 0 16px;
   border: none;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--primary);
   color: #fff;
   font: inherit;
@@ -1180,7 +1163,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 .update {
   min-width: 0;
   padding: 18px;
-  border-radius: 24px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -1231,7 +1214,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 .quote {
   margin-top: 12px;
   padding: 12px 14px;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--card-border);
   font-size: 14px;
@@ -1246,7 +1229,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   gap: 12px;
   margin-top: 14px;
   padding: 10px;
-  border-radius: 20px;
+  border-radius: 8px;
   background: var(--surface-2);
 }
 
@@ -1356,14 +1339,14 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
 .hbar-track {
   height: 14px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: 6px;
   background: repeating-linear-gradient(-45deg, #ebe6e1 0 2px, #f6f3f0 2px 7px);
 }
 
 .hbar-fill {
   display: block;
   height: 100%;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--primary);
 }
 
@@ -1449,7 +1432,7 @@ html.dark .tabbar { background: rgba(26, 29, 35, 0.86); }
   flex-direction: column-reverse;
   align-items: center;
   gap: var(--dot-gap, 5px);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .dot-col:hover { background: var(--surface-2); }
@@ -1529,7 +1512,7 @@ body.sheet-open { overflow: hidden; }
   max-height: calc(100vh - 28px);
   overflow-y: auto;
   padding: 20px 22px 26px;
-  border-radius: 30px;
+  border-radius: 8px;
   background: var(--sheet-bg);
   color: var(--text);
   box-shadow: -24px 0 60px rgba(17, 17, 17, 0.14);
@@ -1550,7 +1533,7 @@ body.sheet-open { overflow: hidden; }
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--surface-2);
   color: var(--text);
 }
@@ -1606,7 +1589,7 @@ body.sheet-open { overflow: hidden; }
   min-height: 56px;
   padding: 16px 18px;
   border: 1px solid transparent;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--surface-2);
   color: var(--text);
   font: inherit;
@@ -1650,7 +1633,7 @@ textarea.control {
   grid-row: 1;
   display: grid;
   place-items: center;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--surface-2);
   box-shadow: -8px 0 0 var(--sheet-bg);
   color: var(--text);
@@ -1673,7 +1656,7 @@ textarea.control {
   gap: 14px;
   margin-bottom: 20px;
   padding: 16px;
-  border-radius: 24px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -1693,7 +1676,7 @@ textarea.control {
 .client-card-notes {
   margin-top: 8px;
   padding: 8px 12px;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--surface);
   font-size: 13px;
 }
@@ -1705,7 +1688,7 @@ textarea.control {
   height: 46px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
+  border-radius: 6px;
   border: 1px solid var(--border-strong);
   background: var(--surface);
   color: var(--text);
@@ -1719,7 +1702,7 @@ textarea.control {
   gap: 16px 18px;
   margin: 20px 0;
   padding: 18px;
-  border-radius: 22px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -1777,7 +1760,7 @@ textarea.control {
   align-items: center;
   gap: 12px;
   padding: 10px 10px 10px 12px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
   cursor: pointer;
@@ -1804,7 +1787,7 @@ textarea.control {
   height: 44px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
+  border-radius: 8px;
   background: var(--primary);
   color: #fff;
   font-size: 11px;
@@ -1834,7 +1817,7 @@ textarea.control {
   gap: 10px;
   margin-bottom: 18px;
   padding: 12px 16px;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--primary-soft);
   color: #0a3d91;
   font-size: 14px;
@@ -1900,7 +1883,7 @@ textarea.control {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -1936,7 +1919,7 @@ textarea.control {
   gap: 12px;
   padding: 6px 16px 6px 6px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface);
   font-size: 14px;
   font-weight: 600;
@@ -1965,7 +1948,7 @@ textarea.control {
   display: grid;
   place-items: center;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--surface);
   font-size: 24px;
   cursor: pointer;
@@ -1997,12 +1980,6 @@ textarea.control {
 .tone-row button.tone-13 { background: #22c55e; }
 .tone-row button.tone-14 { background: #ff4d8d; }
 
-.bg-swatch.bg-swatch-0 { background: #efebe6; }
-.bg-swatch.bg-swatch-1 { background: #e7f0ff; }
-.bg-swatch.bg-swatch-2 { background: #e8f5ec; }
-.bg-swatch.bg-swatch-3 { background: #fbe9eb; }
-.bg-swatch.bg-swatch-4 { background: #e7e7ea; }
-
 .upload-btn { position: relative; overflow: hidden; }
 .upload-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
@@ -2014,7 +1991,7 @@ textarea.control {
   z-index: 80;
   max-width: calc(100vw - 32px);
   padding: 12px 20px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
@@ -2033,7 +2010,7 @@ textarea.control {
   position: fixed;
   z-index: 90;
   padding: 8px 12px;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: 0 10px 28px rgba(17, 17, 17, 0.14);
@@ -2110,7 +2087,7 @@ textarea.control {
     align-items: center;
     justify-content: space-around;
     padding: 8px 10px;
-    border-radius: 999px;
+    border-radius: 6px;
     background: rgba(255, 255, 255, 0.84);
     border: 1px solid var(--border);
     backdrop-filter: blur(20px) saturate(1.6);
@@ -2146,7 +2123,7 @@ textarea.control {
     display: grid;
     place-items: center;
     border: none;
-    border-radius: 50%;
+    border-radius: 6px;
     background: var(--primary);
     color: #fff;
     box-shadow: 0 8px 20px rgba(0, 103, 255, 0.4);
@@ -2161,7 +2138,7 @@ textarea.control {
     max-width: none;
     max-height: 92vh;
     padding: 12px 18px calc(24px + env(safe-area-inset-bottom));
-    border-radius: 30px 30px 0 0;
+    border-radius: 8px 8px 0 0;
     box-shadow: 0 -20px 50px rgba(17, 17, 17, 0.16);
     animation: slideUp 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -2181,10 +2158,10 @@ textarea.control {
 
 @media (max-width: 560px) {
   .stats { gap: 10px; }
-  .stat { min-height: 124px; padding: 14px 16px 16px; border-radius: 22px; }
+  .stat { min-height: 124px; padding: 14px 16px 16px; border-radius: 8px; }
   .stat-value { font-size: 40px; }
   .stat-icon { width: 36px; height: 36px; }
-  .panel { padding: 16px; border-radius: 22px; }
+  .panel { padding: 16px; border-radius: 8px; }
   .case { grid-template-columns: 22px minmax(0, 1fr); gap: 12px; padding: 16px; }
   .case-check { width: 22px; height: 22px; }
   .case-top,
@@ -2278,7 +2255,7 @@ textarea.control {
   height: 42px;
   padding: 0 8px 0 10px;
   border: none;
-  border-radius: 14px;
+  border-radius: 8px;
   background: none;
   color: var(--text);
   font: inherit;
@@ -2301,7 +2278,7 @@ textarea.control {
   padding: 0 7px;
   display: inline-grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface-2);
   color: var(--text-muted);
   font-size: 12px;
@@ -2397,7 +2374,7 @@ textarea.control {
   gap: 10px;
   min-height: 130px;
   padding: 14px 10px 8px 14px;
-  border-radius: 16px;
+  border-radius: 8px;
   box-shadow: 0 6px 16px rgba(17, 17, 17, 0.08);
 }
 
@@ -2432,7 +2409,7 @@ textarea.control {
   align-items: center;
   gap: 12px;
   padding: 10px 8px 10px 12px;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -2497,7 +2474,7 @@ textarea.control {
     height: 40px;
     padding: 0 12px;
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: 6px;
     background: var(--surface);
   }
 
@@ -2520,7 +2497,7 @@ textarea.control {
   padding: 0 5px;
   display: grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: 6px;
   border: 2px solid var(--surface);
   font-size: 11px;
   font-weight: 800;
@@ -2546,7 +2523,7 @@ textarea.control {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border-radius: 50%;
+  border-radius: 6px;
   background: color-mix(in srgb, #7b61ff 14%, transparent);
   color: #7b61ff;
 }
@@ -2564,7 +2541,7 @@ textarea.control {
   height: 42px;
   padding: 0 14px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface);
   color: var(--text);
   font: inherit;
@@ -2600,7 +2577,7 @@ textarea.control {
   height: 34px;
   padding: 0 14px;
   border: none;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--red-soft);
   color: var(--red-text);
   font: inherit;
@@ -2636,7 +2613,7 @@ textarea.control {
   gap: 6px;
   padding: 10px;
   border: 1px solid var(--card-border);
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--cal-bg);
   color: var(--text);
   font: inherit;
@@ -2672,7 +2649,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
 
 .cal-date .cal-today {
   padding: 2px 7px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--primary);
   color: #fff;
   text-transform: none;
@@ -2732,7 +2709,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
 
 @media (max-width: 560px) {
   .cal-grid { gap: 4px; }
-  .cal-day { min-height: 64px; padding: 6px; gap: 4px; border-radius: 12px; }
+  .cal-day { min-height: 64px; padding: 6px; gap: 4px; border-radius: 8px; }
   .cal-date { font-size: 13px; }
   .cal-date small { display: none; }
   .cal-count { font-size: 20px; }
@@ -2758,7 +2735,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   align-items: start;
   gap: 12px;
   padding: 14px;
-  border-radius: 20px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
   cursor: pointer;
@@ -2771,7 +2748,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   display: grid;
   place-items: center;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 8px;
   background: var(--primary-soft);
   color: var(--primary);
   font-size: 12px;
@@ -2853,7 +2830,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   gap: 2px;
   padding: 10px 14px;
   border: 1px solid var(--card-border);
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--card);
   color: var(--text);
   font: inherit;
@@ -2909,7 +2886,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
 .share-preview {
   margin-bottom: 18px;
   padding: 14px 16px;
-  border-radius: 16px;
+  border-radius: 8px;
   font-size: 14px;
   line-height: 1.4;
 }
@@ -2928,7 +2905,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   gap: 12px;
   padding: 10px 14px 10px 12px;
   border: 1px solid var(--card-border);
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--card);
   cursor: pointer;
 }
@@ -3010,7 +2987,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   gap: 4px;
   padding: 16px;
   border: 2px solid transparent;
-  border-radius: 22px;
+  border-radius: 8px;
   background: var(--surface);
   box-shadow: var(--shadow-card);
   color: var(--text);
@@ -3032,13 +3009,13 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   display: grid;
   place-items: center;
   margin-bottom: 6px;
-  border-radius: 14px;
+  border-radius: 8px;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
-.supplier-logo.sm { width: 34px; height: 34px; margin: 0; border-radius: 11px; font-size: 12px; }
+.supplier-logo.sm { width: 34px; height: 34px; margin: 0; border-radius: 8px; font-size: 12px; }
 
 .supplier-name {
   max-width: 100%;
@@ -3111,7 +3088,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
     margin-bottom: 10px;
     padding: 12px 14px;
     border: 1px solid var(--card-border);
-    border-radius: 18px;
+    border-radius: 8px;
     background: var(--card);
   }
 
@@ -3145,7 +3122,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid var(--card-border);
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--card);
   color: var(--text);
   text-decoration: none;
@@ -3154,9 +3131,9 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
 .case-booking:hover { border-color: var(--primary); }
 
 /* Case numbers: always the bigger chip; bigger still in a case's own header. */
-.id-chip.case-no { height: 30px; padding: 0 10px; border-radius: 10px; font-size: 14px; font-weight: 700; }
+.id-chip.case-no { height: 30px; padding: 0 10px; border-radius: 8px; font-size: 14px; font-weight: 700; }
 .id-chip.case-no .ico { width: 14px; height: 14px; }
-.id-chip.case-no.lg { height: 36px; padding: 0 12px; border-radius: 12px; font-size: 18px; letter-spacing: -0.01em; }
+.id-chip.case-no.lg { height: 36px; padding: 0 12px; border-radius: 8px; font-size: 18px; letter-spacing: -0.01em; }
 .id-chip.case-no.lg .ico { width: 16px; height: 16px; }
 .sheet-head .eyebrow,
 .page-head .eyebrow { flex-wrap: wrap; }
@@ -3168,7 +3145,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   gap: 12px;
   margin-bottom: 20px;
   padding: 16px;
-  border-radius: 24px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
 }
@@ -3187,7 +3164,7 @@ button.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset
   gap: 10px;
   min-height: 46px;
   padding: 6px 6px 6px 12px;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--surface);
 }
 
@@ -3235,7 +3212,7 @@ a.contact-value:hover { color: var(--primary); }
   flex-direction: column;
   gap: 4px;
   padding: 12px 14px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--primary-soft);
 }
 
@@ -3259,7 +3236,7 @@ a.contact-value:hover { color: var(--primary); }
   gap: 12px;
   margin-bottom: 20px;
   padding: 16px;
-  border-radius: 24px;
+  border-radius: 8px;
   background: var(--primary-soft);
   border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
 }
@@ -3285,7 +3262,7 @@ a.contact-value:hover { color: var(--primary); }
   align-items: flex-start;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--surface);
 }
 
@@ -3309,7 +3286,7 @@ a.contact-value:hover { color: var(--primary); }
   align-items: center;
   gap: 2px;
   padding: 8px 4px 9px;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
   text-align: center;
@@ -3338,7 +3315,7 @@ a.contact-value:hover { color: var(--primary); }
 .kind-badge {
   flex-shrink: 0;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--text);
   color: var(--surface);
   font-size: 11px;
@@ -3353,7 +3330,7 @@ a.contact-value:hover { color: var(--primary); }
   gap: 3px;
   margin-top: 6px;
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: 8px;
   background: var(--primary-soft);
 }
 
@@ -3432,7 +3409,7 @@ a.contact-value:hover { color: var(--primary); }
   margin-left: auto;
   padding: 0 12px 0 10px;
   border: none;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--primary);
   color: #fff;
   font: inherit;
@@ -3451,7 +3428,7 @@ a.contact-value:hover { color: var(--primary); }
 .case-last.none { padding: 8px 8px 8px 14px; font-size: 15px; }
 
 .quick-followup { gap: 8px; margin-top: 8px; }
-.quick-followup input { height: 48px; padding: 0 16px; border-radius: 16px; background: var(--surface); font-size: 17px; }
+.quick-followup input { height: 48px; padding: 0 16px; border-radius: 8px; background: var(--surface); font-size: 17px; }
 
 .followup p { font-size: 18px; line-height: 1.5; }
 .followup-meta { font-size: 14px; }
@@ -3473,7 +3450,7 @@ a.contact-value:hover { color: var(--primary); }
   max-width: 1320px;
   padding: 0;
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 8px;
   background: var(--surface);
 }
 
@@ -3501,7 +3478,7 @@ a.contact-value:hover { color: var(--primary); }
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--surface-2);
   font-size: 30px;
 }
@@ -3533,7 +3510,7 @@ a.contact-value:hover { color: var(--primary); }
   align-items: center;
   gap: 14px;
   padding: 16px 18px;
-  border-radius: 22px;
+  border-radius: 8px;
   background: var(--primary-soft);
 }
 
@@ -3552,7 +3529,7 @@ a.contact-value:hover { color: var(--primary); }
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  border-radius: 22px;
+  border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
 }
@@ -3576,27 +3553,6 @@ a.contact-value:hover { color: var(--primary); }
 .cf-facts dt { margin-bottom: 4px; font-size: 12px; color: var(--text-muted); }
 .cf-facts dd { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 0; font-size: 14px; font-weight: 600; }
 
-.rank-badge {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  margin-left: auto;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.rank-badge .ico { width: 16px; height: 16px; }
-.rank-badge.tier-centurion { background: var(--text); color: var(--surface); }
-.rank-badge.tier-platinum { background: var(--surface-3); }
-.rank-badge.tier-world-elite { background: transparent; box-shadow: inset 0 0 0 1px var(--border-strong); }
 
 .cf-left .case-bookings { margin: 0; }
 
@@ -3625,7 +3581,7 @@ a.contact-value:hover { color: var(--primary); }
 }
 
 .chat-day { display: flex; justify-content: center; margin: 6px 0 2px; }
-.chat-day span { padding: 3px 12px; border-radius: 999px; background: var(--surface-2); color: var(--text-muted); font-size: 12px; font-weight: 600; }
+.chat-day span { padding: 3px 12px; border-radius: 6px; background: var(--surface-2); color: var(--text-muted); font-size: 12px; font-weight: 600; }
 
 .chat-event { align-self: center; max-width: 92%; font-size: 12px; color: var(--text-muted); text-align: center; }
 .chat-empty { margin: auto; max-width: 280px; font-size: 14px; color: var(--text-muted); text-align: center; }
@@ -3636,13 +3592,13 @@ a.contact-value:hover { color: var(--primary); }
 .chat-bubble {
   min-width: 0;
   padding: 10px 14px 8px;
-  border-radius: 18px 18px 18px 6px;
+  border-radius: 8px 8px 8px 2px;
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: 0 1px 2px rgba(17, 17, 17, 0.04);
 }
 
-.chat-msg.mine .chat-bubble { border-color: transparent; border-radius: 18px 18px 6px 18px; background: var(--primary); color: #fff; }
+.chat-msg.mine .chat-bubble { border-color: transparent; border-radius: 8px 8px 2px 8px; background: var(--primary); color: #fff; }
 .chat-name { display: block; font-size: 12px; font-weight: 700; color: var(--primary); }
 .chat-bubble p { margin: 2px 0 0; font-size: 17px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
 .chat-time { display: block; margin-top: 4px; font-size: 11px; color: var(--text-muted); text-align: right; }
@@ -3661,7 +3617,7 @@ a.contact-value:hover { color: var(--primary); }
   height: 34px;
   padding: 0 12px;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface);
   color: var(--text);
   font: inherit;
@@ -3684,7 +3640,7 @@ a.contact-value:hover { color: var(--primary); }
   gap: 8px;
   padding: 5px 5px 5px 16px;
   border: 1px solid var(--border-strong);
-  border-radius: 24px;
+  border-radius: 8px;
   background: var(--surface-2);
 }
 
@@ -3712,7 +3668,7 @@ a.contact-value:hover { color: var(--primary); }
   display: grid;
   place-items: center;
   border: none;
-  border-radius: 50%;
+  border-radius: 6px;
   background: var(--primary);
   color: #fff;
   cursor: pointer;
@@ -3736,7 +3692,7 @@ a.contact-value:hover { color: var(--primary); }
   .sheet.case-full::before { display: none; }
   .case-full.page { height: auto; }
   .cf-head { padding: 12px 14px; align-items: flex-start; }
-  .cf-pic { width: 46px; height: 46px; border-radius: 14px; font-size: 24px; }
+  .cf-pic { width: 46px; height: 46px; border-radius: 8px; font-size: 24px; }
   .cf-title { font-size: 20px; }
   .cf-left { padding: 14px; }
   .cf-facts { grid-template-columns: minmax(0, 1fr); }
@@ -3744,14 +3700,13 @@ a.contact-value:hover { color: var(--primary); }
 
 @media (max-width: 560px) {
   .cf-section .case-contact-head { flex-wrap: wrap; }
-  .cf-section .rank-badge { order: 3; margin-left: 0; }
 }
 
 /* ---------- Case bars: one line each, opened up on click ---------- */
 .case-list { gap: 8px; }
 
 .case-bar {
-  border-radius: 18px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid var(--card-border);
   transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
@@ -3768,7 +3723,7 @@ a.contact-value:hover { color: var(--primary); }
   align-items: center;
   gap: 12px;
   padding: 12px 14px 12px 16px;
-  border-radius: 18px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
@@ -3840,29 +3795,6 @@ a.contact-value:hover { color: var(--primary); }
   border-bottom: 1px solid var(--border);
 }
 
-.cw-nav { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.cw-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 42px;
-  padding: 0 16px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.cw-nav-btn .ico { width: 18px; height: 18px; }
-.cw-nav-btn:hover { border-color: var(--border-strong); background: var(--surface-2); }
-.cw-nav-btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
-.cw-nav-btn.primary:hover { background: var(--primary-hover); }
-
 .cw-body {
   flex: 1;
   min-height: 0;
@@ -3880,12 +3812,12 @@ a.contact-value:hover { color: var(--primary); }
   flex-direction: column;
   gap: 16px;
   padding: 18px;
-  border-radius: 22px;
+  border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
 }
 
-.cw-body .case-chat { border: 1px solid var(--border); border-radius: 22px; overflow: hidden; }
+.cw-body .case-chat { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .chat-head .chat-add { margin-left: auto; }
 
 .cw-label {
@@ -3912,12 +3844,12 @@ a.contact-value:hover { color: var(--primary); }
 .cw-supplier { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
 .cw-supplier .ico { width: 15px; height: 15px; }
 
-.cw-reminder { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 16px; background: var(--orange-50); border: 1px solid var(--orange-100); }
+.cw-reminder { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 8px; background: var(--orange-50); border: 1px solid var(--orange-100); }
 .cw-reminder[hidden] { display: none; }
 .cw-reminder .form-actions { margin: 0; }
 
 .cw-reminders { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.cw-reminders li { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border-radius: 14px; background: var(--orange-50); font-size: 14px; }
+.cw-reminders li { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border-radius: 8px; background: var(--orange-50); font-size: 14px; }
 .cw-reminders li > .ico { width: 16px; height: 16px; color: var(--orange-600); }
 .cw-reminders li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .cw-reminders li.overdue { background: var(--red-soft); }
@@ -3931,7 +3863,7 @@ a.contact-value:hover { color: var(--primary); }
 .cw-edit[hidden] { display: none; }
 
 .cw-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.cw-facts .cw-field { padding: 12px 14px; border-radius: 16px; background: var(--surface-2); }
+.cw-facts .cw-field { padding: 12px 14px; border-radius: 8px; background: var(--surface-2); }
 .cw-date { background: var(--primary-soft) !important; }
 .cw-date b { color: var(--primary); }
 .cw-date small { font-size: 13px; font-weight: 600; color: var(--text-muted); }
@@ -3946,7 +3878,7 @@ a.contact-value:hover { color: var(--primary); }
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border-radius: 18px;
+  border-radius: 8px;
   border: 1px dashed var(--border-strong);
 }
 
@@ -3972,7 +3904,6 @@ a.contact-value:hover { color: var(--primary); }
 
 .cw-client-top { display: grid; grid-template-columns: minmax(0, 1.6fr) auto auto; align-items: start; gap: 16px; }
 .cw-client-name b { font-size: 20px; font-weight: 800; }
-.cw-client-top .rank-badge { margin: 0; }
 .cw-client-ids { display: flex; flex-wrap: wrap; gap: 20px; }
 .cw-none { margin: 0; font-size: 14px; color: var(--text-muted); }
 .cw-notes { margin: 0; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
@@ -3987,7 +3918,6 @@ a.contact-value:hover { color: var(--primary); }
 
 @media (max-width: 860px) {
   .cw-top { padding: 10px 12px; align-items: flex-start; }
-  .cw-nav-btn { height: 38px; padding: 0 12px; font-size: 13px; }
   .cw-body { padding: 10px; }
   .cw-box { padding: 14px; }
   .cw-client-top { grid-template-columns: minmax(0, 1fr) auto; }
@@ -4034,7 +3964,7 @@ a.contact-value:hover { color: var(--primary); }
   height: 34px;
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: 6px;
   background: none;
   cursor: pointer;
 }
@@ -4077,7 +4007,7 @@ a.contact-value:hover { color: var(--primary); }
   padding: 0 6px;
   display: grid;
   place-items: center;
-  border-radius: 999px;
+  border-radius: 6px;
   border: 2px solid var(--bg);
   color: #fff;
   font-size: 11px;
@@ -4114,7 +4044,7 @@ a.contact-value:hover { color: var(--primary); }
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--surface-2);
 }
 
@@ -4125,7 +4055,7 @@ a.contact-value:hover { color: var(--primary); }
   height: 32px;
   padding: 0 12px;
   border: none;
-  border-radius: 999px;
+  border-radius: 6px;
   background: none;
   color: var(--text-muted);
   font: inherit;
@@ -4140,16 +4070,35 @@ a.contact-value:hover { color: var(--primary); }
 .layout-switch button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 
 
-/* ---------- Clean and airy: everything on white, no boxes or dividing lines; space does the separating ---------- */
-.content { padding: 28px 48px 64px; }
-.dash { grid-template-columns: 240px minmax(0, 1fr); gap: 56px; }
-.dash-left { gap: 32px; }
+/* ---------- White page; the menus and boxes float on a soft shadow, with no outline.
+   Corners are small everywhere (6–8px), not rounded. ---------- */
+.content { padding: 28px 44px 64px; }
+.dash { grid-template-columns: 248px minmax(0, 1fr); gap: 24px; }
+.dash-left { gap: 20px; }
 
-/* The rail has no dividing line; its buttons are outlined and the blue + keeps its glow. */
-.rail { border-right: 0; }
-.rail-btn { box-shadow: none; }
-.rail-btn:hover { box-shadow: 0 6px 16px rgba(17, 17, 17, 0.07); }
-.rail-new { box-shadow: 0 8px 20px rgba(0, 103, 255, 0.28); }
+.panel,
+.dash-nav {
+  border-color: transparent;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.dash-nav { padding: 14px 12px; }
+.dash-main > .panel { padding: 14px 18px 18px; }
+.dash-me { padding: 2px 4px 10px 6px; border-bottom: 0; }
+
+/* The rail: plain icons with no circles or outlines. A soft square shows under the one you point at,
+   a blue one under the page you're on; the blue + stays solid. */
+.rail-btn { border: 0; background: transparent; box-shadow: none; }
+.rail-btn:hover { transform: none; background: var(--surface-2); box-shadow: none; }
+.rail-btn.active { background: var(--primary-soft); color: var(--primary); box-shadow: none; }
+.rail-new,
+.rail-new:hover { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(0, 103, 255, 0.25); }
+.rail-new:hover { background: var(--primary-hover); }
+.rail-me,
+.rail-me:hover,
+.rail-me.active { background: transparent; box-shadow: none; }
 
 /* The rail never disappears: a case or side window opens beside it, not over it. */
 @media (min-width: 861px) {
@@ -4157,26 +4106,78 @@ a.contact-value:hover { color: var(--primary); }
   .sheet.case-full { width: 100%; }
 }
 
-/* The dashboard's side menu, Reminders and Sticky notes, and the list sit straight on the page. */
-.dash-nav,
-.dash-main > .panel { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
-.dash-me { padding: 0 4px 6px 10px; border-bottom: 0; }
-
-/* My tasks' filters sit at the end of the title row, as soft grey pills. */
+/* My tasks' filters sit at the end of the title row. */
 .dash-head .home-filters { margin-left: auto; flex-wrap: nowrap; }
-.dash-head .control-sm { border-color: transparent; background-color: var(--surface-2); }
 .dash-head .control-sm.set { background-color: var(--primary-soft); }
 
+/* Inside a case, the boxes float on a shadow too (with room around them so the shadow isn't cut off). */
+.cw-box,
+.cw-body .case-chat { border-color: transparent; box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 4px 14px rgba(16, 24, 40, 0.06); }
+.cw-left { margin: -4px -6px -12px -4px; padding: 4px 6px 12px 4px; }
+.case-full.page { border-color: transparent; box-shadow: var(--shadow-soft); }
+
+/* A case window growing out of a row (or shrinking back into it) runs its own animation. */
+.sheet-overlay.closing { pointer-events: none; }
+.sheet-overlay.closing .sheet { animation: none; }
+
+/* ---------- Card type: a little credit card and its name. Centurion black, Platinum silver, Fly Card light blue ---------- */
+.card-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.card-pic {
+  position: relative;
+  flex-shrink: 0;
+  width: 28px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--card-face);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* The chip on the card. */
+.card-pic::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 6px;
+  width: 6px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--card-chip);
+}
+
+.tier-centurion { --card-face: linear-gradient(135deg, #3a3a3d 0%, #0d0d0e 55%, #2a2a2d 100%); --card-chip: linear-gradient(135deg, #e6e6e9, #9c9ca3); }
+.tier-platinum { --card-face: linear-gradient(135deg, #f3f4f6 0%, #c6c9cf 50%, #eceef1 100%); --card-chip: linear-gradient(135deg, #f3dc97, #c9a449); }
+.tier-fly-card { --card-face: linear-gradient(135deg, #dcf1ff 0%, #8ccff7 55%, #c6e9ff 100%); --card-chip: linear-gradient(135deg, #f3dc97, #c9a449); }
+html.dark .tier-centurion .card-pic { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2); }
+
+.card-type.lg { gap: 10px; font-size: 13px; }
+.card-type.lg .card-pic { width: 38px; height: 24px; border-radius: 4px; }
+.card-type.lg .card-pic::before { left: 5px; top: 8px; width: 8px; height: 7px; }
+.client-card-name .card-type,
+.day-case-client .card-type { margin-left: 8px; }
+
 /* ---------- My tasks and All files: one row per case ---------- */
-/* Columns: No. / Client / Card type / Due date / Status / + Follow-up. The list is one grid and every row
-   shares its columns, so they line up; the client gets the most room and the spare space is shared out. */
+/* Columns: No. / Client (card type under the name) / Info (request type, headline under it) / Due date / Status /
+   follow-up and email. The list is one grid and every row shares its columns, so they line up; the client and
+   Info columns get the spare width, Info the most. */
 .case-list.task-list {
   display: grid;
-  grid-template-columns: max-content minmax(0, 2fr) minmax(max-content, 1fr) minmax(max-content, 1fr) minmax(max-content, 1fr) max-content;
+  grid-template-columns: max-content minmax(150px, 0.8fr) minmax(0, 1.5fr) max-content max-content max-content;
   grid-auto-rows: max-content;
   align-content: start;
-  column-gap: 32px;
-  row-gap: 4px;
+  column-gap: 28px;
+  row-gap: 2px;
 }
 
 .task-head,
@@ -4185,7 +4186,7 @@ a.contact-value:hover { color: var(--primary); }
   display: grid;
   grid-template-columns: subgrid;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 14px;
 }
 
 .task-list > .empty { grid-column: 1 / -1; }
@@ -4196,7 +4197,8 @@ a.contact-value:hover { color: var(--primary); }
   top: 0;
   z-index: 1;
   height: 36px;
-  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
   color: var(--text-faint);
   font-size: 11px;
   font-weight: 600;
@@ -4209,103 +4211,596 @@ a.contact-value:hover { color: var(--primary); }
 .task-head span:nth-child(5) { grid-column: 5; }
 .task-head span:nth-child(6) { grid-column: 6; }
 
-/* No lines between rows: a soft grey shows under the one you point at. */
-.task-row {
-  --dot: var(--text-faint);
-  border-radius: 18px;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
+/* A thin line between rows; a very light blue shows under the one you point at. */
+.task-row { transition: background-color 0.15s ease; }
+.task-row + .task-row { border-top: 1px solid var(--border); }
 .task-row:hover { background: var(--surface-2); }
 .task-row.is-done { opacity: 0.6; }
-.task-row.st-new { --dot: var(--primary); }
-.task-row.st-in_progress { --dot: var(--purple); }
-.task-row.st-waiting_provider { --dot: var(--amber); }
-.task-row.st-waiting_client { --dot: var(--teal); }
-.task-row.st-done { --dot: var(--green-vivid); }
 
-/* The first four columns are one button that opens the case. */
+/* The first four columns are one button that opens the case, growing out of the row. */
 .task-main {
   grid-column: 1 / 5;
   display: grid;
   grid-template-columns: subgrid;
   align-items: center;
   min-width: 0;
-  min-height: 64px;
-  border-radius: 12px;
+  min-height: 66px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .task-main:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 
 .task-no { font-size: 14px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
-.task-name { min-width: 0; overflow: hidden; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; }
-.task-tier { display: flex; }
+
+/* Client: the name, and the card type under it. */
+.task-client { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; padding: 10px 0; }
+.task-name,
+.task-type,
+.task-title { max-width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.task-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.task-client .card-type { gap: 7px; font-size: 10px; }
+.task-client .card-pic { width: 24px; height: 15px; }
+.task-client .card-pic::before { left: 3px; top: 5px; width: 5px; height: 4px; }
+
+/* Info: the request's picture on a soft tile, its type, and the headline under it. */
+.task-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+.task-pic {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.task-pic .emoji3d { width: 26px; height: 26px; vertical-align: 0; }
+.task-pic .photo-pic { width: 100%; height: 100%; border-radius: inherit; }
+.task-info-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.task-type { font-size: 14px; font-weight: 600; }
+.task-title { font-size: 13px; color: var(--text-muted); }
+
 .task-due { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .task-due.overdue { color: var(--red-text); font-weight: 600; }
 
-/* The status reads as a coloured dot and a word; it's still a menu to change it. */
-.task-status { position: relative; display: flex; align-items: center; justify-self: start; min-width: 0; }
+/* ---------- Status: a white pill on a gentle shadow, told apart by a small coloured square ----------
+   Needs attention is flagged in red; orange ongoing, pink waiting on the supplier, amber waiting on the client, green done. */
+.st-new { --st-color: var(--red); }
+.st-in_progress { --st-color: #ff7a1a; }
+.st-waiting_provider { --st-color: #ff3d8b; }
+.st-waiting_client { --st-color: #f5b000; }
+.st-done { --st-color: #17b26a; }
 
-.task-status::before {
-  content: "";
-  position: absolute;
-  left: 12px;
-  z-index: 1;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--dot);
-  pointer-events: none;
+.status-select.st-new,
+.status-select.st-in_progress,
+.status-select.st-waiting_provider,
+.status-select.st-waiting_client,
+.status-select.st-done {
+  padding-left: 28px;
+  border-color: transparent;
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"), linear-gradient(var(--st-color), var(--st-color));
+  background-repeat: no-repeat;
+  background-position: right 9px center, left 12px center;
+  background-size: 14px, 8px 8px;
+  color: var(--text);
+  box-shadow: var(--shadow-lift);
 }
+
+.status-select option { background: var(--surface); color: var(--text); }
+
+.tag.st-new,
+.tag.st-in_progress,
+.tag.st-waiting_provider,
+.tag.st-waiting_client,
+.tag.st-done,
+.transition .tag.to.st-new,
+.transition .tag.to.st-in_progress,
+.transition .tag.to.st-waiting_provider,
+.transition .tag.to.st-waiting_client,
+.transition .tag.to.st-done { gap: 7px; border-color: transparent; background: var(--surface); color: var(--text); box-shadow: var(--shadow-lift); }
+
+.tag.st-new::before,
+.tag.st-in_progress::before,
+.tag.st-waiting_provider::before,
+.tag.st-waiting_client::before,
+.tag.st-done::before { content: ""; flex-shrink: 0; width: 8px; height: 8px; background: var(--st-color); }
+
+/* Activity's bars: the left edge in the same colours (urgent open cases stay red). */
+.case-bar.st-new,
+.case-bar.st-in_progress,
+.case-bar.st-waiting_provider,
+.case-bar.st-waiting_client,
+.case-bar.st-done { --bar-edge: var(--st-color); }
+.case-bar.is-urgent { --bar-edge: var(--red); }
+
+.task-status { display: flex; align-items: center; justify-self: start; min-width: 0; }
 
 .task-row .task-status .status-select {
   max-width: 100%;
   height: 32px;
-  padding: 0 28px 0 27px;
-  border-color: transparent;
-  background-color: color-mix(in srgb, var(--dot) 12%, transparent);
-  background-position: right 9px center;
-  color: var(--text);
+  padding: 0 30px 0 28px;
   font-size: 13px;
   font-weight: 600;
 }
 
-.task-row .task-status .status-select:hover { background-color: color-mix(in srgb, var(--dot) 20%, transparent); }
-
-/* + Follow-up: adds one without opening the case, on a line that opens under the row. */
-.task-row .followup-add { justify-self: end; margin-left: 0; background: var(--primary-soft); color: var(--primary); }
-.task-row .followup-add .ico { color: currentColor; }
-.task-row .followup-add:hover { background: var(--primary); color: #fff; }
-.task-row .quick-followup { grid-column: 1 / -1; margin: 0 0 14px; cursor: default; }
-.task-row .quick-followup input { height: 44px; border-radius: 12px; font-size: 15px; }
-
-/* Narrower windows: a slimmer side menu, the due date under the client's name, and just + for a follow-up. */
-@media (min-width: 861px) and (max-width: 1180px) {
-  .content { padding: 28px 28px 64px; }
-  .dash { grid-template-columns: 220px minmax(0, 1fr); gap: 32px; }
-  .case-list.task-list { grid-template-columns: max-content minmax(0, 1fr) max-content 0 max-content max-content; column-gap: 18px; }
-  .task-head,
-  .task-row { padding: 0 12px; }
-  .task-head span:nth-child(4) { display: none; }
-  .task-main { grid-template-rows: auto auto; row-gap: 2px; padding: 12px 0; }
-  .task-no,
-  .task-tier { grid-row: 1 / 3; }
-  .task-name { grid-column: 2; grid-row: 1; }
-  .task-due { grid-column: 2; grid-row: 2; font-size: 13px; color: var(--text-muted); }
-  .task-row .followup-add { width: 32px; padding: 0; justify-content: center; font-size: 0; }
+/* ---------- Tabs: the side menu's current view and the pill tabs are the + button's blue, with its soft glow ---------- */
+.dash-item.active {
+  background: var(--primary-soft);
+  box-shadow: 0 4px 12px -2px rgba(0, 103, 255, 0.18);
 }
 
-/* Phones: file ID, client and card type on top, then the date; status and + Follow-up underneath. */
+.dash-item.active .dash-count { background: var(--primary); }
+
+.pills > button.active {
+  border-color: transparent;
+  background: var(--primary);
+  box-shadow: 0 6px 16px -4px rgba(0, 103, 255, 0.45);
+}
+
+/* Pointing at the file ID shows a small button that copies it. */
+.task-no { display: inline-flex; align-items: center; gap: 4px; }
+
+.task-copy {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.task-copy .ico { width: 14px; height: 14px; }
+.task-no:hover .task-copy,
+.task-copy:focus-visible { opacity: 1; }
+.task-copy:hover { background: var(--primary); color: #fff; }
+.task-copy:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+/* Touch screens have no pointing, so the copy button always shows there. */
+@media (hover: none) {
+  .task-copy { opacity: 1; }
+}
+
+/* Two icon buttons at the end: add a follow-up (with how many so far) and email the client. */
+.task-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.task-icon {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.task-icon .ico { width: 18px; height: 18px; }
+.task-icon:hover { background: var(--primary); color: #fff; }
+.task-icon:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.task-icon.is-off,
+.task-icon.is-off:hover { background: var(--surface-2); color: var(--text-faint); cursor: default; }
+
+.task-icon-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  border: 2px solid var(--surface);
+  background: var(--text);
+  color: var(--surface);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Follow-up opens a line under the row. */
+.task-row .quick-followup { grid-column: 1 / -1; margin: 0 0 12px; }
+.task-row .quick-followup input { height: 44px; border-radius: 6px; font-size: 15px; }
+
+/* Narrower windows: a slimmer side menu and tighter columns. */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .content { padding: 28px 28px 64px; }
+  .dash { grid-template-columns: 220px minmax(0, 1fr); gap: 20px; }
+  .case-list.task-list { grid-template-columns: max-content minmax(120px, 0.8fr) minmax(0, 1.4fr) max-content max-content max-content; column-gap: 16px; }
+  .task-head,
+  .task-row { padding: 0 10px; }
+  .task-pic { width: 34px; height: 34px; font-size: 19px; }
+  .task-pic .emoji3d { width: 22px; height: 22px; }
+}
+
+/* Phones: file ID and client (with the card) on top, then Info and the date; status and the two buttons underneath. */
 @media (max-width: 860px) {
   .content { padding: 20px 16px calc(116px + env(safe-area-inset-bottom)); }
+  .dash-main > .panel { padding: 10px; }
   .dash-head { flex-wrap: wrap; }
   .dash-head .home-filters { order: 3; width: 100%; margin-left: 0; }
   .dash-head .home-filters .control-sm { flex: 1 1 0; min-width: 0; }
   .case-list.task-list { display: flex; flex-direction: column; gap: 4px; }
   .task-head { display: none; }
-  .task-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px 12px; }
-  .task-main { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 0; }
-  .task-name { flex: 1 1 0; }
-  .task-due { order: 1; flex-basis: 100%; }
+  .task-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 12px 10px; }
+  .task-main { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 10px; min-height: 0; }
+  .task-client { flex: 1 1 0; padding: 0; }
+  .task-info,
+  .task-due { flex-basis: 100%; }
 }
+
+/* ---------- One white page: no lines on the rail or the page; things lift off it on a gentle shadow ---------- */
+.app-body { --shadow-lift: 0 1px 2px rgba(16, 24, 40, 0.05), 0 4px 14px rgba(16, 24, 40, 0.07); }
+html.dark .app-body { --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 14px rgba(0, 0, 0, 0.35); }
+
+.rail { border-right: 0; }
+.rail-sep { background: transparent; }
+
+/* Windows open over a light white veil, not a grey one. */
+.sheet-overlay { background: rgba(255, 255, 255, 0.55); }
+.sheet-overlay:not(.full) .sheet { box-shadow: 0 12px 44px rgba(16, 24, 40, 0.16); }
+html.dark .sheet-overlay { background: rgba(0, 0, 0, 0.35); }
+
+/* The title row's controls float instead of being outlined. */
+.dash-head .control-sm { border-color: transparent; box-shadow: var(--shadow-lift); }
+
+.cal-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cal-toggle .ico { width: 18px; height: 18px; color: var(--primary); }
+.cal-toggle:hover { color: var(--primary); }
+.cal-toggle.active { background: var(--primary); color: #fff; box-shadow: 0 6px 16px -4px rgba(0, 103, 255, 0.45); }
+.cal-toggle.active .ico { color: #fff; }
+
+/* The list has no box of its own: each case is a white card floating on the page, with room around it for the shadow. */
+.dash-main > .panel { padding: 0; background: none; box-shadow: none; }
+.case-list.task-list { row-gap: 10px; }
+.is-dash .case-list.task-list { margin: 0 -12px 0 -8px; padding: 0 12px 24px 8px; }
+.task-head { border-bottom: 0; }
+.task-row,
+.task-row + .task-row { border-top: 0; }
+.task-row { border-radius: 8px; background: var(--surface); box-shadow: var(--shadow-lift); transition: box-shadow 0.15s ease; }
+.task-row:hover { background: var(--surface); box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06), 0 10px 26px rgba(16, 24, 40, 0.1); }
+.dash-main > .panel > .panel-head { padding: 0 4px; }
+
+/* Inside a case: no lines either, and the tiles and follow-ups are white. */
+.cw-top { border-bottom: 0; }
+.square-btn { background: var(--surface); box-shadow: var(--shadow-lift); }
+.square-btn:hover { background: var(--surface); color: var(--primary); }
+.chat-head { border-bottom: 0; }
+.chat-log { background: var(--surface); }
+.cw-facts .cw-field { background: var(--surface); box-shadow: var(--shadow-lift); }
+
+/* ---------- My tasks' calendar: a sliding strip of the days that have cases ---------- */
+.date-slider {
+  margin: 0 0 16px;
+  padding: 14px 16px 16px;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.date-slider-head { display: flex; align-items: center; gap: 12px; margin: 0 2px 10px; }
+.date-month { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.date-slider-head .link-btn { font-size: 13px; }
+.date-arrows { display: flex; gap: 4px; margin-left: auto; }
+
+.date-arrow {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.date-arrow .ico { width: 18px; height: 18px; }
+.date-arrow.back .ico { transform: rotate(180deg); }
+.date-arrow:hover { background: var(--surface-2); }
+
+.date-strip {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  padding: 2px 2px 8px;
+}
+
+.date-strip::-webkit-scrollbar { display: none; }
+
+.date-cell {
+  flex: 0 0 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.date-cell:hover { background: var(--surface-2); }
+.date-wd { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+.date-dn { font-size: 22px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.date-cell.past .date-dn { color: var(--text-faint); }
+.date-cell.today .date-wd { color: var(--primary); font-weight: 600; }
+.date-times { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; font-weight: 500; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.date-times .more { color: var(--primary); font-weight: 600; }
+
+/* The picked day: a light blue column with a shadow, its times on the + button's blue. */
+.date-cell.active { background: var(--primary-soft); box-shadow: 0 6px 16px -6px rgba(0, 103, 255, 0.35); }
+.date-cell.active .date-times span { padding: 1px 8px; border-radius: 4px; background: var(--primary); color: #fff; }
+.date-cell.active .date-times .more { background: none; color: var(--primary); }
+.date-cell:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.date-slider-empty { margin: 4px 2px 0; font-size: 14px; color: var(--text-muted); }
+
+/* ---------- A case opened from the dashboard: the list's cases down the left as cards, the case on the right ---------- */
+.sheet.case-full .cw-split { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr); }
+.cw-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+
+.cw-cards {
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 12px 24px 16px;
+}
+
+.cw-cards-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 4px 4px 6px; color: var(--text-muted); font-size: 13px; font-weight: 600; }
+.cw-cards-head b { font-family: var(--font-display); font-size: 20px; font-weight: 500; color: var(--text); }
+
+.cw-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  flex-shrink: 0;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.cw-card:hover { box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06), 0 10px 26px rgba(16, 24, 40, 0.1); }
+.cw-card.active { background: var(--primary-soft); box-shadow: 0 8px 20px -6px rgba(0, 103, 255, 0.4); }
+.cw-card.is-done { opacity: 0.6; }
+.cw-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cw-card-top { display: flex; justify-content: space-between; width: 100%; font-size: 12px; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.cw-card-top .overdue { color: var(--red-text); }
+.cw-card-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.cw-card-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 13px; line-height: 1.4; color: var(--text-muted); }
+.cw-card .tag { margin-top: 2px; }
+
+/* Narrower windows: slimmer cards, and the case's own two columns stack. */
+@media (max-width: 1180px) {
+  .sheet.case-full .cw-split { grid-template-columns: 240px minmax(0, 1fr); }
+  .cw-split .cw-body { display: block; overflow-y: auto; }
+  .cw-split .cw-left { overflow: visible; margin-bottom: 14px; }
+}
+
+/* Phones: just the case, full screen. */
+@media (max-width: 860px) {
+  .sheet.case-full .cw-split { grid-template-columns: minmax(0, 1fr); }
+  .cw-cards { display: none; }
+}
+
+/* ---------- Case tabs: Home, then each case left open (client and file ID); × shows on pointing ---------- */
+.case-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 0;
+  margin: 0 0 20px;
+  padding: 2px 2px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.case-tabs::-webkit-scrollbar { display: none; }
+
+.case-tab {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  color: var(--text);
+  transition: box-shadow 0.15s ease;
+}
+
+.case-tab:hover { box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06), 0 8px 20px rgba(16, 24, 40, 0.1); }
+
+.case-tab.home {
+  gap: 8px;
+  padding: 0 16px;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.case-tab.home .ico { width: 18px; height: 18px; }
+
+.case-tab-open {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  max-width: 260px;
+  height: 100%;
+  padding: 0 34px 0 14px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 40px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.case-tab-open span { font-size: 12px; font-weight: 500; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.case-tab-x {
+  position: absolute;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.case-tab-x .ico { width: 14px; height: 14px; }
+.case-tab:hover .case-tab-x,
+.case-tab-x:focus-visible { opacity: 1; }
+.case-tab-x:hover { background: rgba(16, 24, 40, 0.08); }
+.case-tab button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; border-radius: 6px; }
+
+/* Touch screens have no pointing, so the × always shows there. */
+@media (hover: none) {
+  .case-tab-x { opacity: 1; }
+}
+
+/* The tab you're on: the + button's blue with its soft glow. */
+.case-tab.active { background: var(--primary); color: #fff; box-shadow: 0 6px 16px -4px rgba(0, 103, 255, 0.45); }
+.case-tab.active .case-tab-open span { color: rgba(255, 255, 255, 0.8); }
+.case-tab.active .case-tab-x:hover { background: rgba(255, 255, 255, 0.2); }
+
+.case-tabs-actions { display: flex; gap: 8px; margin-left: auto; padding-left: 8px; }
+.case-tabs-actions .square-btn { width: 40px; height: 40px; }
+
+/* In a case window the tabs sit exactly where they do on the page underneath. */
+.cw-top { display: block; padding: 28px 44px 0; }
+.cw-top .case-tabs { margin-bottom: 6px; }
+.sheet.case-full .cw-split { grid-template-columns: 344px minmax(0, 1fr); }
+.cw-cards { padding: 8px 12px 24px 44px; }
+
+@media (max-width: 1180px) {
+  .cw-top { padding: 28px 28px 0; }
+  .sheet.case-full .cw-split { grid-template-columns: 268px minmax(0, 1fr); }
+  .cw-cards { padding-left: 28px; }
+}
+
+@media (max-width: 860px) {
+  .cw-top { padding: 12px 16px 0; }
+  .sheet.case-full .cw-split { grid-template-columns: minmax(0, 1fr); }
+  .case-tab-open { max-width: 200px; }
+}
+
+/* The side menu's links (All files) look like its buttons. */
+a.dash-item { color: var(--text); text-decoration: none; }
+
+/* A long tab name is cut short before its ×. */
+.case-tab-open { display: block; }
+.case-tab-open span { margin-left: 6px; }
+
+/* Phones: the Calendar button is just its icon, so the two filters have room. */
+@media (max-width: 860px) {
+  .cal-toggle { flex-shrink: 0; gap: 0; padding: 0 12px; font-size: 0; }
+}
+
+/* ---------- Screens change with one short, soft fade ---------- */
+/* A window fades in as a whole (nothing slides or scales), and a redraw of the same window doesn't fade again. */
+.sheet-overlay { animation: fadeIn 0.15s ease-out; }
+.sheet.case-full { animation: none; }
+.sheet-overlay.redraw,
+.sheet-overlay.redraw .sheet { animation: none; }
+
+@media (min-width: 861px) {
+  .sheet-overlay:not(.full) .sheet { animation: none; }
+}
+
+/* ---------- No scrollbars cutting the screen into strips: everything still scrolls, the bars just don't show ---------- */
+html,
+.app-body,
+.app-body * { scrollbar-width: none; }
+html::-webkit-scrollbar,
+.app-body *::-webkit-scrollbar { display: none; }
+
+/* ---------- Needs attention: a case just opened with nothing done on it yet, flagged in red ---------- */
+.status-select.st-new {
+  color: var(--red-text);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 21V4' stroke='%23ff3350' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M5 4h13l-2.8 4.5L18 13H5z' fill='%23ff3350'/%3E%3C/svg%3E");
+  background-size: 14px, 13px 13px;
+  background-position: right 9px center, left 10px center;
+}
+
+.tag.st-new { color: var(--red-text); }
+
+.tag.st-new::before {
+  width: 12px;
+  height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 21V4' stroke='%23ff3350' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M5 4h13l-2.8 4.5L18 13H5z' fill='%23ff3350'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Its row and its card down the left of a case carry a red edge, like a flag. */
+.task-row.st-new,
+.cw-card.st-new { box-shadow: inset 3px 0 0 var(--red), var(--shadow-lift); }
+.task-row.st-new:hover,
+.cw-card.st-new:hover { box-shadow: inset 3px 0 0 var(--red), 0 2px 4px rgba(16, 24, 40, 0.06), 0 10px 26px rgba(16, 24, 40, 0.1); }
+.cw-card.st-new.active { box-shadow: inset 3px 0 0 var(--red), 0 8px 20px -6px rgba(0, 103, 255, 0.4); }
