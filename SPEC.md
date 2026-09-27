@@ -53,8 +53,8 @@ This spec describes what the product does today and the rules it follows. [Pract
   4. At the bottom: dark mode and log out.
 - **The rail never disappears.** It stays on screen on every page, and case windows and side windows open beside it, never over it. Going somewhere from the rail closes the open window.
 - **Tab bar** (phones): Me, Search, **+**, Activity, Suppliers, Settings.
-- **Look:** **everything on one white background, with no shadows** and nothing that looks like a separate floating menu. Parts are told apart by **very light lines** (`#eceef3`): down the right edge of the side menu and between its parts, between rows, and around fields, buttons, tabs and the boxes inside a case. No stroke by the rail. Only things that float over the page (side windows, the reminder pop-up) keep a soft shadow. There are **no grey fills**; the few soft fills (pointing at something, a picture tile) are a very light blue. Windows open over a light white veil, not a grey one. **Small corners everywhere (6–8px), no round pills or big curves**; only profile pictures and dots stay round. **No scrollbars show** (so they don't cut the screen into strips); everything still scrolls. **Screens change with one short, soft fade** (0.15s): a case window fades in and out, another page fades in, and moving between cases fades just the case; nothing slides, grows or scales. Generous spacing; nothing crowded.
-- **Case tabs:** every case you open stays as a tab across the top (**client name and file ID**, `Tamar Avraham #G-1025`), after a **Home** tab. *Needs attention* opens as a tab of its own too (flag, name and count, §4.1). Home goes back to the dashboard and keeps the tabs, so you can leave a case you're working on and look at the rest; clicking a tab brings its case back. Pointing at a tab shows its **×** to close it (on touch screens it always shows); closing the case you're on moves to the next tab, or to Home after the last. The tabs show on the dashboard, Activity, Suppliers and Settings while any are open, and are kept per browser tab (a refresh keeps them).
+- **Look:** **everything on one white background**, told apart by **very light lines** (`#eceef3`): down the right edge of the side menu and between its parts, between rows, and around fields, buttons, tabs and the boxes inside a case. No stroke by the rail. A **very, very gentle shadow** sets the menus a touch apart from the page (the side menu's right edge, the tabs, the tools, the cards and the boxes inside a case); rows have none. Things that float over the page (side windows, the reminder pop-up) keep a soft shadow. There are **no grey fills**; the few soft fills (pointing at something, a picture tile) are a very light blue. Windows open over a light white veil, not a grey one. **Small corners everywhere (6–8px), no round pills or big curves**; only profile pictures and dots stay round. **No scrollbars show** (so they don't cut the screen into strips); everything still scrolls. **Screens change with one short, soft fade** (0.15s): a case window fades in and out, another page fades in, and moving between cases fades just the case; nothing slides, grows or scales. **A calm, smaller scale, like other work apps of this kind:** 14px text, 13px menus, tabs and controls, 12px secondary lines, 11px labels; list rows about 54px, tabs and controls 34px, rail buttons 40px on a 72px rail. Generous spacing; nothing crowded.
+- **Case tabs:** the first tab is **My tasks** with how many tasks you have; it always shows on My tasks, and clicking it goes back to all your tasks (closing any case window). Every case you keep open is a tab after it (**client name and file ID**, `Tamar Avraham #G-1025`), and so is each picker you open (§4.1). A case you only look at from the cards is a **preview**: an italic tab at the end with a **+** (a small square with a line round it) that keeps it as a tab; the next preview replaces it. Pointing at a tab shows its **×** to close it (on touch screens it always shows); closing the tab you're on moves to the next one, or back to My tasks after the last (closing the preview just closes it). The tabs show on Activity, Suppliers and Settings too while any are open, and are kept per browser tab (a refresh keeps them).
 - **Side windows** (notes, reminders, your icon, add client…) always open on the **left**, next to the rail. On phones they come up from the bottom.
 - **Back always returns to the screen before.** Every screen has its own address: My tasks (`#/home`, a view as `?view=new`), All files (`#/files?view=…`), Activity's tab (`?tab=reports`) and the supplier category (`#/suppliers?group=…`), and My tasks' calendar (`?cal=1`, a day as `&day=2026-09-28`). Opening a window adds a Back step too, so Back closes it; a case opened from a calendar day goes Back to the day first. The back button inside a window does the same as the browser's.
 - **Keyboard:** `/` search, `N` new case, `Esc` closes a panel or window.
@@ -64,10 +64,10 @@ This spec describes what the product does today and the rules it follows. [Pract
 
 ## 4. Dashboard
 
-**No page title** on My tasks (there's a hidden one for screen readers): the side menu and the list start at the top, under the case tabs when any are open.
+**No page title** on My tasks (there's a hidden one for screen readers): the tabs, then the side menu and the list. My tasks always opens on all your tasks.
 
 ### 4.1 My tasks
-- **Side menu:** your profile, then *All my tasks*, *Needs attention* (flag icon), *Urgent*, *Waiting on supplier*, *Waiting on client*, each with a count, then *All files* (the whole team's cases), with no section label over them (the page title already says it). The *Urgent* count is red when there are any, and *Needs attention*'s is pink like its flag. **Needs attention opens its cases in a tab of its own** (flag, name and count): the first case big on the right and the rest of them as cards down the left; clicking a card shows that case in the same tab. The main area has no heading of its own; the side menu shows which view you're on.
+- **Side menu** (no profile; that's in Settings): ***Needs attention*** first (a filled pink flag), *Urgent* (red), *Waiting on supplier* (orange), *Waiting on client* (blue), each with a count shown in its colour while there are any, then *All files* (the whole team's cases). All my tasks isn't in the menu: it's the **My tasks** tab. **Needs attention and the two Waiting views open a picker in a tab of their own** (icon, name and count): their cases as cards down the left and nothing picked yet on the right ("Pick a case to see it here"). Clicking a card previews that case on the right, in the same tab; pointing at a card shows a **+** square that keeps that case as a tab of its own. *Urgent* narrows the list instead.
 - **List** of rows (§5), and a **Calendar** button that opens a **sliding strip of days** over the list (§4.4). No squares.
 - **Tools** at the top of the list, floating on a shadow, **Calendar first**: *Calendar*, *Opened* (any time, today, last 7 days, last 30 days, over 30 days ago) and *Status*. Cases show open first, then by date.
 - **Reminders and Sticky notes:** under the side menu, each with its count (reminders turn red when one is overdue). On phones they're round buttons beside the tools.
@@ -128,7 +128,7 @@ Side menu, in this order:
 
 - **Look:** plain rows split by a very light line, about 66px tall, with a very light blue under the row you point at. Plenty of space between columns; the client and Info get the spare width. Done cases are dimmed.
 - **Narrower windows:** a slimmer side menu and tighter columns. **Phones:** file ID and client (with the card) on top, then Info and the date, then the status and the two buttons.
-- **Clicking anywhere else on the row** opens the case in the case screen (§6), with the list's cases as cards down the left; Home, Esc or Back closes it.
+- **Clicking anywhere else on the row** opens the case in the case screen (§6), with the list's cases as cards down the left; the My tasks tab, Esc or Back closes it.
 
 **Bars** (Activity): **compact one-line bars**:
 
@@ -146,9 +146,9 @@ Side menu, in this order:
 
 ## 6. The case window
 
-A case opens as a window that fills the screen beside the rail, which stays visible (a phone uses the whole screen); Back or Home closes it. **Opened from My tasks or All files it's split:** the list's cases run down the left as cards (file ID and date, client, request type and headline, status), the open one lit up in light blue, and the case fills the right; clicking a card **opens that case in a new tab**, and the case you were on stays open in its own tab, so you can jump straight back (a case that already has a tab just comes forward). A case also has its own page (`app.html#/case/<id>`, the *Open in new tab* button), titled with the file ID and client (`#G-1025 · Tamar Avraham`), with the same layout.
+A case opens as a window that fills the screen beside the rail, which stays visible (a phone uses the whole screen); Back or the My tasks tab closes it. **Opened from My tasks or All files it's split:** the list's cases run down the left as cards (file ID and date, client, request type and headline, status), the open one lit up in light blue, and the case fills the right; clicking a card **previews** that case in the italic preview tab (a case already kept as a tab just comes forward), and pointing at a card shows a **+** that keeps it as a tab of its own, so the case you were on stays open and you can jump straight back. A case also has its own page (`app.html#/case/<id>`, the *Open in new tab* button), titled with the file ID and client (`#G-1025 · Tamar Avraham`), with the same layout.
 
-- **Top bar:** the **case tabs** (Home and the open cases), plus *Back* when opened from a calendar day and *Open in new tab*. New case is the rail's **+**.
+- **Top bar:** the **case tabs** (My tasks and the open cases), plus *Back* when opened from a calendar day and *Open in new tab*. New case is the rail's **+**.
 - **Left column, case box**
   - **File ID** (big chip), **Add reminder**, **File status** (a dropdown) and the **supplier name(s)** from its bookings
   - The case's reminders: time and text, with a ✓ to mark each done
@@ -284,10 +284,10 @@ Pictures are Microsoft's Fluent 3D emoji (MIT licence, 256px), loaded from jsDel
 
     | Status | Colour |
     |---|---|
-    | Open | blue `#0067ff` (the + blue) |
+    | Open | turquoise `#14b8c4` |
     | **Ongoing** | **violet `#7c5cff`** |
     | Waiting on supplier | orange `#ff7a1a` |
-    | Waiting on client | turquoise `#14b8c4` |
+    | Waiting on client | blue `#0067ff` (the + blue, like its menu item) |
     | Done / closed | green `#17b26a` |
 
   - **Red `#ff3350`:** **urgent** (an urgent open case's bar edge is red, and the urgent tag is solid red) and the alert colour: overdue, calendar days not all done, missing invoices, errors.
@@ -324,7 +324,7 @@ Kept in `localStorage` under `gustavo_data_v1`:
 Other keys:
 - `crm_session`: who's signed in
 - `gustavo_theme`: light or dark
-- `gustavo_home_view`: the My tasks view
+- (`gustavo_home_view` used to remember the My tasks view; My tasks now always opens on all your tasks)
 - `gustavo_ui` (in the tab's `sessionStorage`): where you were, restored after a refresh
 
 **Sample data:** 6 Israeli clients and 46 cases spread over the month (past, done, today and upcoming), plus sample bookings, notes and reminders. Older saves get new sample additions once through migrations, and anything the user entered is never overwritten.

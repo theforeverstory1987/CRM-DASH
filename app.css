@@ -4791,14 +4791,10 @@ html::-webkit-scrollbar,
 .task-flag .ico { width: 15px; height: 15px; fill: var(--flag); }
 .cw-card-top .task-flag { width: auto; margin-right: 5px; vertical-align: -2px; }
 
-/* In the side menu: a pink flag, and a pink count while any case needs attention. */
-.dash-item.is-flag .ico { color: var(--flag); }
-.dash-count.flagged { background: color-mix(in srgb, var(--flag) 14%, transparent); color: #d61f6c; }
 
-/* Its tab: the flag, the name and how many are waiting. */
+/* A picker tab: its icon (in its colour), name and how many are waiting. */
 .view-tab .case-tab-open { display: inline-flex; align-items: center; gap: 6px; }
-.view-tab .case-tab-open .ico { width: 16px; height: 16px; color: var(--flag); fill: var(--flag); }
-.view-tab.active .case-tab-open .ico { color: #fff; fill: #fff; }
+.view-tab .case-tab-open .ico { width: 16px; height: 16px; }
 
 /* ---------- My tasks: no title; the tools sit at the top of the list, Calendar first ---------- */
 .home-tools { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 2px 4px 0; }
@@ -4971,3 +4967,248 @@ html.dark .app-body { --shadow-lift: none; --shadow-soft: none; --shadow-card: n
 .dash-head .control-sm { border-color: var(--hairline); }
 .cw-box,
 .cw-body .case-chat { box-shadow: none; }
+
+/* ---------- Menu colours: Needs attention pink (a filled flag), Urgent red, Waiting on supplier orange,
+   Waiting on client blue; on the icon, and on the count while there are any ---------- */
+.tone-pink { --tone: var(--flag); }
+.tone-red { --tone: var(--red); }
+.tone-orange { --tone: #ff7a1a; }
+.tone-blue { --tone: var(--primary); }
+.dash-item.tone-pink .ico,
+.dash-item.tone-red .ico,
+.dash-item.tone-orange .ico,
+.dash-item.tone-blue .ico,
+.case-tab.tone-pink .ico,
+.case-tab.tone-red .ico,
+.case-tab.tone-orange .ico,
+.case-tab.tone-blue .ico { color: var(--tone); }
+.dash-item.tone-pink .ico,
+.case-tab.tone-pink .ico { fill: var(--tone); }
+.dash-item.has-count.tone-pink .dash-count,
+.dash-item.has-count.tone-red .dash-count,
+.dash-item.has-count.tone-orange .dash-count,
+.dash-item.has-count.tone-blue .dash-count { background: color-mix(in srgb, var(--tone) 14%, transparent); color: var(--tone); }
+.case-tab.active .ico { color: #fff; }
+.case-tab.active.tone-pink .ico { fill: #fff; }
+
+/* Status squares follow the menu: Waiting on client is blue, so Open moves to turquoise. */
+.st-new { --st-color: #14b8c4; }
+.st-waiting_client { --st-color: var(--primary); }
+
+/* ---------- Pickers and previews ---------- */
+/* A picker before anything is picked. */
+.cw-main .cw-pick {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.cw-pick .ico { width: 28px; height: 28px; color: var(--primary); }
+.cw-pick b { font-size: 15px; color: var(--text); }
+.cw-pick span { font-size: 13px; }
+
+/* The preview tab is italic until + keeps it. */
+.case-tab.preview .case-tab-open { font-style: italic; padding-right: 58px; }
+
+/* The + that keeps a case as a tab: a small square with a line round it. */
+.case-tab-pin,
+.cw-card-pin {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.case-tab-pin .ico,
+.cw-card-pin .ico { width: 13px; height: 13px; stroke-width: 2.4; }
+.case-tab-pin { position: absolute; right: 32px; }
+.case-tab.active .case-tab-pin { border-color: rgba(255, 255, 255, 0.75); background: transparent; color: #fff; }
+.case-tab-pin:hover { background: rgba(255, 255, 255, 0.2); }
+
+.cw-card { position: relative; }
+.cw-card-pin { position: absolute; right: 10px; bottom: 10px; opacity: 0; transition: opacity 0.15s ease; }
+.cw-card:hover .cw-card-pin,
+.cw-card-pin:focus-visible { opacity: 1; }
+.cw-card-pin:hover { border-color: var(--primary); background: var(--primary); color: #fff; }
+.cw-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+@media (hover: none) {
+  .cw-card-pin { opacity: 1; }
+}
+
+/* The My tasks tab's total. */
+.case-tab.home span { margin-left: 2px; font-size: 11px; font-weight: 500; opacity: 0.75; font-variant-numeric: tabular-nums; }
+
+/* ---------- A very, very gentle shadow, so the menus stand a touch apart from the page ---------- */
+.app-body { --shadow-lift: 0 1px 2px rgba(16, 24, 40, 0.05); --shadow-soft: 0 1px 3px rgba(16, 24, 40, 0.06), 0 8px 20px -12px rgba(16, 24, 40, 0.12); }
+
+@media (min-width: 861px) {
+  .dash-left { box-shadow: 12px 0 18px -20px rgba(16, 24, 40, 0.3); }
+}
+
+.case-tab:not(.active),
+.cal-toggle:not(.active),
+.home-tools .control-sm,
+.cw-card:not(.active),
+.cw-box,
+.cw-body .case-chat,
+.date-slider { box-shadow: var(--shadow-lift); }
+.task-row { box-shadow: none; }
+
+/* ---------- A calmer, smaller scale, as in other work apps of this kind: 14px text, 13px controls and menus,
+   12px secondary lines, 11px labels; rows, tabs and controls a little lower ---------- */
+.app-body { font-size: 14px; }
+
+/* Rail */
+.rail { gap: 12px; padding: 24px 0 18px; }
+.rail-bottom { gap: 12px; }
+.rail-btn { width: 40px; height: 40px; }
+.rail-btn .ico { width: 20px; height: 20px; }
+.rail-new .ico { width: 21px; height: 21px; }
+.rail-me .avatar { font-size: 14px; }
+
+@media (min-width: 861px) {
+  .sheet-overlay { left: 72px; }
+}
+
+/* Page */
+.content { padding: 24px 32px 56px; }
+.page-title { font-size: 28px; }
+.dash-head .page-title { font-size: 28px; line-height: 40px; }
+.panel-head h2 { font-size: 16px; }
+
+@media (min-width: 861px) {
+  .dash-left { padding-right: 16px; }
+}
+
+/* Side menu */
+.dash-item { height: 34px; gap: 9px; padding: 0 8px; border-radius: 6px; font-size: 13px; }
+.dash-item .ico { width: 16px; height: 16px; }
+.dash-count { min-width: 22px; height: 20px; padding: 0 6px; font-size: 11px; }
+.dash-label { font-size: 10.5px; }
+
+/* Tabs */
+.case-tabs { gap: 6px; margin-bottom: 16px; }
+.case-tab { height: 34px; }
+.case-tab.home { gap: 7px; padding: 0 12px; font-size: 13px; }
+.case-tab.home .ico { width: 16px; height: 16px; }
+.case-tab-open { max-width: 220px; padding: 0 30px 0 12px; font-size: 13px; line-height: 34px; }
+.case-tab-open span { font-size: 11px; }
+.case-tab-x { right: 6px; width: 20px; height: 20px; }
+.case-tab-x .ico { width: 13px; height: 13px; }
+.case-tabs-actions .square-btn { width: 34px; height: 34px; }
+.cw-top { padding: 24px 32px 0; }
+
+/* Tools */
+.cal-toggle,
+.control-sm { height: 34px; font-size: 13px; }
+.cal-toggle { gap: 6px; padding: 0 12px; }
+.cal-toggle .ico { width: 16px; height: 16px; }
+.control-sm { padding: 0 32px 0 12px; background-position: right 10px center; background-size: 14px; }
+.home-tools { margin-bottom: 12px; }
+
+/* Rows */
+.case-list.task-list { column-gap: 24px; }
+.task-head { height: 32px; font-size: 10.5px; }
+.task-main { min-height: 54px; }
+.task-client { gap: 4px; padding: 8px 0; }
+.task-no { font-size: 12.5px; }
+.task-flag { width: 14px; }
+.task-flag .ico { width: 13px; height: 13px; }
+.task-name { font-size: 14px; }
+.task-type { font-size: 13px; }
+.task-title { font-size: 12px; }
+.task-due { font-size: 13px; }
+.task-info { gap: 10px; }
+.task-pic { width: 32px; height: 32px; font-size: 18px; }
+.task-pic .emoji3d { width: 20px; height: 20px; }
+.task-client .card-type { gap: 6px; font-size: 9.5px; }
+.task-client .card-pic { width: 22px; height: 14px; }
+.task-row .task-status .status-select { height: 28px; padding: 0 26px 0 25px; font-size: 12px; background-position: right 8px center, left 11px center; background-size: 12px, 7px 7px; }
+.task-icon { width: 30px; height: 30px; }
+.task-icon .ico { width: 15px; height: 15px; }
+.task-copy { width: 22px; height: 22px; }
+.task-copy .ico { width: 12px; height: 12px; }
+
+/* Calendar strip */
+.date-slider { padding: 12px 14px; }
+.date-month { font-size: 14px; }
+.date-cell { flex-basis: 70px; gap: 5px; padding: 9px 4px; }
+.date-wd { font-size: 11.5px; }
+.date-dn { font-size: 18px; }
+.date-times { font-size: 11px; }
+
+/* Case window */
+.cw-cards { gap: 8px; padding: 8px 10px 20px 32px; }
+.cw-cards-head b { font-size: 16px; }
+.cw-card { gap: 4px; padding: 10px 12px; }
+.cw-card-top { font-size: 11px; }
+.cw-card-name { font-size: 14px; }
+.cw-card-title { font-size: 12px; }
+.cw-box { gap: 12px; padding: 14px; }
+.cw-label { font-size: 10.5px; }
+.cw-field b { font-size: 14px; }
+.id-chip.case-no.lg { height: 30px; padding: 0 10px; font-size: 15px; }
+.cw-request { padding: 12px; }
+.cw-request-pic { font-size: 24px; }
+.cw-request-title { font-size: 15px; }
+.cw-budget b { font-size: 16px; }
+.cw-client-name b { font-size: 16px; }
+.cf-desc,
+.chat-bubble p,
+.chat-input textarea,
+.followup p,
+.case-last-text { font-size: 14px; }
+.chat-head h3 { font-size: 14px; }
+.quick-followup input { height: 40px; font-size: 14px; }
+
+/* Buttons, chips and fields */
+.app-body .btn.btn-md { gap: 8px; padding: 9px 14px; font-size: 13px; }
+.tag { height: 28px; padding: 0 11px; font-size: 12px; }
+.tag.sm { height: 22px; padding: 0 8px; font-size: 11px; }
+.pills > button { height: 32px; padding: 0 12px; font-size: 13px; }
+.control { min-height: 42px; padding: 10px 12px; font-size: 14px; }
+.stat-value { font-size: 34px; }
+.sheet-title { font-size: 20px; }
+
+/* Narrower windows */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .content { padding: 24px 24px 56px; }
+  .cw-top { padding: 24px 24px 0; }
+  .cw-cards { padding-left: 24px; }
+  .dash { grid-template-columns: 196px minmax(0, 1fr); gap: 18px; }
+  .sheet.case-full .cw-split { grid-template-columns: 244px minmax(0, 1fr); }
+}
+
+/* Phones */
+@media (max-width: 860px) {
+  .content { padding: 16px 14px calc(110px + env(safe-area-inset-bottom)); }
+  .cw-top { padding: 12px 14px 0; }
+}
+
+/* The smaller layout's columns are for computer screens; phones keep their own single column. */
+@media (min-width: 861px) {
+  .shell { grid-template-columns: 72px minmax(0, 1fr); }
+  .sheet.case-full .cw-split { grid-template-columns: 300px minmax(0, 1fr); }
+}
+
+@media (min-width: 1181px) {
+  .dash { grid-template-columns: 216px minmax(0, 1fr); gap: 24px; }
+}
+
+@media (max-width: 860px) {
+  .task-main { min-height: 0; }
+  .task-client { padding: 0; }
+}

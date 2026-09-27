@@ -354,25 +354,25 @@ const PRIORITY_FILTERS = [['', 'Any priority'], ['hot', 'Urgent & high'], ['urge
 const DATE_FILTERS = [['', 'Any date'], ['overdue', 'Overdue'], ['today', 'Due today'], ['week', 'Due this week'], ['later', 'Due later'], ['none', 'No due date']];
 const SORTS = [['due', 'Sort: due date'], ['priority', 'Sort: priority'], ['newest', 'Sort: newest']];
 
-// The dashboard's side menu: one view at a time, like mail folders.
-// No section label: the page title already says "My tasks".
+// The dashboard's side menu, Needs attention first. Each has its colour (`tone`). Needs attention and the two
+// Waiting views open a picker of their cases in their own tab (`picker`); Urgent narrows the list. All my tasks isn't
+// in the menu: it's the My tasks tab at the top, with the total count.
 const HOME_VIEWS = [
   {
     section: '',
     items: [
-      { id: 'all', label: 'All my tasks', icon: 'briefcase', hint: 'Everything assigned to you or taken by you, open first', empty: 'Nothing on your plate. Open a new file with +.' },
-      { id: 'new', label: 'Needs attention', icon: 'flag', hint: 'Just opened, with nothing done yet: opens them in their own tab', empty: 'Nothing needs attention right now.' },
-      { id: 'urgent', label: 'Urgent', icon: 'flame', hint: 'Open cases marked urgent', empty: 'No urgent cases right now.' },
-      { id: 'waiting_provider', label: 'Waiting on supplier', icon: 'store', hint: 'Waiting for the supplier to reply', empty: 'No cases waiting on a supplier.' },
-      { id: 'waiting_client', label: 'Waiting on client', icon: 'clock', hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.' },
+      { id: 'all', label: 'All my tasks', icon: 'briefcase', hidden: true, hint: 'Everything assigned to you or taken by you, open first', empty: 'Nothing on your plate. Open a new file with +.' },
+      { id: 'new', label: 'Needs attention', icon: 'flag', tone: 'pink', picker: true, hint: 'Just opened, with nothing done yet', empty: 'Nothing needs attention right now.' },
+      { id: 'urgent', label: 'Urgent', icon: 'flame', tone: 'red', hint: 'Open cases marked urgent', empty: 'No urgent cases right now.' },
+      { id: 'waiting_provider', label: 'Waiting on supplier', icon: 'store', tone: 'orange', picker: true, hint: 'Waiting for the supplier to reply', empty: 'No cases waiting on a supplier.' },
+      { id: 'waiting_client', label: 'Waiting on client', icon: 'clock', tone: 'blue', picker: true, hint: 'Waiting for the client to reply', empty: 'No cases waiting on a client.' },
     ],
   },
 ];
-const VIEW_KEY = 'gustavo_home_view';
 
 function homeView(id) {
-  for (const s of HOME_VIEWS) for (const v of s.items) if (v.id === id) return v;
-  return HOME_VIEWS[0].items[0];
+  const all = HOME_VIEWS.flatMap(s => s.items);
+  return all.find(v => v.id === id) || all.find(v => v.id === 'all');
 }
 
 function whoseAll() {
@@ -1066,35 +1066,26 @@ function renderHome() {
   const keepTop = old && homeListView === place ? old.scrollTop : 0;
   const oldStrip = document.getElementById('dateStrip');
   const keepLeft = oldStrip && homeListView && homeListView.split(':')[0] === state.home.view ? oldStrip.scrollLeft : null;
-  const me = findMember(ME);
   const view = homeView(state.home.view);
 
   viewEl.innerHTML = `
-    ${caseTabs()}
+    ${caseTabs('', '', { always: true })}
     <h1 class="visually-hidden">My tasks</h1>
     <div class="dash">
       <div class="dash-left">
       <aside class="dash-nav" aria-label="Dashboard views">
-        <div class="dash-me">
-          ${memberAvatar(ME)}
-          <div class="dash-me-text">
-            <div class="dash-me-name">${esc(me.name)}</div>
-            <div class="dash-me-sub">${esc(me.title)}</div>
-          </div>
-          <button type="button" class="icon-btn" data-action="edit-avatar" aria-label="Change your icon" title="Change your icon">${icon('pencil')}</button>
-        </div>
         ${HOME_VIEWS.map(section => `
           <div class="dash-section">
             ${section.section ? `<p class="dash-label">${section.section}</p>` : ''}
-            ${section.items.map(item => {
+            ${section.items.filter(item => !item.hidden).map(item => {
               const count = homeViewCases(item.id).length;
-              // Urgent's count is red when there are any; Needs attention's is pink, like its flag.
-              const mark = count > 0 && item.id === 'urgent' ? ' alert' : count > 0 && item.id === 'new' ? ' flagged' : '';
-              // Needs attention opens its cases in their own tab rather than filtering the list.
-              const current = item.id === view.id && item.id !== 'new';
+              // The icon, and the count while there are any, in the view's colour.
+              const tone = item.tone ? ` tone-${item.tone}` : '';
+              // The pickers open their own tab, so only Urgent is ever the list's current view.
+              const current = item.id === view.id && !item.picker;
               return `
-                <button type="button" class="dash-item${item.id === 'new' ? ' is-flag' : ''}${current ? ' active' : ''}" data-view="${item.id}"${current ? ' aria-current="true"' : ''}>
-                  ${icon(item.icon)}<span class="dash-item-label">${item.label}</span><span class="dash-count${mark}">${count}</span>
+                <button type="button" class="dash-item${tone}${count ? ' has-count' : ''}${current ? ' active' : ''}" data-view="${item.id}"${current ? ' aria-current="true"' : ''}>
+                  ${icon(item.icon)}<span class="dash-item-label">${item.label}</span><span class="dash-count">${count}</span>
                 </button>`;
             }).join('')}
           </div>`).join('')}
@@ -1616,15 +1607,6 @@ function openNotesSheet(color = 'yellow') {
       sheet.querySelector('#nText').focus();
     },
   });
-}
-
-// Number cards jump straight to what they count.
-function saveHomeView() {
-  try {
-    localStorage.setItem(VIEW_KEY, state.home.view);
-  } catch {
-    // Remembering the view is a nicety; ignore blocked storage.
-  }
 }
 
 // ---------- Activity: all open cases + reports ----------
@@ -2447,7 +2429,7 @@ function closeSheet(keepHistory = false) {
 // The page under a case window shows the case tabs as they are now (one may have opened or closed meanwhile).
 function refreshPageTabs() {
   if (!['home', 'files', 'activity', 'suppliers', 'settings'].includes(state.route.name)) return;
-  const html = caseTabs();
+  const html = caseTabs('', '', { always: state.route.name === 'home' });
   const old = viewEl.querySelector(':scope > .case-tabs');
   if (old && html) old.outerHTML = html;
   else if (old) old.remove();
@@ -2954,22 +2936,25 @@ function budgetText(budget) {
 }
 
 // ---------- Case tabs ----------
-// A case you open stays as a tab at the top (client and file ID), next to Home: leave one you're working on,
-// look at the rest, and jump back. Needs attention opens as a tab too ('view:new'), holding its cases.
-// Pointing at a tab shows its × to close it.
+// Across the top: My tasks (with how many you have), then a tab for each case you keep open (client and file ID)
+// and for each picker you open (Needs attention, Waiting on supplier or client: `view:<id>`). A case you only
+// look at from the cards is a preview: an italic tab at the end, with + to keep it as a tab. Pointing at a tab
+// shows its × to close it.
 function addCaseTab(id) {
   if (!state.tabs.includes(id)) state.tabs.push(id);
 }
 
 const isViewTab = id => id.startsWith('view:');
 
-// One tab: a case's client and file ID, or a view's flag, name and count.
-function caseTab(id, active) {
+// One tab: a case's client and file ID, or a picker's icon, name and count. A preview tab has + to keep it.
+function caseTab(id, active, preview = false) {
   let label;
   let name;
+  let tone = '';
   if (isViewTab(id)) {
     const view = homeView(id.slice(5));
     name = view.label;
+    tone = view.tone ? ` tone-${view.tone}` : '';
     label = `${icon(view.icon)}${esc(name)}<span>${homeViewCases(view.id).length}</span>`;
   } else {
     const kase = findCase(id);
@@ -2978,33 +2963,41 @@ function caseTab(id, active) {
     label = `${esc(client ? client.name : 'Unknown client')}<span>#${caseNo(kase)}</span>`;
   }
   return `
-    <span class="case-tab${active ? ' active' : ''}${isViewTab(id) ? ' view-tab' : ''}">
+    <span class="case-tab${active ? ' active' : ''}${isViewTab(id) ? ' view-tab' : ''}${preview ? ' preview' : ''}${tone}">
       <button type="button" class="case-tab-open" data-tab-open="${id}"${active ? ' aria-current="page"' : ''}>${label}</button>
+      ${preview ? `<button type="button" class="case-tab-pin" data-case-pin="${id}" title="Keep it as a tab" aria-label="Keep ${esc(name)} as a tab">${icon('plus')}</button>` : ''}
       <button type="button" class="case-tab-x" data-tab-close="${id}" title="Close tab" aria-label="Close the tab for ${esc(name)}">${icon('x')}</button>
     </span>`;
 }
 
-// `activeId` is the tab showing (a case, or a view tab); none means Home. Nothing shows while no tab is open.
-function caseTabs(activeId = '', actions = '') {
+// `activeId` is the tab showing (a case, a picker, or `previewId`, the case being previewed); none means My tasks.
+// `always` shows the strip even with no tabs (on My tasks itself).
+function caseTabs(activeId = '', actions = '', { always = false, previewId = '' } = {}) {
   state.tabs = state.tabs.filter(id => isViewTab(id) || findCase(id));
-  if (!state.tabs.length) return '';
+  const preview = previewId && !state.tabs.includes(previewId) ? previewId : '';
+  if (!state.tabs.length && !preview && !always) return '';
   return `
     <nav class="case-tabs" aria-label="Open cases">
-      <button type="button" class="case-tab home${activeId ? '' : ' active'}" data-action="tab-home"${activeId ? '' : ' aria-current="page"'}>${icon('home')}Home</button>
+      <button type="button" class="case-tab home${activeId ? '' : ' active'}" data-action="tab-home"${activeId ? '' : ' aria-current="page"'}>${icon('briefcase')}My tasks<span>${myCases().length}</span></button>
       ${state.tabs.map(id => caseTab(id, id === activeId)).join('')}
+      ${preview ? caseTab(preview, true, true) : ''}
       ${actions ? `<span class="case-tabs-actions">${actions}</span>` : ''}
     </nav>`;
 }
 
-// `tab` is the view tab the case shows in (Needs attention); without one the case has its own tab.
-function caseWindowTop(kase, actions = '', tab = '') {
+// `tab` is the picker tab the case shows in; `preview` shows it as the italic preview tab; otherwise it's kept as
+// its own tab.
+function caseWindowTop(kase, actions = '', { tab = '', preview = false } = {}) {
+  if (preview && !state.tabs.includes(kase.id)) return `<header class="cw-top">${caseTabs(kase.id, actions, { previewId: kase.id })}</header>`;
   addCaseTab(tab || kase.id);
   return `<header class="cw-top">${caseTabs(tab || kase.id, actions)}</header>`;
 }
 
-// Needs attention in its own tab: its cases down the left, one of them open on the right (the first by default).
+// A picker in its own tab: the view's cases as cards down the left; picking one previews it on the right (in this
+// tab), and + on a card keeps that case as a tab of its own. It opens with nothing picked yet.
 function openViewTab(view, id = '') {
   const tab = `view:${view}`;
+  if (id) return openCaseSheet(id, { list: tab, tab });
   const list = cardsOf(tab);
   if (!list.length) {
     state.tabs = state.tabs.filter(t => t !== tab);
@@ -3012,7 +3005,22 @@ function openViewTab(view, id = '') {
     else render();
     return toast(homeView(view).empty);
   }
-  openCaseSheet(id || list[0].id, { list: tab, tab });
+  addCaseTab(tab);
+  const switching = Boolean(sheetRoot.firstElementChild);
+  openSheet(`
+    <header class="cw-top">${caseTabs(tab)}</header>
+    <div class="cw-split">
+      ${switchCards(tab, '')}
+      <div class="cw-main">
+        <div class="cw-pick">
+          ${icon(homeView(view).icon)}
+          <b>Pick a case to see it here</b>
+          <span>Or point at a card and press + to keep it open as a tab.</span>
+        </div>
+      </div>
+    </div>`, { label: homeView(view).label, full: true });
+  currentSheet = { type: 'view', tab, list: tab };
+  if (switching) fadeIn(sheetRoot.querySelector('.cw-main'));
 }
 
 // Opens whatever a tab holds.
@@ -3496,9 +3504,9 @@ function openRequesterSheet(caseId) {
 }
 
 // Opening a case fills the screen: the case and client boxes, and the follow-ups. Opened from a dashboard list
-// (`list`: 'home', 'files', or a view tab's 'view:new'), that list's cases stay down the left as cards; each one
-// opens in its own tab, except inside a view tab (`tab`), where they all show in that one tab.
-function openCaseSheet(id, { list = '', tab = '' } = {}) {
+// (`list`: 'home', 'files', or a picker's 'view:<id>'), that list's cases stay down the left as cards. A case shows
+// in its own tab, inside a picker's tab (`tab`), or as the italic preview tab (`preview`) until + keeps it.
+function openCaseSheet(id, { list = '', tab = '', preview = false } = {}) {
   const kase = findCase(id);
   if (!kase) return;
   const back = sheetBack;
@@ -3516,13 +3524,13 @@ function openCaseSheet(id, { list = '', tab = '' } = {}) {
     <a class="square-btn" href="app.html#/case/${kase.id}" target="_blank" aria-label="Open in a new tab" title="Open in a new tab">${icon('arrowUpRight')}</a>`;
   // The tabs run across the top; under them, the cards (when opened from a list) and the case.
   const body = caseWindowBody(kase);
-  openSheet(`${caseWindowTop(kase, actions, tab)}${list ? `<div class="cw-split">${switchCards(list, kase.id)}<div class="cw-main">${body}</div></div>` : body}`, {
+  openSheet(`${caseWindowTop(kase, actions, { tab, preview })}${list ? `<div class="cw-split">${switchCards(list, kase.id)}<div class="cw-main">${body}</div></div>` : body}`, {
     label: `Case ${caseNo(kase)}`,
     full: true,
     onMount(sheet) {
       bindCaseView(sheet, kase, () => {
         render();
-        openCaseSheet(kase.id, { list, tab });
+        openCaseSheet(kase.id, { list, tab, preview });
       });
       sheet.querySelector('.cw-left').scrollTop = keepTop;
       const cards = sheet.querySelector('.cw-cards');
@@ -3533,7 +3541,7 @@ function openCaseSheet(id, { list = '', tab = '' } = {}) {
   });
   openCaseId = kase.id;
   sheetBack = back;
-  currentSheet = { type: 'case', id: kase.id, list, tab };
+  currentSheet = { type: 'case', id: kase.id, list, tab, preview };
   if (nested) stepIntoSheet();
   if (switching) fadeIn(sheetRoot.querySelector('.cw-main, .cw-body'));
 }
@@ -3555,16 +3563,20 @@ function switchCards(key, activeId) {
     </aside>`;
 }
 
+// A card: clicking it previews the case (in a picker's tab, or as the italic preview tab); pointing at it shows a
+// + square that keeps the case open as a tab of its own.
 function switchCard(kase, active) {
   const client = findClient(kase.clientId);
   const late = isOpen(kase) && kase.dueAt && new Date(kase.dueAt) < new Date();
+  const kept = state.tabs.includes(kase.id);
   return `
-    <button type="button" class="cw-card st-${kase.status}${active ? ' active' : ''}${isOpen(kase) ? '' : ' is-done'}" data-case-switch="${kase.id}" data-thread-case="${kase.id}"${active ? ' aria-current="true"' : ''}>
+    <div class="cw-card st-${kase.status}${active ? ' active' : ''}${isOpen(kase) ? '' : ' is-done'}" role="button" tabindex="0" data-case-switch="${kase.id}" data-thread-case="${kase.id}"${active ? ' aria-current="true"' : ''}>
       <span class="cw-card-top"><span>${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}#${caseNo(kase)}</span><span class="${late ? 'overdue' : ''}">${kase.dueAt ? dotDate(kase.dueAt) : ''}</span></span>
       <span class="cw-card-name">${esc(client ? client.name : 'Unknown client')}</span>
       <span class="cw-card-title">${esc(kase.category)} · ${esc(kase.title)}</span>
       <span class="tag sm st-${kase.status}">${esc((STATUSES.find(s => s.id === kase.status) || {}).short || kase.status)}</span>
-    </button>`;
+      ${kept ? '' : `<button type="button" class="cw-card-pin" data-case-pin="${kase.id}" title="Keep it open as a tab" aria-label="Keep #${caseNo(kase)} open as a tab">${icon('plus')}</button>`}
+    </div>`;
 }
 
 const motionOk = () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -3654,7 +3666,7 @@ document.addEventListener('click', e => {
   const navLink = e.target.closest('.rail [data-route], .tabbar [data-route]');
   // Leaving the page keeps the window's Back step behind (Back skips it); staying takes it off.
   if (navLink) closeSheet(navLink.getAttribute('href') !== location.hash);
-  const el = e.target.closest('[data-copy],[data-take],[data-tab-open],[data-tab-close],[data-case-switch],[data-case],[data-client],[data-view],[data-fview],[data-day],[data-cal-day],[data-slide],[data-expand],[data-sgroup],[data-supplier],[data-open-supplier],[data-fset],[data-atab],[data-range],[data-logtype],[data-stop],[data-action]');
+  const el = e.target.closest('[data-copy],[data-take],[data-tab-open],[data-tab-close],[data-case-pin],[data-case-switch],[data-case],[data-client],[data-view],[data-fview],[data-day],[data-cal-day],[data-slide],[data-expand],[data-sgroup],[data-supplier],[data-open-supplier],[data-fset],[data-atab],[data-range],[data-logtype],[data-stop],[data-action]');
   if (!el || el.tagName === 'SELECT' || el.dataset.stop !== undefined) return;
   if (el.dataset.copy) return copyId(el.dataset.copy);
   if (el.dataset.take) return takeCase(el.dataset.take);
@@ -3712,17 +3724,29 @@ document.addEventListener('click', e => {
     state.tabs = state.tabs.filter(t => t !== id);
     const showing = state.route.name === 'case' ? state.route.id : currentSheet ? currentSheet.tab || currentSheet.id : '';
     const list = (currentSheet && !currentSheet.tab && currentSheet.list) || '';
-    if (showing !== id) return openCaseId ? openCaseSheet(openCaseId, { list: (currentSheet && currentSheet.list) || '', tab: (currentSheet && currentSheet.tab) || '' }) : render();
+    // Another tab is showing: just redraw it (a picker, a case, or the page underneath).
+    if (showing !== id) {
+      if (currentSheet && currentSheet.type === 'view') return openViewTab(currentSheet.tab.slice(5));
+      if (openCaseId) return openCaseSheet(openCaseId, { list: currentSheet.list || '', tab: currentSheet.tab || '', preview: Boolean(currentSheet.preview) });
+      return render();
+    }
     const next = state.tabs[Math.min(at, state.tabs.length - 1)];
     if (state.route.name === 'case') return (location.hash = next && !isViewTab(next) ? `#/case/${next}` : homeHash(state.home.view));
     if (next) return openTab(next, list || (['home', 'files'].includes(state.route.name) ? state.route.name : ''));
     return closeSheet();
   }
-  // A card down the left opens its case in a new tab, and the case you were on stays open in its own tab;
-  // inside a view tab (Needs attention) the cards just switch the case that tab shows.
+  // + on a card or on the preview tab: keep that case open as a tab of its own, and show it there.
+  if (el.dataset.casePin) {
+    addCaseTab(el.dataset.casePin);
+    return openCaseSheet(el.dataset.casePin, { list: (currentSheet && currentSheet.list) || '' });
+  }
+  // A card previews its case: inside a picker's tab, or as the italic preview tab (a case already kept as a tab
+  // just comes forward).
   if (el.dataset.caseSwitch) {
+    const id = el.dataset.caseSwitch;
     const { list = '', tab = '' } = currentSheet || {};
-    return openCaseSheet(el.dataset.caseSwitch, { list, tab });
+    if (tab) return openCaseSheet(id, { list, tab });
+    return openCaseSheet(id, { list, preview: !state.tabs.includes(id) });
   }
   if (el.dataset.case) {
     // From a dashboard row, the list's cases come along as cards down the left.
@@ -3730,11 +3754,10 @@ document.addEventListener('click', e => {
     return openCaseSheet(el.dataset.case, row ? { list: row.dataset.listKey } : {});
   }
   if (el.dataset.client) return openClientSheet(el.dataset.client);
-  // Needs attention opens its cases in their own tab, the first one big and the rest down the left.
-  if (el.dataset.view === 'new') return openViewTab('new');
+  // Needs attention and the two Waiting views open a picker of their cases in their own tab.
+  if (el.dataset.view && homeView(el.dataset.view).picker) return openViewTab(el.dataset.view);
   if (el.dataset.view) {
     state.home.view = el.dataset.view;
-    saveHomeView();
     // The calendar strip stays open on the new view, with no day picked.
     return go(homeHash(el.dataset.view, { cal: state.home.cal }));
   }
@@ -3772,10 +3795,14 @@ document.addEventListener('click', e => {
     case 'cal-today': return scrollCalendarToToday(true);
     case 'toggle-cal': return go(homeHash(state.home.view, { cal: !state.home.cal }));
     case 'tab-home': {
-      // Home: back to the page under the case (the dashboard), keeping the case tabs.
-      if (['home', 'files'].includes(state.route.name)) return closeSheet();
+      // My tasks: back to all your tasks, keeping the case tabs.
+      const target = homeHash('all', { cal: state.home.cal });
+      if (location.hash === target || (location.hash === '' && target === '#/home')) {
+        closeSheet();
+        return render();
+      }
       closeSheet(true);
-      location.hash = homeHash(state.home.view);
+      location.hash = target;
       return;
     }
     case 'add-booking': return openBookingSheet(el.dataset.supplierId);
@@ -3874,7 +3901,7 @@ document.addEventListener('keydown', e => {
     }
   }
   // Cards are divs (they hold copy buttons), so give them button keys.
-  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role="button"][data-case],[role="button"][data-client],[role="button"][data-expand]')) {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role="button"][data-case],[role="button"][data-case-switch],[role="button"][data-client],[role="button"][data-expand]')) {
     e.preventDefault();
     e.target.click();
   }
@@ -4076,12 +4103,6 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function init() {
-  let savedView = '';
-  try {
-    savedView = localStorage.getItem(VIEW_KEY) || '';
-  } catch {
-    // Start on "All my tasks" when storage is unavailable.
-  }
   const sheet = restoreUi();
   // A card type saved before Centurion / Platinum / Fly Card falls back to the top one.
   if (!TIERS.includes(state.files.tier)) state.files.tier = TIERS[TIERS.length - 1];
@@ -4089,14 +4110,10 @@ function init() {
   refreshAvatars();
   applyTheme();
   state.route = parseRoute();
-  // My tasks opens on the view you used last, written into the address so Back still works.
-  if (state.route.name === 'home' && !state.route.params.get('view') && homeView(savedView).id === savedView && savedView !== 'all') {
-    history.replaceState(history.state, '', homeHash(savedView));
-    state.route = parseRoute();
-  }
   applyRoute();
   render();
-  if (sheet && sheet.type === 'case') openCaseSheet(sheet.id, { list: sheet.list || '', tab: sheet.tab || '' });
+  if (sheet && sheet.type === 'case') openCaseSheet(sheet.id, { list: sheet.list || '', tab: sheet.tab || '', preview: Boolean(sheet.preview) });
+  else if (sheet && sheet.type === 'view') openViewTab(sheet.tab.slice(5));
   else if (sheet && sheet.type === 'day') openDaySheet(sheet.key, sheet.dayType || '');
   // Back steps from before a refresh whose windows didn't come back.
   const extra = sheetLevel() - (sheetRoot.firstElementChild ? 1 : 0);
