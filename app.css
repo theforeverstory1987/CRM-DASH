@@ -5212,3 +5212,253 @@ html.dark .app-body { --shadow-lift: none; --shadow-soft: none; --shadow-card: n
   .task-main { min-height: 0; }
   .task-client { padding: 0; }
 }
+
+/* ---------- Everything floats: the rail, the side menu, the tabs and every case are white boxes on a gentle
+   bluish shadow, on the white page; a coloured line along the bottom of each case shows its status ---------- */
+.app-body {
+  /* Type: Plus Jakarta Sans for the app, Instrument Serif (an editorial serif) for the big hello and page titles. */
+  --font: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --float: 0 1px 2px rgba(0, 56, 150, 0.05), 0 8px 24px -10px rgba(0, 72, 200, 0.2);
+  --float-hover: 0 2px 4px rgba(0, 56, 150, 0.06), 0 14px 30px -12px rgba(0, 72, 200, 0.3);
+  --shadow-lift: var(--float);
+  --shadow-soft: var(--float);
+  --hairline: #eef1f7;
+  font-family: var(--font);
+}
+
+html.dark .app-body {
+  --float: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 26px -12px rgba(0, 0, 0, 0.6);
+  --float-hover: 0 2px 4px rgba(0, 0, 0, 0.45), 0 14px 30px -12px rgba(0, 0, 0, 0.7);
+  --hairline: #262a33;
+}
+
+/* The rail is its own floating column, apart from the page. */
+@media (min-width: 861px) {
+  .shell { grid-template-columns: 88px minmax(0, 1fr); }
+  .rail {
+    top: 14px;
+    height: calc(100vh - 28px);
+    margin: 14px 0 0 14px;
+    width: 60px;
+    padding: 18px 0 14px;
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--float);
+  }
+  .sheet-overlay { left: 88px; }
+  .content { padding-left: 24px; }
+  .cw-top { padding-left: 24px; }
+  .cw-cards { padding-left: 24px; }
+}
+
+/* The big hello at the top of My tasks. */
+.greeting { margin: 2px 0 20px; }
+.greeting-hello {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.greeting-hello em { color: var(--primary); }
+.greeting-sub { margin: 6px 0 0; font-size: 13px; color: var(--text-muted); }
+.greeting-sub b { font-weight: 600; color: var(--flag); }
+
+/* Page titles and window titles in the display serif, a size up since it's narrow. */
+.page-title,
+.dash-head .page-title { font-family: var(--font-display); font-size: 38px; font-weight: 400; line-height: 44px; letter-spacing: -0.01em; }
+.page-title .soft { font-weight: 400; }
+.sheet-title { font-family: var(--font-display); font-size: 26px; font-weight: 400; letter-spacing: 0; }
+.panel-head h2,
+.cw-cards-head b { font-family: var(--font); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+
+/* The side menu: one floating box, no lines and no icons; a small coloured square before each view, and a bar
+   down the left of the one you're on, in its colour. */
+.dash-left { gap: 14px; padding-right: 0; border-right: 0; box-shadow: none; }
+@media (min-width: 861px) {
+  .dash-left { padding-right: 0; border-right: 0; box-shadow: none; }
+}
+.dash-nav,
+.dash-nav.dash-extras { padding: 10px; border: 0; border-radius: 8px; background: var(--surface); box-shadow: var(--float); }
+.dash-section + .dash-section,
+.dash-extras { padding-top: 6px; border-top: 0; }
+.dash-me { border-bottom: 0; }
+.dash-item .ico { display: none; }
+.dash-item { position: relative; gap: 10px; padding: 0 10px; }
+.dash-item[class*="tone-"]::before { content: ""; flex-shrink: 0; width: 8px; height: 8px; border-radius: 2px; background: var(--tone); }
+.dash-item.active { background: var(--primary-soft); color: var(--text); box-shadow: none; }
+.dash-item.active::after { content: ""; position: absolute; left: 0; top: 7px; bottom: 7px; width: 3px; border-radius: 0 3px 3px 0; background: var(--tone, var(--primary)); }
+.dash-item[class*="tone-"].active { background: color-mix(in srgb, var(--tone) 9%, var(--surface)); }
+
+/* Tabs float too; the one you're on is the + blue. */
+.case-tab,
+.case-tab:not(.active) { border: 0; box-shadow: var(--float); }
+.case-tab:hover { border: 0; box-shadow: var(--float-hover); }
+.case-tab.home .ico { display: none; }
+
+/* Tools at the top of the list float with no outline. */
+.cal-toggle,
+.home-tools .control-sm,
+.dash-head .control-sm,
+.date-slider,
+.square-btn { border: 0; box-shadow: var(--float); }
+.cal-toggle.active { box-shadow: 0 6px 16px -4px rgba(0, 103, 255, 0.45); }
+
+/* The list: every case is its own floating box, with a line in its status colour along the bottom. */
+.dash-main > .panel { padding: 0; border: 0; background: none; box-shadow: none; }
+.case-list.task-list { row-gap: 10px; }
+.is-dash .case-list.task-list { margin: 0 -14px 0 -10px; padding: 2px 14px 28px 10px; }
+.task-head { border-bottom: 0; background: var(--surface); }
+.task-row,
+.task-row + .task-row {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--float);
+  transition: box-shadow 0.15s ease;
+}
+.task-row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--st-color);
+  pointer-events: none;
+}
+.task-row:hover { background: var(--surface); box-shadow: var(--float-hover); }
+.task-row.is-done { opacity: 0.65; }
+
+/* Info is the request type and its headline, no picture. */
+.task-pic { display: none; }
+
+/* The follow-up and email buttons show when you point at a row (always on touch screens), plain until pointed at. */
+.task-icon { background: transparent; color: var(--text-muted); }
+.task-icon:hover { background: var(--primary-soft); color: var(--primary); }
+.task-icon-count { border-color: var(--surface); background: var(--primary); }
+@media (hover: hover) {
+  .task-actions { opacity: 0; transition: opacity 0.15s ease; }
+  .task-row:hover .task-actions,
+  .task-actions:focus-within { opacity: 1; }
+}
+
+/* Inside a case: the cards down the left and the boxes float, the cards with the same status line. */
+.cw-card,
+.cw-card:not(.active),
+.cw-box,
+.cw-body .case-chat,
+.cw-facts .cw-field { border: 0; box-shadow: var(--float); }
+.cw-card { overflow: hidden; }
+.cw-card::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--st-color); }
+.cw-card:hover { border: 0; box-shadow: var(--float-hover); }
+.cw-card.active { box-shadow: 0 0 0 2px var(--primary), var(--float); }
+
+/* Phones: the rail is the bar at the bottom, so nothing changes there; the hello is smaller. */
+@media (max-width: 860px) {
+  .greeting { margin-bottom: 14px; }
+  .greeting-hello { font-size: 34px; }
+  .page-title,
+  .dash-head .page-title { font-size: 32px; line-height: 38px; }
+  .is-dash .case-list.task-list { margin: 0; padding: 0; }
+}
+
+/* Narrower windows: a slimmer side menu and closer columns, so Info keeps its room. */
+@media (min-width: 861px) and (max-width: 1180px) {
+  .dash { grid-template-columns: 212px minmax(0, 1fr); gap: 16px; }
+  .task-no { position: relative; }
+  .task-copy { position: absolute; left: 100%; z-index: 1; margin-left: 2px; background: var(--surface); box-shadow: var(--float); }
+  .case-list.task-list { grid-template-columns: max-content minmax(100px, 0.8fr) minmax(90px, 1.4fr) max-content max-content max-content; column-gap: 14px; }
+}
+
+/* ---------- My tasks' views as one airy row over the list, like a board's column heads: a short bar in each view's
+   colour, its name and count; All files, Reminders and Sticky notes at the far end. The rail gets a soft blue. ---------- */
+.dash.dash-wide,
+.is-dash .dash.dash-wide { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 18px; }
+
+.view-bar { display: flex; align-items: center; gap: 36px; min-width: 0; padding: 4px 2px; overflow-x: auto; }
+
+.view-item {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0 6px 14px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.view-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2px;
+  height: 22px;
+  border-radius: 2px;
+  background: var(--tone);
+  transform: translateY(-50%);
+}
+
+.view-item:hover { color: var(--text); }
+.view-item.active { color: var(--text); font-weight: 600; }
+.view-item.active::before { width: 3px; height: 26px; }
+.view-item:focus-visible,
+.view-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 4px; }
+.view-count { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+
+.view-bar-end { flex-shrink: 0; display: flex; align-items: center; gap: 22px; margin-left: auto; padding-left: 24px; }
+
+.view-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.view-link:hover { color: var(--primary); }
+.view-link .view-count { font-weight: 500; color: var(--text-faint); }
+.view-link .view-count.alert { color: var(--red-text); font-weight: 600; }
+
+/* The rail sits on a soft blue, so it stands apart from the white page; the page you're on is a white square. */
+.rail { background: #eef3ff; box-shadow: none; }
+.rail-btn:hover { background: rgba(255, 255, 255, 0.7); }
+.rail-btn.active { background: var(--surface); color: var(--primary); box-shadow: var(--float); }
+.rail-me.active,
+.rail-me:hover { background: transparent; box-shadow: none; }
+html.dark .rail { background: #1b2233; }
+
+@media (max-width: 860px) {
+  .view-bar { gap: 24px; padding: 2px 2px 6px; }
+  .view-link.is-extra { display: none; }
+}
+
+/* The status line is a short, thin dash at the bottom left of each case, not a full-width bar. */
+.task-row::after,
+.cw-card::after { left: 14px; right: auto; bottom: 0; width: 28px; height: 2px; border-radius: 2px 2px 0 0; }
+
+@media (min-width: 861px) and (max-width: 1180px) {
+  .view-bar { flex-wrap: wrap; gap: 6px 20px; }
+  .view-bar-end { gap: 14px; padding-left: 12px; }
+}
