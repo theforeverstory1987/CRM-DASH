@@ -5252,20 +5252,6 @@ html.dark .app-body {
   .cw-cards { padding-left: 24px; }
 }
 
-/* The big hello at the top of My tasks. */
-.greeting { margin: 2px 0 20px; }
-.greeting-hello {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 46px;
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-.greeting-hello em { color: var(--primary); }
-.greeting-sub { margin: 6px 0 0; font-size: 13px; color: var(--text-muted); }
-.greeting-sub b { font-weight: 600; color: var(--flag); }
 
 /* Page titles and window titles in the display serif, a size up since it's narrow. */
 .page-title,
@@ -5361,8 +5347,6 @@ html.dark .app-body {
 
 /* Phones: the rail is the bar at the bottom, so nothing changes there; the hello is smaller. */
 @media (max-width: 860px) {
-  .greeting { margin-bottom: 14px; }
-  .greeting-hello { font-size: 34px; }
   .page-title,
   .dash-head .page-title { font-size: 32px; line-height: 38px; }
   .is-dash .case-list.task-list { margin: 0; padding: 0; }
@@ -5462,3 +5446,481 @@ html.dark .rail { background: #1b2233; }
   .view-bar { flex-wrap: wrap; gap: 6px 20px; }
   .view-bar-end { gap: 14px; padding-left: 12px; }
 }
+
+/* ---------- Rail: Home (blue) at the top instead of the profile; the + is a blue outline, not a filled square,
+   so it never looks like the page you're on ---------- */
+.rail-home { color: var(--primary); }
+.rail-home .ico { stroke-width: 2; }
+.rail-new,
+.rail-new:hover {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+.rail-new:hover { background: var(--surface); }
+.tab-plus { border: 1.5px solid var(--primary); background: var(--surface); color: var(--primary); box-shadow: none; }
+
+/* ---------- Tabs, like folder tabs: the one you're on is a raised white tab on a soft shadow, the rest are plain
+   words with no box ---------- */
+.case-tabs { gap: 4px; padding: 6px 4px 10px; }
+.case-tab,
+.case-tab:not(.active) { background: transparent; box-shadow: none; color: var(--text-muted); }
+.case-tab:hover { background: transparent; box-shadow: none; color: var(--text); }
+.case-tab.home { padding: 0 14px; font-weight: 500; }
+.case-tab span { font-weight: 500; color: var(--text-faint); }
+.case-tab-open span,
+.case-tab.home span { margin-left: 6px; }
+.case-tab.active,
+.case-tab.active:hover {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 -2px 10px -4px rgba(0, 72, 200, 0.14), 0 8px 22px -10px rgba(0, 72, 200, 0.28);
+}
+.case-tab.active,
+.case-tab.active .case-tab-open { font-weight: 600; }
+.case-tab.active span,
+.case-tab.active .case-tab-open span { color: var(--primary); }
+.case-tab.active .case-tab-x:hover,
+.case-tab-x:hover { background: var(--surface-2); }
+.case-tab.active .case-tab-pin { border-color: var(--border-strong); background: var(--surface); color: var(--primary); }
+.case-tab.active .case-tab-pin:hover { border-color: var(--primary); background: var(--primary); color: #fff; }
+.case-tab .alert { color: var(--red-text); }
+
+/* Add reminder and Sticky notes: two quiet actions after the two lists, set a little apart. */
+.case-tab.tab-extra { gap: 6px; font-size: 13px; }
+.case-tab.tab-extra .ico { width: 14px; height: 14px; color: var(--primary); stroke-width: 2.2; }
+.case-tab[data-action="open-reminders"] { margin-left: 14px; }
+
+/* ---------- For me: every case is a square, like a board's cards ---------- */
+.case-list.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 18px;
+}
+.is-dash .case-list.case-grid { margin: 0 -14px 0 -10px; padding: 4px 14px 28px 10px; }
+
+.case-square {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--float);
+  transition: box-shadow 0.15s ease;
+}
+.case-square:hover { box-shadow: var(--float-hover); }
+.case-square.is-done { opacity: 0.65; }
+.case-square::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  bottom: 0;
+  width: 28px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--st-color);
+}
+
+.sq-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px 10px;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+}
+.sq-main:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.sq-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.sq-top .task-no { font-size: 12px; font-weight: 500; color: var(--text-faint); letter-spacing: 0.04em; }
+.sq-top .task-copy { width: 22px; height: 22px; }
+.sq-top .task-copy .ico { width: 12px; height: 12px; }
+.sq-due { font-size: 12px; font-weight: 500; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.sq-due.overdue { color: var(--red-text); font-weight: 600; }
+.sq-type { font-size: 15px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.sq-title {
+  display: -webkit-box;
+  min-height: 2.9em;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.sq-client { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; min-width: 0; }
+.sq-name { min-width: 0; overflow: hidden; font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.sq-client .card-type { flex-shrink: 0; gap: 6px; font-size: 9.5px; }
+.sq-client .card-pic { width: 22px; height: 14px; }
+
+.sq-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 14px 16px 18px; }
+.sq-actions .status-select { height: 30px; padding: 0 26px 0 25px; font-size: 12px; background-position: right 8px center, left 11px center; background-size: 12px, 7px 7px; }
+.sq-icons { display: flex; gap: 6px; }
+.sq-icons .task-icon { width: 32px; height: 32px; color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary-soft); }
+.sq-icons .task-icon .ico { width: 16px; height: 16px; }
+.sq-icons .task-icon.is-off { box-shadow: none; color: var(--text-faint); }
+.case-square .quick-followup { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 14px 16px 18px; }
+.case-square .quick-followup[hidden] { display: none; }
+.case-square .quick-followup input { flex: 1 1 100%; height: 38px; font-size: 13px; }
+
+@media (max-width: 860px) {
+  .case-list.case-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .is-dash .case-list.case-grid { margin: 0; padding: 0; }
+}
+
+/* The page you're on: its rail icon is white on a solid blue square (the only filled one; the + is an outline). */
+.rail-btn.active,
+.rail-btn.active:hover,
+.rail-home.active { background: var(--primary); color: #fff; box-shadow: 0 6px 16px -4px rgba(0, 103, 255, 0.45); }
+
+/* ---------- Clearer separation: what sits under the tabs is one panel on a very light blue, joined to the tab
+   you're on like a folder; rows, squares and cards stay white on it. The rail is a deeper soft blue. ---------- */
+.app-body { --panel: #f3f7ff; }
+html.dark .app-body { --panel: #181d27; }
+.rail { background: #e6eeff; }
+
+.case-tabs { margin-bottom: 0; padding-bottom: 0; align-items: flex-end; }
+.case-tab.active,
+.case-tab.active:hover { border-radius: 8px 8px 0 0; background: var(--panel); box-shadow: none; }
+.case-tab.active::before,
+.case-tab.active::after { content: ""; position: absolute; bottom: 0; width: 8px; height: 8px; pointer-events: none; }
+.case-tab.active::before { left: -8px; background: radial-gradient(circle at 0 0, transparent 8px, var(--panel) 8.5px); }
+.case-tab.active::after { right: -8px; background: radial-gradient(circle at 100% 0, transparent 8px, var(--panel) 8.5px); }
+.case-tabs > .case-tab:first-child.active::before { display: none; }
+
+/* The dashboard's panel. */
+.dash.dash-wide { padding: 16px 18px 0; border-radius: 0 8px 8px 8px; background: var(--panel); }
+.dash.dash-wide .task-head { background: var(--panel); }
+.dash.dash-wide .home-tools .control-sm,
+.dash.dash-wide .cal-toggle:not(.active) { background-color: var(--surface); }
+.dash.dash-wide .home-tools .control-sm.set { background-color: var(--primary-soft); }
+.view-bar { padding-bottom: 12px; border-bottom: 1px solid #e3eaf7; }
+html.dark .view-bar { border-bottom-color: var(--hairline); }
+
+/* A case window's panel: the cards and the case under the tabs. */
+.sheet.case-full .cw-split,
+.sheet.case-full > .cw-body { margin: 0 24px 20px; border-radius: 8px; background: var(--panel); }
+.cw-top + .cw-split .cw-cards { padding-left: 16px; }
+.cw-top .case-tabs { margin-bottom: 0; }
+
+@media (max-width: 860px) {
+  .dash.dash-wide { padding: 12px 10px 0; border-radius: 0 8px 8px 8px; }
+  .sheet.case-full .cw-split,
+  .sheet.case-full > .cw-body { margin: 0 8px 12px; }
+}
+
+/* No row of views any more: the panel holds the tools and the cases; All files sits at the tools' far end. */
+.dash.dash-wide,
+.is-dash .dash.dash-wide { grid-template-rows: minmax(0, 1fr); }
+.home-tools .view-link { margin-left: auto; }
+
+/* ---------- Soft frosted look (from the user's reference): a light grey-to-blue background; the rail and the
+   panel under the tabs are frosted glass with large soft corners; the tab you're on is a black pill; cases are
+   white tiles; small actions are round outline buttons ---------- */
+.app-body {
+  --bg: transparent;
+  --frame: transparent;
+  --sheet-bg: transparent;
+  --panel: rgba(255, 255, 255, 0.5);
+  --glass-line: rgba(255, 255, 255, 0.85);
+  --tile: rgba(255, 255, 255, 0.88);
+  --float: 0 1px 2px rgba(20, 30, 60, 0.04), 0 8px 22px -10px rgba(30, 50, 110, 0.16);
+  --float-hover: 0 2px 4px rgba(20, 30, 60, 0.05), 0 14px 30px -12px rgba(30, 50, 110, 0.24);
+  min-height: 100vh;
+  background: linear-gradient(165deg, #f3f4f6 0%, #e9ecf2 45%, #dde4f1 100%) fixed;
+}
+
+html.dark .app-body {
+  --panel: rgba(255, 255, 255, 0.04);
+  --glass-line: rgba(255, 255, 255, 0.08);
+  --tile: rgba(30, 34, 42, 0.92);
+  background: linear-gradient(165deg, #15181e 0%, #171b23 50%, #1a2130 100%) fixed;
+}
+
+.content { background: transparent; }
+
+/* The rail: a frosted column; the page you're on stays white on solid blue. */
+.rail {
+  border: 1px solid var(--glass-line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 8px 30px -14px rgba(30, 50, 110, 0.2);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+html.dark .rail { background: rgba(255, 255, 255, 0.05); }
+.rail-btn { border-radius: 12px; }
+.rail-btn:hover { background: rgba(255, 255, 255, 0.8); }
+
+/* Tabs: plain words; the one you're on is a black pill. */
+.case-tabs { gap: 6px; padding: 4px 2px 0; margin-bottom: 14px; align-items: center; }
+.case-tab,
+.case-tab:not(.active),
+.case-tab:hover { height: 38px; border-radius: 999px; background: transparent; box-shadow: none; color: #3d4250; }
+.case-tab:hover { color: #111; }
+.case-tab.home { padding: 0 18px; }
+.case-tab.active,
+.case-tab.active:hover { border-radius: 999px; background: #111; color: #fff; box-shadow: 0 8px 18px -8px rgba(17, 17, 17, 0.5); }
+.case-tab.active::before,
+.case-tab.active::after { display: none; }
+.case-tab.active span,
+.case-tab.active .case-tab-open span { color: rgba(255, 255, 255, 0.7); }
+.case-tab.active .case-tab-x:hover { background: rgba(255, 255, 255, 0.18); }
+.case-tab.active .case-tab-pin { border-color: rgba(255, 255, 255, 0.6); background: transparent; color: #fff; }
+html.dark .case-tab.active { background: #f1f2f4; color: #111; }
+
+/* The panel under the tabs: frosted glass with large corners. */
+.dash.dash-wide,
+.sheet.case-full .cw-split,
+.sheet.case-full > .cw-body {
+  border: 1px solid var(--glass-line);
+  border-radius: 26px;
+  background: var(--panel);
+  box-shadow: 0 10px 40px -20px rgba(30, 50, 110, 0.25);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+.dash.dash-wide { padding: 18px 20px 0; }
+.dash.dash-wide .task-head { background: transparent; }
+.sheet.case-full { background: linear-gradient(165deg, #f3f4f6 0%, #e9ecf2 45%, #dde4f1 100%); }
+html.dark .sheet.case-full { background: linear-gradient(165deg, #15181e 0%, #171b23 50%, #1a2130 100%); }
+
+/* Cases are soft white tiles. */
+.task-row,
+.task-row + .task-row,
+.case-square,
+.cw-card,
+.cw-card:not(.active),
+.cw-box,
+.cw-body .case-chat { border-radius: 16px; background: var(--tile); }
+.task-row::after,
+.cw-card::after,
+.case-square::after { left: 20px; }
+.case-list.task-list { row-gap: 10px; }
+.cw-card.active { box-shadow: 0 0 0 2px #111, var(--float); }
+
+/* Tools: round pills; small actions are round outline buttons. */
+.cal-toggle,
+.home-tools .control-sm,
+.dash-head .control-sm { border-radius: 999px; background-color: var(--tile); }
+.cal-toggle.active { background: #111; color: #fff; box-shadow: 0 8px 18px -8px rgba(17, 17, 17, 0.5); }
+.cal-toggle.active .ico { color: #fff; }
+.task-row .status-select,
+.case-square .status-select { border-radius: 999px; }
+.task-icon,
+.sq-icons .task-icon {
+  border-radius: 50%;
+  background: transparent;
+  color: #2b3040;
+  box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.16);
+}
+.task-icon:hover,
+.sq-icons .task-icon:hover { background: #fff; color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+.square-btn { border-radius: 50%; background: var(--tile); }
+.date-slider { border-radius: 18px; background: var(--tile); }
+
+/* Squarer: small, even corners everywhere, like the rail's buttons (no pills, no circles). */
+.rail { border-radius: 14px; }
+.rail-btn { border-radius: 10px; }
+.dash.dash-wide,
+.sheet.case-full .cw-split,
+.sheet.case-full > .cw-body { border-radius: 14px; }
+.task-row,
+.task-row + .task-row,
+.case-square,
+.cw-card,
+.cw-card:not(.active),
+.cw-box,
+.cw-body .case-chat,
+.date-slider { border-radius: 10px; }
+.case-tab,
+.case-tab:not(.active),
+.case-tab:hover,
+.case-tab.active,
+.case-tab.active:hover,
+.cal-toggle,
+.home-tools .control-sm,
+.dash-head .control-sm,
+.task-row .status-select,
+.case-square .status-select { border-radius: 8px; }
+.task-icon,
+.sq-icons .task-icon,
+.square-btn { border-radius: 8px; }
+
+/* The + (create a file): a white square with the blue outline and blue +. */
+.rail-new,
+.rail-new:hover { background: #fff; }
+.rail-new:hover { box-shadow: inset 0 0 0 1.5px var(--primary), 0 6px 16px -6px rgba(0, 103, 255, 0.35); }
+.tab-plus { background: #fff; }
+
+/* Folder tabs again (the user's pick): the tab you're on is part of the frosted panel under it, joined with soft
+   inward curves; the others are plain words. */
+.case-tabs { position: relative; z-index: 1; margin-bottom: -1px; padding-bottom: 0; align-items: flex-end; }
+.case-tab.active,
+.case-tab.active:hover {
+  height: 44px;
+  border: 1px solid var(--glass-line);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: none;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+.case-tab.active::before,
+.case-tab.active::after { display: block; content: ""; position: absolute; bottom: 0; width: 10px; height: 10px; pointer-events: none; }
+.case-tab.active::before { left: -11px; background: radial-gradient(circle at 0 0, transparent 10px, var(--panel) 10.5px); }
+.case-tab.active::after { right: -11px; background: radial-gradient(circle at 100% 0, transparent 10px, var(--panel) 10.5px); }
+.case-tabs > .case-tab:first-child.active::before { display: none; }
+.case-tab.active span,
+.case-tab.active .case-tab-open span { color: var(--primary); }
+.case-tab.active .case-tab-x:hover { background: rgba(17, 24, 39, 0.06); }
+.case-tab.active .case-tab-pin { border-color: var(--border-strong); background: var(--surface); color: var(--primary); }
+html.dark .case-tab.active { background: var(--panel); color: var(--text); }
+.content:has(.case-tabs > .case-tab:first-child.active) .dash.dash-wide { border-top-left-radius: 0; }
+
+/* A square, top to bottom: file ID and due date; the client's name in Playfair Display; their card, small; then the
+   request type in capitals. */
+.sq-main { gap: 4px; }
+.sq-top { margin-bottom: 8px; }
+.sq-main .sq-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.card-type.sq-tier { align-self: flex-start; gap: 5px; font-size: 9px; color: var(--text-muted); }
+.card-type.sq-tier .card-pic { width: 18px; height: 12px; }
+.sq-main .sq-type { margin-top: 12px; font-size: 13px; letter-spacing: 0.08em; }
+
+/* Open cases' tools end with small links: All files, Reminders (the thread starts here) and Sticky notes. */
+.home-tools .view-link { margin-left: 0; }
+.home-links { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+@media (max-width: 860px) {
+  .home-links { width: 100%; margin-left: 0; padding: 4px 2px 0; }
+}
+
+
+/* The request: status on the left and the file ID at the top right; then dates, headline, description, the facts,
+   what they insist on and the hashtags. */
+.cw-case .cw-case-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.cw-case .cw-status { margin-left: 0; align-items: flex-start; }
+.cw-file-id { align-items: flex-end; text-align: right; }
+.cw-request-view { display: flex; flex-direction: column; gap: 14px; }
+.cw-request-view[hidden] { display: none; }
+.cw-dates b { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.cw-dates small { font-size: 12px; color: var(--text-muted); }
+.cw-dates.overdue b,
+.cw-dates.overdue small { color: var(--red-text); }
+.cw-headline { margin: 0; font-family: "Playfair Display", Georgia, serif; font-size: 26px; font-weight: 500; line-height: 1.2; }
+
+.cw-specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.cw-specs > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 10px 12px; border-radius: 10px; background: var(--tile); box-shadow: var(--float); }
+.cw-specs dt { font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-faint); }
+.cw-specs dd { display: flex; align-items: center; gap: 6px; margin: 0; min-width: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.cw-person { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.cw-requirements { margin: 0; padding: 10px 12px; border-left: 3px solid var(--primary); border-radius: 0 8px 8px 0; background: var(--primary-soft); font-size: 13.5px; font-weight: 500; }
+.cw-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cw-actions-row { display: flex; gap: 8px; }
+
+/* The client: name, gender and card, then ID number, phones and emails, each on its own line. */
+.cw-client-view { display: flex; flex-direction: column; gap: 12px; }
+.cw-client-view[hidden] { display: none; }
+.cw-client-title { display: inline-flex; align-items: center; gap: 8px; font-family: "Playfair Display", Georgia, serif; font-size: 22px; font-weight: 500; }
+.cw-contact { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.cw-contact > div { display: flex; flex-direction: column; gap: 3px; }
+.cw-contact dt { font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-faint); }
+.cw-contact dd { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: 14px; }
+.cw-contact .contact-value { font-weight: 500; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+.cw-contact .btn-email { margin-left: auto; }
+.cw-contact-gap { margin-top: 6px; padding-top: 12px; border-top: 1px solid rgba(17, 24, 39, 0.06); }
+
+/* ---------- A case window in three columns: the follow-ups chat on the left, the request in the middle, the
+   client on the right. The chat scrolls on its own; the request and client scroll together ---------- */
+.cw-body.cw-three {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 2.15fr);
+  gap: 16px;
+  padding: 16px;
+  background: transparent;
+}
+.cw-three > .case-chat { min-height: 0; }
+.cw-three > .cw-mid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(250px, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.cw-case-col,
+.cw-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+/* Narrower windows: the client goes under the request. Phones: one column, the request first, the chat last. */
+@media (max-width: 1280px) {
+  .cw-three > .cw-mid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 960px) {
+  .cw-body.cw-three { display: flex; flex-direction: column; overflow-y: auto; }
+  .cw-three > .cw-mid { order: 1; flex-shrink: 0; overflow: visible; }
+  .cw-three > .case-chat { order: 2; flex-shrink: 0; min-height: 480px; }
+  .cw-specs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- Case window, reordered: the client on the left, the request in the middle, the follow-ups on the
+   right ---------- */
+.cw-body.cw-three { grid-template-columns: minmax(0, 2.15fr) minmax(280px, 0.85fr); }
+.cw-three > .cw-mid { grid-template-columns: minmax(260px, 1fr) minmax(0, 1.4fr); }
+
+/* The client: the name (no label over it), then each detail in its own box, with a copy button on pointing. */
+.cw-client-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.cw-info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.cw-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--tile);
+  box-shadow: var(--float);
+}
+.cw-info.wide { grid-column: 1 / -1; }
+.cw-info-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-faint); }
+.cw-info-value { min-width: 0; padding-right: 26px; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.cw-info-value a { color: var(--text); text-decoration: none; }
+.cw-info-value a:hover { color: var(--primary); }
+.cw-info-value .card-type { font-size: 10px; }
+.cw-info .cw-info-copy { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 6px; }
+.cw-info .cw-info-copy .ico { width: 13px; height: 13px; }
+.cw-info:hover .cw-info-copy,
+.cw-info-copy:focus-visible { opacity: 1; }
+
+/* Additional info: a free-text box. */
+.cw-more { display: flex; flex-direction: column; gap: 6px; }
+.cw-more textarea { min-height: 90px; resize: vertical; font-size: 14px; }
+
+/* Additional contacts: each person's name and who they are, then their phone and email boxes. */
+.cw-contacts { display: flex; flex-direction: column; gap: 10px; }
+.cw-person-card { display: flex; flex-direction: column; gap: 8px; }
+.cw-person-head { display: flex; align-items: baseline; gap: 8px; }
+.cw-person-head b { font-size: 15px; font-weight: 600; }
+.cw-person-head span { font-size: 12px; color: var(--text-muted); }
+.cw-person-head .icon-btn { margin-left: auto; align-self: center; opacity: 0.5; }
+.cw-person-head .icon-btn:hover { opacity: 1; }
+
+@media (max-width: 1280px) {
+  .cw-three > .cw-mid { grid-template-columns: minmax(0, 1fr); }
+  .cw-three > .cw-mid > .cw-case-col { order: 1; }
+  .cw-three > .cw-mid > .cw-side { order: 2; }
+}
+.cw-info-value a[href^="tel:"] { white-space: nowrap; }

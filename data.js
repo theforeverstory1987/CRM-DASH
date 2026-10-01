@@ -3,7 +3,7 @@
 const DATA_KEY = 'gustavo_data_v1';
 
 // Request types, shown as hashtags (#Restaurant). One word each so the hashtag reads cleanly.
-const CATEGORIES = ['Restaurant', 'Hotel', 'Flights', 'Airport VIP', 'Transfers', 'Attractions', 'Massage', 'Yacht', 'Events', 'Tickets', 'Shopping', 'Gifts', 'Other'];
+const CATEGORIES = ['Restaurant', 'Hotel', 'Flights', 'Airport VIP', 'Transfers', 'Attractions', 'Massage', 'Yacht', 'Events', 'Tickets', 'Shopping', 'Gifts', 'Delivery', 'Other'];
 
 // Older request types, mapped to the new ones.
 const OLD_CATEGORIES = { Dining: 'Restaurant', Travel: 'Flights', Lifestyle: 'Shopping' };
@@ -63,6 +63,39 @@ const SAMPLE_CASE_EXTRAS = {
 };
 
 const SAMPLE_GENDERS = { emma: 'female', james: 'male', aiko: 'female', marco: 'male', olivia: 'female', noah: 'male' };
+
+// The case's request in more detail (added later): how many (tickets, guests, passengers), the last requested day
+// (`dueUntil`, for a range like 12–16.10), what the client insists on, and #hashtags for the style.
+const SAMPLE_REQUEST_EXTRAS = {
+  c40: { quantity: 6, requirements: 'A VIP box only, up to €800 per ticket', tags: ['Concert', 'VIPBox'] },
+  c3: { quantity: 2, requirements: 'Courtside only, up to $2,500 per seat', tags: ['NBA', 'Basketball'] },
+  c37: { quantity: 2, requirements: 'Seats together, close to the stage', tags: ['StandUp'] },
+  c18: { quantity: 2, requirements: 'Front row only', tags: ['Fashion', 'FrontRow'] },
+  c1: { quantity: 2, requirements: 'Chef’s table, no shellfish', tags: ['Anniversary', 'FineDining'] },
+  c17: { quantity: 2, untilDays: 2, requirements: 'A suite with a private spa', tags: ['Spa', 'Weekend'] },
+  c14: { quantity: 3, untilDays: 0, requirements: 'Black Mercedes S-Class or similar', tags: ['Chauffeur', 'Monaco'] },
+  c4: { quantity: 2, requirements: 'Meet & greet at arrivals', tags: ['Paris'] },
+};
+
+// The client's ID number and a second phone and email (added later).
+const SAMPLE_CLIENT_EXTRAS = {
+  emma: { idNumber: '031245678', phone2: '+972 3 555 0190', email2: 'yael.office@example.com' },
+  james: { idNumber: '204517392', phone2: '+44 20 7946 0958', email2: '' },
+  aiko: { idNumber: '058812340', phone2: '', email2: 'tamar.work@example.com' },
+  marco: { idNumber: '300218765', phone2: '+972 9 555 0144', email2: '' },
+  olivia: { idNumber: '', phone2: '', email2: '' },
+  noah: { idNumber: '', phone2: '', email2: '' },
+};
+
+// Other people to reach for a client: a secretary, a partner… (added later).
+const SAMPLE_CLIENT_CONTACTS = {
+  james: [
+    { name: 'Yael', role: 'Secretary', phone: '+44 20 7946 0101', email: 'yael.office@example.com' },
+    { name: 'Dana', role: 'Wife', phone: '+44 7700 900222', email: 'dana.bendavid@example.com' },
+  ],
+  emma: [{ name: 'Noam', role: 'Husband', phone: '+972 52 555 0177', email: 'noam.mizrahi@example.com' }],
+  marco: [{ name: 'Liat', role: 'Personal assistant', phone: '+972 50 555 0108', email: 'liat.pa@example.com' }],
+};
 
 // Sample cases whose request changed: id → [old title, new title, new request type].
 const RETITLED_SAMPLES = {
@@ -207,10 +240,33 @@ function migrate(data) {
       k.budget = extras.budget || null;
       data.migrated = true;
     }
+    // Cases from before the request's quantity, date range, requirements and hashtags.
+    if (k.quantity === undefined) {
+      const extras = (data.demo && SAMPLE_REQUEST_EXTRAS[k.id]) || {};
+      k.quantity = extras.quantity || null;
+      k.requirements = extras.requirements || '';
+      k.tags = extras.tags || [];
+      k.dueUntil = null;
+      if (extras.untilDays !== undefined && k.dueAt) {
+        const until = new Date(k.dueAt);
+        until.setDate(until.getDate() + extras.untilDays);
+        if (extras.untilDays) k.dueUntil = until.toISOString().slice(0, 10);
+      }
+      data.migrated = true;
+    }
   }
   for (const c of data.clients) {
     if (c.gender === undefined) {
       c.gender = (data.demo && SAMPLE_GENDERS[c.id]) || '';
+      data.migrated = true;
+    }
+    // Clients from before the ID number and the second phone and email.
+    if (c.idNumber === undefined) {
+      Object.assign(c, { idNumber: '', phone2: '', email2: '' }, (data.demo && SAMPLE_CLIENT_EXTRAS[c.id]) || {});
+      data.migrated = true;
+    }
+    if (c.contacts === undefined) {
+      c.contacts = ((data.demo && SAMPLE_CLIENT_CONTACTS[c.id]) || []).map(p => ({ ...p }));
       data.migrated = true;
     }
     // Card types are now the card the client holds: Standard, Gold and World Elite become Fly Card, VIP becomes Centurion.
@@ -279,6 +335,10 @@ function addClient(input, by) {
     gender: input.gender || '',
     tier: input.tier || TIERS[0],
     notes: (input.notes || '').trim(),
+    idNumber: (input.idNumber || '').trim(),
+    phone2: (input.phone2 || '').trim(),
+    email2: (input.email2 || '').trim(),
+    contacts: [],
     createdAt: new Date().toISOString(),
   };
   db.clients.push(client);
@@ -303,6 +363,11 @@ function createCase(input, by) {
     status: 'new',
     details: (input.details || '').trim(),
     dueAt: input.dueAt || null,
+    // The last requested day (YYYY-MM-DD) when it's a range; how many; what they insist on; #hashtags.
+    dueUntil: input.dueUntil || null,
+    quantity: input.quantity || null,
+    requirements: (input.requirements || '').trim(),
+    tags: input.tags || [],
     createdAt: new Date().toISOString(),
     createdBy: by,
     assignee: input.assignee || null,
@@ -340,6 +405,13 @@ function setCaseStatus(caseId, status, by) {
 }
 
 // Changes what a case is (request, date, location, budget, description) from the case window.
+function updateClientInfo(clientId, patch) {
+  const client = findClient(clientId);
+  if (!client) return;
+  Object.assign(client, patch);
+  saveData();
+}
+
 function updateCaseInfo(caseId, patch) {
   const kase = findCase(caseId);
   if (!kase) return;

@@ -361,7 +361,7 @@ const HOME_VIEWS = [
   {
     section: '',
     items: [
-      { id: 'all', label: 'All my tasks', hidden: true, hint: 'Everything assigned to you or taken by you, open first', empty: 'Nothing on your plate. Open a new file with +.' },
+      { id: 'all', label: 'All my tasks', hidden: true, hint: 'Everything assigned to you or taken by you, open first', empty: 'No open cases. Open a new file with +.' },
       { id: 'new', label: 'Needs attention', tone: 'pink', hint: 'Just opened, with nothing done yet', empty: 'Nothing needs attention right now.' },
       { id: 'urgent', label: 'Urgent', tone: 'red', hint: 'Open cases marked urgent', empty: 'No urgent cases right now.' },
       { id: 'waiting_provider', label: 'Waiting on supplier', tone: 'orange', hint: 'Waiting for the supplier to reply', empty: 'No cases waiting on a supplier.' },
@@ -383,6 +383,7 @@ function myCases() {
   return db.cases.filter(k => k.assignee === ME);
 }
 
+// The dashboard's cases in a view: yours (the whole team's are in All files).
 function homeViewCases(view) {
   const mine = myCases();
   switch (view) {
@@ -501,7 +502,8 @@ function matchesPriority(kase, filter) {
 // My tasks' cases before the calendar's day: the side menu's view, narrowed by when they were opened and status.
 function homeCases() {
   const f = state.home;
-  return homeViewCases(f.view).filter(k => matchesCreated(k, f.created) && (!f.status || k.status === f.status));
+  // Only open cases, unless the Status tool picks one (Done included).
+  return homeViewCases(f.view).filter(k => matchesCreated(k, f.created) && (f.status ? k.status === f.status : isOpen(k)));
 }
 
 function filteredCases(key) {
@@ -587,10 +589,11 @@ function renderList(key) {
     : refined ? 'No cases match these filters.'
       : key === 'home' ? homeView(state.home.view).empty
         : key === 'files' ? fileView(state.files.view).empty : 'No cases here.';
-  // The dashboard (My tasks and All files) shows plain rows under column names; other lists keep one-line bars.
-  const rows = key === 'files' || key === 'home';
+  // The dashboard (Open cases) shows each case as a square; All files shows rows under column names; other lists keep bars.
+  const squares = key === 'home';
+  const rows = key === 'files';
   listEl.innerHTML = list.length
-    ? (rows ? taskHead() : '') + list.map(k => (rows ? taskRow : caseCard)(k, key)).join('')
+    ? (rows ? taskHead() : '') + list.map(k => (squares ? caseSquare : rows ? taskRow : caseCard)(k, key)).join('')
     : `<div class="empty">${emptyText}</div>`;
 }
 
@@ -623,6 +626,7 @@ const CATEGORY_KINDS = {
   Tickets: { icon: '🎤', date: 'Show date' },
   Shopping: { icon: '🛍️', date: 'Needed by' },
   Gifts: { icon: '🎁', date: 'Deliver by' },
+  Delivery: { icon: '📦', date: 'Deliver by' },
   Other: { icon: '📌', date: 'Needed by' },
 };
 
@@ -759,6 +763,51 @@ function taskRow(kase, key) {
     </div>`;
 }
 
+// The request type as a square's headline, in plainer words where they read better.
+const SQUARE_TYPES = { 'Airport VIP': 'VIP at the airport', Transfers: 'Transport', Restaurant: 'Restaurants' };
+
+// A case as a square (Open cases): the file ID (and the pink flag) with the due date across from it; the client's name
+// in Playfair Display; their card (the little card and its name, small); then the request type in capitals
+// (VIP AT THE AIRPORT, TICKETS, TRANSPORT…). At the bottom, quick ways to change the status, add a follow-up and
+// email the client. A short dash in the status colour sits at its bottom left. Clicking the rest opens the case.
+function caseSquare(kase, key) {
+  const client = findClient(kase.clientId);
+  const late = isOpen(kase) && kase.dueAt && new Date(kase.dueAt) < new Date();
+  const no = `#${caseNo(kase)}`;
+  const n = kase.updates.length;
+  const firstNameOf = client ? firstName(client.name) : 'the client';
+  return `
+    <div class="case-square st-${kase.status}${isOpen(kase) ? '' : ' is-done'}" data-bar="${kase.id}" data-list-key="${key}" data-thread-case="${kase.id}">
+      <div class="sq-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
+        <span class="sq-top">
+          <span class="task-no">${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}${no}<button type="button" class="task-copy" data-copy="${no}" title="Copy ${no}" aria-label="Copy ${no}">${icon('copy')}</button></span>
+          <span class="sq-due${late ? ' overdue' : ''}">${kase.dueAt ? dotDate(kase.dueAt) : ''}</span>
+        </span>
+        <span class="sq-name">${esc(client ? client.name : 'Unknown client')}</span>
+        ${client ? tierTag(client.tier, 'sq-tier') : ''}
+        <span class="sq-type">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span>
+      </div>
+      <div class="sq-actions">
+        <span class="task-status" data-stop>
+          <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
+            ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
+          </select>
+        </span>
+        <span class="sq-icons">
+          <button type="button" class="task-icon" data-action="toggle-followup" title="Add a follow-up" aria-label="Add a follow-up (${n} so far)">${icon('msgPlus')}${n ? `<span class="task-icon-count">${n}</span>` : ''}</button>
+          ${client && client.email
+            ? `<a class="task-icon" href="${esc(caseMailto(kase, client.email))}" title="Email ${esc(firstNameOf)}" aria-label="Email ${esc(firstNameOf)}" data-stop>${icon('mail')}</a>`
+            : `<span class="task-icon is-off" title="No email for this client" aria-label="No email for this client">${icon('mail')}</span>`}
+        </span>
+      </div>
+      <form class="quick-followup" data-followup-form="${kase.id}" data-stop hidden>
+        <input type="text" placeholder="Write a follow-up…" aria-label="New follow-up for ${no}">
+        <button type="button" class="btn btn-secondary btn-md" data-action="toggle-followup">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-md">${icon('plus')}Add</button>
+      </form>
+    </div>`;
+}
+
 function poolItem(kase) {
   const client = findClient(kase.clientId);
   const due = fmtDue(kase);
@@ -867,7 +916,7 @@ function parseRoute() {
 
 // Every screen has its own address (My tasks' view, All files' view, Activity's tab, the supplier category),
 // so the browser's Back button always returns to the screen before.
-// My tasks' address: the view, and whether the calendar strip is open with a day picked on it.
+// The dashboard's address: the view, and whether the calendar strip is open with a day picked on it.
 function homeHash(view, { cal = false, day = '' } = {}) {
   const params = new URLSearchParams();
   if (view !== 'all') params.set('view', view);
@@ -993,6 +1042,18 @@ function matchesCreated(kase, filter) {
 }
 
 // My tasks' tools, at the top of the list: Calendar first, then when the case was opened, and its status.
+// At the tools' far end: All files (the whole team's cases), Reminders (pull a thread from it onto a case) and
+// Sticky notes, each with its count.
+function homeLinks() {
+  const c = reminderNoteCounts();
+  return `
+    <span class="home-links">
+      <a class="view-link" href="#/files">All files<span class="view-count">${db.cases.length}</span></a>
+      <button type="button" class="view-link" data-action="open-reminders" data-thread title="Click for your reminders, or pull a thread onto a case to set one for it">Reminders<span class="view-count${c.overdue ? ' alert' : ''}">${c.reminders}</span></button>
+      <button type="button" class="view-link" data-action="open-notes">Sticky notes<span class="view-count">${c.notes}</span></button>
+    </span>`;
+}
+
 function homeFilters() {
   const f = state.home;
   return `
@@ -1000,21 +1061,6 @@ function homeFilters() {
       <button type="button" class="cal-toggle${f.cal ? ' active' : ''}" data-action="toggle-cal" aria-pressed="${f.cal}">${icon('calendar')}Calendar</button>
       ${filterSelect('home', 'created', CREATED_FILTERS, f.created, 'When the case was opened')}
       ${filterSelect('home', 'status', STATUS_OPTIONS, f.status, 'Status')}
-    </div>`;
-}
-
-// The big hello at the top of My tasks, in the display font: "Welcome back, Amit" through the day and
-// "Have a good one, Amit" from 17:00; under it, today's date and how many tasks are open and need attention.
-function greeting() {
-  const me = findMember(ME);
-  const name = ((me && me.name) || ME).split(/[\s.]+/)[0];
-  const hello = new Date().getHours() >= 17 ? 'Have a good one' : 'Welcome back';
-  const open = myCases().filter(isOpen).length;
-  const attention = homeViewCases('new').length;
-  return `
-    <div class="greeting">
-      <p class="greeting-hello">${hello}, <em>${esc(name)}</em></p>
-      <p class="greeting-sub">${esc(longDayFmt.format(new Date()))} · ${open} open task${open === 1 ? '' : 's'}${attention ? ` · <b>${attention} need${attention === 1 ? 's' : ''} attention</b>` : ''}</p>
     </div>`;
 }
 
@@ -1083,37 +1129,17 @@ function renderHome() {
   const oldStrip = document.getElementById('dateStrip');
   const keepLeft = oldStrip && homeListView && homeListView.split(':')[0] === state.home.view ? oldStrip.scrollLeft : null;
   const view = homeView(state.home.view);
-  const extras = reminderNoteCounts();
 
   viewEl.innerHTML = `
     ${caseTabs('', '', { always: true })}
-    <h1 class="visually-hidden">My tasks</h1>
-    ${greeting()}
+    <h1 class="visually-hidden">Open cases</h1>
     <div class="dash dash-wide">
-      <nav class="view-bar" aria-label="Dashboard views">
-        ${HOME_VIEWS.flatMap(section => section.items).filter(item => !item.hidden).map(item => {
-          // A short bar in the view's colour before its name, then its count.
-          const count = homeViewCases(item.id).length;
-          const current = item.id === view.id;
-          return `
-            <button type="button" class="view-item tone-${item.tone}${current ? ' active' : ''}" data-view="${item.id}"${current ? ' aria-current="true"' : ''}>
-              ${item.label}<span class="view-count">${count}</span>
-            </button>`;
-        }).join('')}
-        <!-- At the far end: the whole team's cases, then Reminders (pull a thread from it onto a case) and Sticky notes. -->
-        <span class="view-bar-end">
-          <a class="view-link" href="#/files">All files<span class="view-count">${db.cases.length}</span></a>
-          <button type="button" class="view-link is-extra" data-action="open-reminders" data-thread title="Click for your reminders, or pull a thread onto a case to set one for it">Reminders<span class="view-count${extras.overdue ? ' alert' : ''}">${extras.reminders}</span></button>
-          <button type="button" class="view-link is-extra" data-action="open-notes">Sticky notes<span class="view-count">${extras.notes}</span></button>
-        </span>
-      </nav>
-
       <div class="dash-main">
         <section class="panel">
           <h2 class="visually-hidden">${esc(view.label)}</h2>
-          <div class="home-tools">${homeFilters()}${phoneExtras()}</div>
+          <div class="home-tools">${homeFilters()}${homeLinks()}</div>
           ${state.home.cal ? dateSlider() : ''}
-          <div class="case-list task-list" id="homeList"></div>
+          <div class="case-list case-grid" id="homeList"></div>
         </section>
       </div>
     </div>`;
@@ -2858,6 +2884,11 @@ function openAddClientSheet({ onSaved } = {}) {
         <div class="fld"><label class="fld-label" for="cPhone">Phone</label><input id="cPhone" class="control" type="tel" autocomplete="off"></div>
         <div class="fld"><label class="fld-label" for="cEmail">Email</label><input id="cEmail" class="control" type="email" autocomplete="off"></div>
       </div>
+      <div class="fld-grid">
+        <div class="fld"><label class="fld-label" for="cPhone2">Additional phone</label><input id="cPhone2" class="control" type="tel" autocomplete="off"></div>
+        <div class="fld"><label class="fld-label" for="cEmail2">Additional email</label><input id="cEmail2" class="control" type="email" autocomplete="off"></div>
+      </div>
+      <div class="fld"><label class="fld-label" for="cIdNumber">ID number</label><input id="cIdNumber" class="control" autocomplete="off"></div>
       <div class="fld">
         <label class="fld-label" for="cCountry">Country</label>
         ${selectWrap('cCountry', options([['', 'Choose a country…'], ...COUNTRIES], ''))}
@@ -2892,6 +2923,9 @@ function openAddClientSheet({ onSaved } = {}) {
           name: nameInput.value,
           phone: sheet.querySelector('#cPhone').value,
           email: sheet.querySelector('#cEmail').value,
+          phone2: sheet.querySelector('#cPhone2').value,
+          email2: sheet.querySelector('#cEmail2').value,
+          idNumber: sheet.querySelector('#cIdNumber').value,
           country: sheet.querySelector('#cCountry').value,
           gender: form.gender.value,
           tier: form.tier.value,
@@ -2974,9 +3008,11 @@ function caseTabs(activeId = '', actions = '', { always = false, previewId = '' 
   state.tabs = state.tabs.filter(id => findCase(id));
   const preview = previewId && !state.tabs.includes(previewId) ? previewId : '';
   if (!state.tabs.length && !preview && !always) return '';
+  // The dashboard's one tab, Open cases (lit when no case is showing); kept cases follow it.
+  const onHome = !activeId && state.route.name === 'home';
   return `
     <nav class="case-tabs" aria-label="Open cases">
-      <button type="button" class="case-tab home${activeId ? '' : ' active'}" data-action="tab-home"${activeId ? '' : ' aria-current="page"'}>My tasks<span>${myCases().length}</span></button>
+      <button type="button" class="case-tab home${onHome ? ' active' : ''}" data-action="tab-home"${onHome ? ' aria-current="page"' : ''}>Open cases<span>${myCases().filter(isOpen).length}</span></button>
       ${state.tabs.map(id => caseTab(id, id === activeId)).join('')}
       ${preview ? caseTab(preview, true, true) : ''}
       ${actions ? `<span class="case-tabs-actions">${actions}</span>` : ''}
@@ -2990,18 +3026,57 @@ function caseWindowTop(kase, actions = '', { preview = false } = {}) {
   return `<header class="cw-top">${caseTabs(kase.id, actions)}</header>`;
 }
 
-// The case: file ID, reminder, status and supplier; the description; date and location; what they need and the budget.
+// The requested dates: 12.10, or a range, 12–16.10 (30.09–02.10 across two months).
+function requestedDates(kase) {
+  if (!kase.dueAt) return '';
+  const pad = n => String(n).padStart(2, '0');
+  const dayMonth = x => `${pad(x.getDate())}.${pad(x.getMonth() + 1)}`;
+  const from = new Date(kase.dueAt);
+  const until = kase.dueUntil ? new Date(`${kase.dueUntil}T00:00`) : null;
+  if (!until || until <= startOfDay(from)) return dayMonth(from);
+  return until.getMonth() === from.getMonth() ? `${pad(from.getDate())}–${dayMonth(until)}` : `${dayMonth(from)}–${dayMonth(until)}`;
+}
+
+// What the case's number counts, by request type.
+const QUANTITY_LABELS = {
+  Tickets: 'No. of tickets', Events: 'No. of tickets', Attractions: 'No. of tickets',
+  Restaurant: 'Guests', Hotel: 'Guests', Yacht: 'Guests', Massage: 'People',
+  Transfers: 'Passengers', Flights: 'Passengers', 'Airport VIP': 'Passengers',
+};
+const quantityLabel = kase => QUANTITY_LABELS[kase.category] || 'Quantity';
+
+// A location: a country with its flag, or free text such as "England / France / Rome".
+function placeHtml(location) {
+  const country = COUNTRIES.find(([code]) => code === location);
+  return country ? `${flag(location)}${esc(country[1])}` : esc(location);
+}
+
+// Typed back into a location: a country's name becomes its code (and gets its flag); anything else stays as typed.
+function placeValue(text) {
+  const t = text.trim();
+  const country = COUNTRIES.find(([, name]) => name.toLowerCase() === t.toLowerCase());
+  return country ? country[0] : t;
+}
+
+// "#Concert #VIPBox" or "Concert, VIP box" → ['Concert', 'VIPBox'].
+function parseTags(text) {
+  return [...new Set(text.split(/[\s,#]+/).map(t => t.trim()).filter(Boolean))];
+}
+
+// The request, in the middle of a case window: the status, with the file ID at the top right; the requested dates;
+// the headline; the description; how many, where and the budget; what the client insists on; the #hashtags.
+// Then reminders, editing, who handles it and the assignment.
 function caseBox(kase) {
   const client = findClient(kase.clientId);
-  const kind = requestKind(kase);
   const d = kase.dueAt ? new Date(kase.dueAt) : null;
   const late = isOpen(kase) && d && d < new Date();
   const bookings = db.bookings.filter(b => b.caseId === kase.id);
   const suppliers = [...new Set(bookings.map(b => (findSupplier(b.supplierId) || {}).name).filter(Boolean))];
-  const country = COUNTRIES.find(([c]) => c === kase.location);
   const reminders = db.reminders.filter(r => r.caseId === kase.id && !r.done).sort((a, b) => a.at.localeCompare(b.at));
   const last = lastUpdateInfo(kase);
   const budget = budgetText(kase.budget);
+  const tags = kase.tags || [];
+  const notSet = '<span class="muted">Not set</span>';
   const handler = kase.assignee
     ? `${memberAvatar(kase.assignee, 'xs')}${esc(memberName(kase.assignee))}`
     : '<span class="muted">Open pool</span>';
@@ -3009,8 +3084,6 @@ function caseBox(kase) {
   return `
     <section class="cw-box cw-case" aria-label="Case">
       <div class="cw-case-top">
-        <div class="cw-field"><span class="cw-label">File ID</span>${caseChip(kase, 'lg')}</div>
-        <button type="button" class="btn-email" data-reminder-toggle>${icon('clock')}Add reminder</button>
         <div class="cw-field cw-status">
           <span class="cw-label">File status</span>
           <select class="status-select st-${kase.status}" data-case-status aria-label="File status">
@@ -3018,8 +3091,75 @@ function caseBox(kase) {
           </select>
           ${suppliers.length ? `<span class="cw-supplier">${icon('store')}${esc(suppliers.join(', '))}</span>` : ''}
         </div>
+        <div class="cw-field cw-file-id"><span class="cw-label">File ID</span>${caseChip(kase, 'lg')}</div>
       </div>
 
+      <div class="cw-request-view" data-case-view>
+        <div class="cw-field cw-dates${late ? ' overdue' : !isOpen(kase) ? ' done' : ''}">
+          <span class="cw-label">Requested dates</span>
+          <b>${d ? esc(requestedDates(kase)) : notSet}</b>
+          ${d ? `<small>${esc(`${timeFmt.format(d)} · ${dueCountdown(kase).text}`)}</small>` : ''}
+        </div>
+        <h2 class="cw-headline">${esc(kase.title)}</h2>
+        <div class="cw-block">
+          <div class="cw-label-row">
+            <span class="cw-label">Description</span>
+            <button type="button" class="link-btn" data-case-edit>${icon('pencil')}Edit case</button>
+          </div>
+          <p class="cf-desc">${kase.details ? esc(kase.details) : '<span class="muted">No description yet. Edit the case to add what the client asked for.</span>'}</p>
+        </div>
+        <dl class="cw-specs">
+          <div><dt>${esc(quantityLabel(kase))}</dt><dd>${kase.quantity ? esc(kase.quantity) : notSet}</dd></div>
+          <div><dt>Location</dt><dd class="cw-location">${kase.location ? placeHtml(kase.location) : notSet}</dd></div>
+          <div><dt>Budget</dt><dd>${budget ? esc(budget) : notSet}</dd></div>
+        </dl>
+        ${kase.requirements ? `<p class="cw-requirements">${esc(kase.requirements)}</p>` : ''}
+        <div class="cw-tags">${hashtag(kase.category)}${tags.map(t => `<span class="hashtag">#${esc(t)}</span>`).join('')}${hotTag(kase.priority, 'sm')}</div>
+      </div>
+
+      <form class="cw-edit form" data-case-edit-form hidden>
+        <div class="fld">
+          <label class="fld-label" for="ceTitle">Headline</label>
+          <input id="ceTitle" class="control" autocomplete="off" value="${esc(kase.title)}" placeholder="e.g. Oasis concert">
+        </div>
+        <div class="fld-grid">
+          <div class="fld"><label class="fld-label" for="ceDue">Requested from</label><input id="ceDue" type="datetime-local" class="control" value="${esc(d ? toLocalInputValue(d) : '')}"></div>
+          <div class="fld"><label class="fld-label" for="ceUntil">Until (optional)</label><input id="ceUntil" type="date" class="control" value="${esc(kase.dueUntil || '')}"></div>
+        </div>
+        <div class="fld">
+          <label class="fld-label" for="ceDetails">Description</label>
+          <textarea id="ceDetails" class="control" rows="4">${esc(kase.details)}</textarea>
+        </div>
+        <div class="fld-grid">
+          <div class="fld"><label class="fld-label" for="ceQuantity">${esc(quantityLabel(kase))}</label><input id="ceQuantity" type="number" min="0" step="1" class="control" value="${esc(kase.quantity || '')}" placeholder="0"></div>
+          <div class="fld">
+            <label class="fld-label" for="ceLocation">Location</label>
+            <input id="ceLocation" class="control" list="ceCountries" autocomplete="off" value="${esc((COUNTRIES.find(([c]) => c === kase.location) || [0, kase.location || ''])[1])}" placeholder="e.g. England / France / Rome">
+            <datalist id="ceCountries">${COUNTRIES.map(([, name]) => `<option value="${esc(name)}">`).join('')}</datalist>
+          </div>
+        </div>
+        <div class="fld-grid">
+          <div class="fld"><label class="fld-label" for="ceBudget">Budget</label><input id="ceBudget" type="number" min="0" step="1" class="control" value="${esc(kase.budget ? kase.budget.amount : '')}" placeholder="0"></div>
+          <div class="fld"><span class="fld-label">Currency</span>${segRadio('ceCurrency', CURRENCIES.map(c => ({ id: c, label: c })), (kase.budget && kase.budget.currency) || '₪')}</div>
+        </div>
+        <div class="fld">
+          <label class="fld-label" for="ceRequirements">What they insist on</label>
+          <input id="ceRequirements" class="control" autocomplete="off" value="${esc(kase.requirements || '')}" placeholder="e.g. Seated area only, up to €800 per ticket">
+        </div>
+        <div class="fld">
+          <label class="fld-label" for="ceTags">Hashtags</label>
+          <input id="ceTags" class="control" autocomplete="off" value="${esc(tags.map(t => `#${t}`).join(' '))}" placeholder="e.g. #Oasis #Concert">
+        </div>
+        <p class="form-error hidden" data-case-edit-error role="alert"></p>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary btn-md" data-case-edit-cancel>Cancel</button>
+          <button type="submit" class="btn btn-primary btn-md">${icon('check')}Save</button>
+        </div>
+      </form>
+
+      <div class="cw-actions-row">
+        <button type="button" class="btn-email" data-reminder-toggle>${icon('clock')}Add reminder</button>
+      </div>
       <form class="cw-reminder" data-reminder-form hidden>
         <input class="control" data-reminder-text aria-label="Reminder" value="${esc(`Follow up on #${caseNo(kase)}${client ? ` with ${firstName(client.name)}` : ''}`)}">
         <input class="control" type="datetime-local" data-reminder-at aria-label="When" value="${esc(defaultDue())}">
@@ -3036,59 +3176,6 @@ function caseBox(kase) {
               <button type="button" class="icon-btn sm" data-reminder-done="${r.id}" aria-label="Mark reminder done" title="Done">${icon('check')}</button>
             </li>`).join('')}
         </ul>` : ''}
-
-      <div class="cw-block" data-case-view>
-        <div class="cw-label-row">
-          <span class="cw-label">General description</span>
-          <button type="button" class="link-btn" data-case-edit>${icon('pencil')}Edit case</button>
-        </div>
-        <p class="cf-desc">${kase.details ? esc(kase.details) : '<span class="muted">No description yet. Edit the case to add what the client asked for.</span>'}</p>
-      </div>
-
-      <div class="cw-facts" data-case-view>
-        <div class="cw-field cw-date${late ? ' overdue' : !isOpen(kase) ? ' done' : ''}">
-          <span class="cw-label">${esc(kind.date)}</span>
-          <b>${esc(d ? `${longDayFmt.format(d)}, ${timeFmt.format(d)}` : 'No date')}</b>
-          ${d ? `<small>${esc(dueCountdown(kase).text)}</small>` : ''}
-        </div>
-        <div class="cw-field">
-          <span class="cw-label">Location</span>
-          <b class="cw-location">${country ? `${flag(kase.location)}${esc(country[1])}` : '<span class="muted">Not set</span>'}</b>
-        </div>
-      </div>
-
-      <div class="cw-request" data-case-view>
-        <span class="cw-request-pic" aria-hidden="true">${emojiPic(kind.icon)}</span>
-        <div class="cw-request-main">
-          <b class="cw-request-title">${esc(kase.title)}</b>
-          <span class="cw-request-tags">${hashtag(kase.category)}${kind.label ? `<span class="kind-badge">${esc(kind.label)}</span>` : ''}${hotTag(kase.priority, 'sm')}</span>
-        </div>
-        <div class="cw-field cw-budget"><span class="cw-label">Budget</span><b>${budget ? esc(budget) : '<span class="muted">Not set</span>'}</b></div>
-      </div>
-
-      <form class="cw-edit form" data-case-edit-form hidden>
-        <div class="fld">
-          <label class="fld-label" for="ceTitle">What they need</label>
-          <input id="ceTitle" class="control" autocomplete="off" value="${esc(kase.title)}" placeholder="e.g. 5 tickets for Harry Styles">
-        </div>
-        <div class="fld-grid">
-          <div class="fld"><label class="fld-label" for="ceDue">${esc(kind.date)}</label><input id="ceDue" type="datetime-local" class="control" value="${esc(d ? toLocalInputValue(d) : '')}"></div>
-          <div class="fld"><label class="fld-label" for="ceLocation">Location</label>${selectWrap('ceLocation', options([['', 'Not set'], ...COUNTRIES], kase.location || ''))}</div>
-        </div>
-        <div class="fld-grid">
-          <div class="fld"><label class="fld-label" for="ceBudget">Budget</label><input id="ceBudget" type="number" min="0" step="1" class="control" value="${esc(kase.budget ? kase.budget.amount : '')}" placeholder="0"></div>
-          <div class="fld"><span class="fld-label">Currency</span>${segRadio('ceCurrency', CURRENCIES.map(c => ({ id: c, label: c })), (kase.budget && kase.budget.currency) || '₪')}</div>
-        </div>
-        <div class="fld">
-          <label class="fld-label" for="ceDetails">General description</label>
-          <textarea id="ceDetails" class="control" rows="4">${esc(kase.details)}</textarea>
-        </div>
-        <p class="form-error hidden" data-case-edit-error role="alert"></p>
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary btn-md" data-case-edit-cancel>Cancel</button>
-          <button type="submit" class="btn btn-primary btn-md">${icon('check')}Save</button>
-        </div>
-      </form>
 
       <dl class="cw-meta">
         <div><dt>Handled by</dt><dd>${handler}</dd></div>
@@ -3111,28 +3198,110 @@ function caseBox(kase) {
     </section>`;
 }
 
-// The client: name, gender and card type; ID; phone and email; the secondary contact; notes.
+// A phone or email of the client's, as a link: a phone calls, an email opens one about this case.
+function contactValue(kind, value, kase) {
+  if (!value) return '<span class="muted">Not set</span>';
+  if (kind === 'phone') return `<a href="tel:${esc(value.replace(/[^\d+]/g, ''))}" title="Call">${esc(value)}</a>`;
+  return `<a href="${esc(caseMailto(kase, value))}" title="Email about #${caseNo(kase)}">${esc(value)}</a>`;
+}
+
+// One of the client's details in its own box: a small label over the value; pointing at it shows a copy button,
+// as on file IDs. `wide` spans both columns.
+function infoBox(label, valueHtml, copy = '', cls = '') {
+  return `
+    <div class="cw-info${cls ? ` ${cls}` : ''}">
+      <span class="cw-info-label">${label}</span>
+      <span class="cw-info-value">${valueHtml}</span>
+      ${copy ? `<button type="button" class="task-copy cw-info-copy" data-copy="${esc(copy)}" title="Copy ${esc(copy)}" aria-label="Copy ${esc(copy)}">${icon('copy')}</button>` : ''}
+    </div>`;
+}
+
+// The client, on the right of a case window: name, gender and card type; ID number, phone and email; the
+// additional phone and email; then their client number, cases, the secondary contact and notes.
 function clientBox(kase) {
   const client = findClient(kase.clientId);
   if (!client) return '';
   const req = kase.requester;
   const gender = GENDERS.find(g => g.id === client.gender);
   const clientCases = db.cases.filter(k => k.clientId === client.id);
+  const notSet = '<span class="muted">Not set</span>';
   return `
     <section class="cw-box cw-client" aria-label="Client">
-      <div class="cw-client-top">
-        <div class="cw-field cw-client-name">
-          <span class="cw-label">Client name</span>
-          <b>${esc(client.name)}${flag(client.country)}</b>
+      <div class="cw-client-view" data-client-view>
+        <div class="cw-client-head">
+          <b class="cw-client-title">${esc(client.name)}${flag(client.country)}</b>
+          <button type="button" class="link-btn" data-client-edit>${icon('pencil')}Edit client</button>
         </div>
-        <div class="cw-field"><span class="cw-label">Gender</span><b>${gender ? esc(gender.label) : '<span class="muted">Not set</span>'}</b></div>
-        <div class="cw-field"><span class="cw-label">Card type</span>${tierTag(client.tier || TIERS[0], 'lg')}</div>
+        <div class="cw-info-grid">
+          ${infoBox('Card type', tierTag(client.tier || TIERS[0]), client.tier || TIERS[0])}
+          ${infoBox('Gender', gender ? esc(gender.label) : notSet, gender ? gender.label : '')}
+          ${infoBox('ID number', client.idNumber ? esc(client.idNumber) : notSet, client.idNumber)}
+          ${infoBox('Phone', contactValue('phone', client.phone, kase), client.phone)}
+          ${infoBox('Email', contactValue('email', client.email, kase), client.email, 'wide')}
+          ${infoBox('Additional phone', contactValue('phone', client.phone2, kase), client.phone2, 'wide')}
+          ${infoBox('Additional email', contactValue('email', client.email2, kase), client.email2, 'wide')}
+        </div>
       </div>
+
+      <form class="cw-edit form" data-client-edit-form hidden>
+        <div class="fld"><span class="fld-label">Gender</span>${segRadio('ckGender', [{ id: '', label: 'Not set' }, ...GENDERS], client.gender || '')}</div>
+        <div class="fld"><span class="fld-label">Card type</span>${segRadio('ckTier', TIERS.map(t => ({ id: t, label: t })), client.tier || TIERS[0])}</div>
+        <div class="fld"><label class="fld-label" for="ckId">ID number</label><input id="ckId" class="control" autocomplete="off" value="${esc(client.idNumber || '')}"></div>
+        <div class="fld-grid">
+          <div class="fld"><label class="fld-label" for="ckPhone">Phone</label><input id="ckPhone" class="control" type="tel" autocomplete="off" value="${esc(client.phone || '')}"></div>
+          <div class="fld"><label class="fld-label" for="ckEmail">Email</label><input id="ckEmail" class="control" type="email" autocomplete="off" value="${esc(client.email || '')}"></div>
+        </div>
+        <div class="fld-grid">
+          <div class="fld"><label class="fld-label" for="ckPhone2">Additional phone</label><input id="ckPhone2" class="control" type="tel" autocomplete="off" value="${esc(client.phone2 || '')}"></div>
+          <div class="fld"><label class="fld-label" for="ckEmail2">Additional email</label><input id="ckEmail2" class="control" type="email" autocomplete="off" value="${esc(client.email2 || '')}"></div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary btn-md" data-client-edit-cancel>Cancel</button>
+          <button type="submit" class="btn btn-primary btn-md">${icon('check')}Save</button>
+        </div>
+      </form>
+
+      <label class="cw-more">
+        <span class="cw-info-label">Additional info</span>
+        <textarea class="control" rows="4" data-client-notes placeholder="Anything else about the client: preferences, allergies, who to call…">${esc(client.notes || '')}</textarea>
+      </label>
+
+      <div class="cw-contacts">
+        <div class="cw-label-row">
+          <span class="cw-info-label">Additional contacts</span>
+          <button type="button" class="link-btn" data-contact-add>${icon('plus')}Add contact</button>
+        </div>
+        ${(client.contacts || []).map((p, i) => `
+          <div class="cw-person-card">
+            <div class="cw-person-head">
+              <b>${esc(p.name)}</b>${p.role ? `<span>${esc(p.role)}</span>` : ''}
+              <button type="button" class="icon-btn sm" data-contact-remove="${i}" aria-label="Remove ${esc(p.name)}" title="Remove">${icon('x')}</button>
+            </div>
+            <div class="cw-info-grid">
+              ${infoBox('Phone', contactValue('phone', p.phone, kase), p.phone, 'wide')}
+              ${infoBox('Email', contactValue('email', p.email, kase), p.email, 'wide')}
+            </div>
+          </div>`).join('') || '<p class="cw-none">No other contacts yet, such as a secretary or a partner.</p>'}
+        <form class="cw-edit form" data-contact-form hidden>
+          <div class="fld-grid">
+            <div class="fld"><label class="fld-label" for="ctName">Name</label><input id="ctName" class="control" autocomplete="off" placeholder="e.g. Yael"></div>
+            <div class="fld"><label class="fld-label" for="ctRole">Who they are</label><input id="ctRole" class="control" autocomplete="off" placeholder="e.g. Secretary, Wife"></div>
+          </div>
+          <div class="fld-grid">
+            <div class="fld"><label class="fld-label" for="ctPhone">Phone</label><input id="ctPhone" class="control" type="tel" autocomplete="off"></div>
+            <div class="fld"><label class="fld-label" for="ctEmail">Email</label><input id="ctEmail" class="control" type="email" autocomplete="off"></div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary btn-md" data-contact-cancel>Cancel</button>
+            <button type="submit" class="btn btn-primary btn-md">${icon('check')}Add contact</button>
+          </div>
+        </form>
+      </div>
+
       <div class="cw-client-ids">
-        <div class="cw-field"><span class="cw-label">ID</span>${idChip(clientNo(client))}</div>
+        <div class="cw-field"><span class="cw-label">Client no.</span>${idChip(clientNo(client))}</div>
         <div class="cw-field"><span class="cw-label">Cases</span><b>${clientCases.filter(isOpen).length} open · ${clientCases.length} in total</b></div>
       </div>
-      ${contactRows(client, kase)}
       <div class="cw-block">
         <div class="cw-label-row">
           <span class="cw-label">Secondary contact</span>
@@ -3145,17 +3314,17 @@ function clientBox(kase) {
           </div>
           ${contactRows(req, kase)}` : '<p class="cw-none">None. The client opened this case themselves.</p>'}
       </div>
-      <div class="cw-block">
-        <span class="cw-label">Client notes</span>
-        <p class="cw-notes">${client.notes ? esc(client.notes) : '<span class="muted">No notes.</span>'}</p>
-      </div>
     </section>`;
 }
 
+// A case window: the client on the left, the request in the middle, the follow-ups chat on the right.
 function caseWindowBody(kase) {
   return `
-    <div class="cw-body">
-      <div class="cw-left">${caseBox(kase)}${clientBox(kase)}</div>
+    <div class="cw-body cw-three">
+      <div class="cw-left cw-mid">
+        <div class="cw-side">${clientBox(kase)}</div>
+        <div class="cw-case-col">${caseBox(kase)}</div>
+      </div>
       ${caseChat(kase)}
     </div>`;
 }
@@ -3334,17 +3503,90 @@ function bindCaseView(root, kase, rerender) {
       return;
     }
     const due = editForm.querySelector('#ceDue').value;
+    const until = editForm.querySelector('#ceUntil').value;
     const amount = Number(editForm.querySelector('#ceBudget').value);
+    const quantity = Number(editForm.querySelector('#ceQuantity').value);
     updateCaseInfo(kase.id, {
       title,
       dueAt: due ? new Date(due).toISOString() : null,
-      location: editForm.querySelector('#ceLocation').value,
+      // A last day before (or on) the first isn't a range.
+      dueUntil: due && until && until > due.slice(0, 10) ? until : null,
+      quantity: quantity > 0 ? Math.round(quantity) : null,
+      location: placeValue(editForm.querySelector('#ceLocation').value),
       budget: amount > 0 ? { amount, currency: editForm.ceCurrency.value } : null,
       details: editForm.querySelector('#ceDetails').value.trim(),
+      requirements: editForm.querySelector('#ceRequirements').value.trim(),
+      tags: parseTags(editForm.querySelector('#ceTags').value),
     });
     rerender();
     toast('Case saved');
   });
+
+  // Edit client: gender, card type, ID number and both phones and emails swap for a form.
+  const clientForm = root.querySelector('[data-client-edit-form]');
+  if (clientForm) {
+    const clientView = root.querySelector('[data-client-view]');
+    const clientEditing = on => {
+      clientView.hidden = on;
+      clientForm.hidden = !on;
+      if (on) clientForm.querySelector('#ckId').focus();
+    };
+    root.querySelector('[data-client-edit]').addEventListener('click', () => clientEditing(true));
+    clientForm.querySelector('[data-client-edit-cancel]').addEventListener('click', () => clientEditing(false));
+    clientForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const value = sel => clientForm.querySelector(sel).value.trim();
+      updateClientInfo(kase.clientId, {
+        gender: clientForm.ckGender.value,
+        tier: clientForm.ckTier.value,
+        idNumber: value('#ckId'),
+        phone: value('#ckPhone'),
+        email: value('#ckEmail'),
+        phone2: value('#ckPhone2'),
+        email2: value('#ckEmail2'),
+      });
+      rerender();
+      toast('Client saved');
+    });
+  }
+
+  // Additional info: free text about the client, saved when you leave the box.
+  const notesBox = root.querySelector('[data-client-notes]');
+  if (notesBox) {
+    notesBox.addEventListener('change', () => {
+      updateClientInfo(kase.clientId, { notes: notesBox.value.trim() });
+      toast('Additional info saved');
+    });
+  }
+
+  // Additional contacts: a secretary, a partner…, each with a phone and email.
+  const contactForm = root.querySelector('[data-contact-form]');
+  if (contactForm) {
+    const client = findClient(kase.clientId);
+    root.querySelector('[data-contact-add]').addEventListener('click', () => {
+      contactForm.hidden = false;
+      contactForm.querySelector('#ctName').focus();
+    });
+    contactForm.querySelector('[data-contact-cancel]').addEventListener('click', () => { contactForm.hidden = true; });
+    contactForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const value = sel => contactForm.querySelector(sel).value.trim();
+      if (!value('#ctName')) return contactForm.querySelector('#ctName').focus();
+      const contact = { name: value('#ctName'), role: value('#ctRole'), phone: value('#ctPhone'), email: value('#ctEmail') };
+      updateClientInfo(kase.clientId, { contacts: [...(client.contacts || []), contact] });
+      rerender();
+      toast(`${contact.name} added`);
+    });
+    root.querySelectorAll('[data-contact-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const contacts = [...(client.contacts || [])];
+        const [gone] = contacts.splice(Number(btn.dataset.contactRemove), 1);
+        updateClientInfo(kase.clientId, { contacts });
+        rerender();
+        toast(`${gone.name} removed`);
+      });
+    });
+  }
 
   // Reminders for this case, which also show in your Reminders.
   const reminderForm = root.querySelector('[data-reminder-form]');
@@ -3483,9 +3725,9 @@ function openCaseSheet(id, { list = '', preview = false } = {}) {
   const actions = `
     ${back ? `<button type="button" class="square-btn back" data-action="sheet-back" aria-label="Back" title="Back">${icon('arrowRight')}</button>` : ''}
     <a class="square-btn" href="app.html#/case/${kase.id}" target="_blank" aria-label="Open in a new tab" title="Open in a new tab">${icon('arrowUpRight')}</a>`;
-  // The tabs run across the top; under them, the cards (when opened from a list) and the case.
+  // The tabs run across the top; under them, the case: the follow-ups, the request and the client side by side.
   const body = caseWindowBody(kase);
-  openSheet(`${caseWindowTop(kase, actions, { preview })}${list ?`<div class="cw-split">${switchCards(list, kase.id)}<div class="cw-main">${body}</div></div>` : body}`, {
+  openSheet(`${caseWindowTop(kase, actions, { preview })}${body}`, {
     label: `Case ${caseNo(kase)}`,
     full: true,
     onMount(sheet) {
@@ -3511,7 +3753,8 @@ function openCaseSheet(id, { list = '', preview = false } = {}) {
 // is lit up.
 function switchCards(key, activeId) {
   const list = filteredCases(key);
-  const label = key === 'files' ? fileView(state.files.view).label : homeView(state.home.view).label;
+  const label = key === 'files' ? fileView(state.files.view).label
+    : state.home.view !== 'all' ? homeView(state.home.view).label : 'Open cases';
   return `
     <aside class="cw-cards" aria-label="${esc(label)}">
       <p class="cw-cards-head"><b>${esc(label)}</b><span>${list.length}</span></p>
@@ -3703,7 +3946,7 @@ document.addEventListener('click', e => {
   }
   if (el.dataset.case) {
     // From a dashboard row, the list's cases come along as cards down the left.
-    const row = el.closest('.task-row');
+    const row = el.closest('[data-list-key]');
     return openCaseSheet(el.dataset.case, row ? { list: row.dataset.listKey } : {});
   }
   if (el.dataset.client) return openClientSheet(el.dataset.client);
@@ -3747,7 +3990,7 @@ document.addEventListener('click', e => {
     case 'cal-today': return scrollCalendarToToday(true);
     case 'toggle-cal': return go(homeHash(state.home.view, { cal: !state.home.cal }));
     case 'tab-home': {
-      // My tasks: back to all your tasks, keeping the case tabs.
+      // Open cases, with no view picked, keeping the case tabs.
       const target = homeHash('all', { cal: state.home.cal });
       if (location.hash === target || (location.hash === '' && target === '#/home')) {
         closeSheet();

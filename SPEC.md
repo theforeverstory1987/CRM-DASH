@@ -8,7 +8,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 - **Where it runs:** locally (`serve.ps1`), and as a published page: https://claude.ai/artifact/X6p9N9xU3AnTKEJHcpQ6Xy
 - **Code:** https://github.com/theforeverstory1987/CRM-DASH
 - **Interface language:** English. Sample client names are Israeli.
-- **Fonts:** the app uses **Plus Jakarta Sans** (a clean, slightly rounded sans that many of today's top dashboards use); the big hello on My tasks and the page and window titles use **Instrument Serif**, an editorial serif, with the name in blue italics. Both are free Google Fonts. (Playfair Display and Inter were used before.)
+- **Fonts:** the app uses **Plus Jakarta Sans** (a clean, slightly rounded sans that many of today's top dashboards use); the page and window titles use **Instrument Serif**, an editorial serif. Both are free Google Fonts. (Playfair Display and Inter were used before.)
 
 ---
 
@@ -22,7 +22,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 | **Card type / rank** | The card the client holds: `Centurion`, `Platinum`, `Fly Card`. Shown as a little credit card with its name in capitals: Centurion black, Platinum silver, Fly Card light blue. Older saves: Standard, Gold and World Elite became Fly Card, VIP became Centurion. |
 | **Secondary contact** | Whoever opened the case on the client's behalf (an assistant, family). Name, phone, email. Empty when the client opened it. Also shown as "Opened by". |
 | **Follow-up** | A note on a case: what happened, what's next. The most important information on a case. |
-| **Request type** | One of: Restaurant, Hotel, Flights, Airport VIP, Transfers, Attractions, Massage, Yacht, Events, Tickets, Shopping, Gifts, Other. Shown as a hashtag (`#Tickets`), and by name in the dashboard's Info column. |
+| **Request type** | One of: Restaurant, Hotel, Flights, Airport VIP, Transfers, Attractions, Massage, Yacht, Events, Tickets, Shopping, Gifts, Delivery, Other. Shown as a hashtag (`#Tickets`), and by name in the dashboard's Info column. |
 | **Request picture** | The icon for what the request is (🏀 NBA, 🎤 show, ✈️ flight, a black Rolls-Royce photo for transfers…), 3D pictures and one photo. See §8. |
 | **Supplier** | A company we buy from (ticket agency, car service, airport VIP, restaurant). |
 | **Booking** | A purchase from a supplier for a case: quantity, price, invoice. |
@@ -47,14 +47,14 @@ This spec describes what the product does today and the rules it follows. [Pract
 ## 3. Layout
 
 - **Side rail** (desktop), top to bottom:
-  1. **Your profile picture**: fills the whole circle with a white stroke inside it (no ring around it). The only place that shows your initials, in a corner badge with a white outline.
-  2. **+ New case**: opens in a new tab.
-  3. Search, Activity, **Suppliers**, Settings. The buttons are plain icons with no circle or outline; a soft square shows under the one you point at, and a light blue one under the page you're on. The **+** is a solid blue square. (Advanced search is on the Search page, dark mode in Settings.)
+  1. **Home** (the main dashboard): a house icon in the + blue (white on a solid blue square while you're on it, like any page you're on), where the profile picture used to be (your profile is in Settings).
+  2. **+ New case**: opens in a new tab. A **white square with a blue outline and a blue +**, not a filled blue square, so it never looks like the page you're on (the phone bar's + matches).
+  3. Search, Activity, **Suppliers**, Settings. The buttons are plain icons with no circle or outline; a soft square shows under the one you point at, and a light blue one under the page you're on. (Advanced search is on the Search page, dark mode in Settings.)
   4. At the bottom: log out.
 - **The rail never disappears.** It stays on screen on every page, and case windows and side windows open beside it, never over it. Going somewhere from the rail closes the open window.
 - **Tab bar** (phones): Me, Search, **+**, Activity, Suppliers, Settings.
-- **Look:** **everything floats on one white background**: the rail is its own column on a soft blue (`#eef3ff`), set apart from the white page, and the tabs, the tools, every case row, the cards and the boxes inside a case are white boxes on a **gentle bluish shadow**, with no outlines. **Each case row and card has a short, thin dash in its status colour at its bottom left**. **Few icons:** the views are names with a short coloured bar, rows have no request pictures, and a row's follow-up and email buttons show when you point at it. Things that float over the page (side windows, the reminder pop-up) keep a soft shadow. There are **no grey fills**; the few soft fills (pointing at something, a picture tile) are a very light blue. Windows open over a light white veil, not a grey one. **Small corners everywhere (6–8px), no round pills or big curves**; only profile pictures and dots stay round. **No scrollbars show** (so they don't cut the screen into strips); everything still scrolls. **Screens change with one short, soft fade** (0.15s): a case window fades in and out, another page fades in, and moving between cases fades just the case; nothing slides, grows or scales. **A calm, smaller scale, like other work apps of this kind:** 14px text, 13px menus, tabs and controls, 12px secondary lines, 11px labels; list rows about 54px, tabs and controls 34px, rail buttons 40px on a 60px floating rail. Generous spacing; nothing crowded.
-- **Case tabs:** the first tab is **My tasks** with how many tasks you have; it always shows on My tasks, and clicking it goes back to all your tasks (closing any case window). Every case you keep open is a tab after it (**client name and file ID**, `Tamar Avraham #G-1025`). A case you only look at from the cards is a **preview**: an italic tab at the end with a **+** (a small square with a line round it) that keeps it as a tab; the next preview replaces it. Pointing at a tab shows its **×** to close it (on touch screens it always shows); closing the tab you're on moves to the next one, or back to My tasks after the last (closing the preview just closes it). The tabs show on Activity, Suppliers and Settings too while any are open, and are kept per browser tab (a refresh keeps them).
+- **Look:** a **soft background that runs from light grey to a pale blue**; the rail and the panel under the tabs are **frosted glass** (translucent white, a thin white edge, small even corners); cases are soft white tiles; the tab you're on is a **folder tab** joined to the frosted panel under it; small actions (follow-up, email, back) are **outline buttons**. **Corners are small and square-ish** (14px panels and rail, 10px tiles, 8px tabs, tools and buttons): no pills or circles. Earlier: the rail is its own column on a soft blue (`#e6eeff`), set apart from the white page, and the tabs, the tools, every case row, the cards and the boxes inside a case are white boxes on a **gentle bluish shadow**, with no outlines. **Each case row and card has a short, thin dash in its status colour at its bottom left**. **Few icons:** the views are names with a short coloured bar, rows have no request pictures, and a row's follow-up and email buttons show when you point at it. Things that float over the page (side windows, the reminder pop-up) keep a soft shadow. There are **no grey fills**; the few soft fills (pointing at something, a picture tile) are a very light blue. Windows open over a light white veil, not a grey one. **Small corners everywhere (6–8px), no round pills or big curves**; only profile pictures and dots stay round. **No scrollbars show** (so they don't cut the screen into strips); everything still scrolls. **Screens change with one short, soft fade** (0.15s): a case window fades in and out, another page fades in, and moving between cases fades just the case; nothing slides, grows or scales. **A calm, smaller scale, like other work apps of this kind:** 14px text, 13px menus, tabs and controls, 12px secondary lines, 11px labels; list rows about 54px, tabs and controls 34px, rail buttons 40px on a 60px floating rail. Generous spacing; nothing crowded.
+- **Tabs:** styled like folder tabs: the one you're on is a **folder tab**: part of the frosted panel under it, joined with soft inward curves (its count in blue); the others are plain words with no box. Everything under the tabs (the tools and cases on the dashboard; the cards and the case in a case window) sits on one frosted-glass panel, so the white rows, squares and cards stand out on it. The dashboard has **one tab, Open cases**, with how many of your cases are open (clicking it shows them and closes any case window). Every case you keep open is a tab after it (**client name and file ID**, `Tamar Avraham #G-1025`). A case you only look at from the cards is a **preview**: an italic tab at the end with a **+** (a small square with a line round it) that keeps it as a tab; the next preview replaces it. Pointing at a tab shows its **×** to close it (on touch screens it always shows); closing the tab you're on moves to the next one, or back to My tasks after the last (closing the preview just closes it). The tabs show on Activity, Suppliers and Settings too while any are open, and are kept per browser tab (a refresh keeps them).
 - **Side windows** (notes, reminders, your icon, add client…) always open on the **left**, next to the rail. On phones they come up from the bottom.
 - **Back always returns to the screen before.** Every screen has its own address: My tasks (`#/home`, a view as `?view=new`), All files (`#/files?view=…`), Activity's tab (`?tab=reports`) and the supplier category (`#/suppliers?group=…`), and My tasks' calendar (`?cal=1`, a day as `&day=2026-09-28`). Opening a window adds a Back step too, so Back closes it; a case opened from a calendar day goes Back to the day first. The back button inside a window does the same as the browser's.
 - **Keyboard:** `/` search, `N` new case, `Esc` closes a panel or window.
@@ -64,17 +64,18 @@ This spec describes what the product does today and the rules it follows. [Pract
 
 ## 4. Dashboard
 
-**No page title** on My tasks (there's a hidden one for screen readers): the tabs, then a **big hello** in Instrument Serif, "Welcome back, Amit" through the day and "Have a good one, Amit" from 17:00, with today's date, how many tasks are open and how many need attention (in pink) under it; then the row of views and the list. My tasks always opens on all your tasks.
+**Home** is the main dashboard: no page title or greeting (there's a hidden title for screen readers), just **one tab, Open cases**, then the tools and **your open cases as squares** (see below). The whole team's cases are in *All files*.
 
-### 4.1 My tasks
-- **Views** (no side menu on My tasks): one airy row over the list, like a board's column heads: ***Needs attention***, *Urgent*, *Waiting on supplier*, *Waiting on client*, each a short bar in its colour (pink, red, orange, blue), its name in grey and its count; the one you're on is darker and bold with a thicker bar. Picking one **narrows the list** to its cases; picking it again goes back to all your tasks, as does the **My tasks** tab. At the far end, small grey links: *All files* (the whole team's cases), *Reminders* (pull a thread from it onto a case) and *Sticky notes*, each with its count. On phones the row scrolls sideways and Reminders and Sticky notes are the round buttons by the tools.
-- **List** of rows (§5), and a **Calendar** button that opens a **sliding strip of days** over the list (§4.4). No squares.
+### 4.1 Open cases
+- **No views row:** there is no Needs attention / Urgent / Waiting row; the *Status* tool narrows the list, and the pink flag still marks cases that need attention. A small grey *All files* link (the whole team's cases, with its calendar) sits at the far end of the tools.
+- **List**: your open cases as squares, open first and by date (the *Status* tool can show any status, Done included); a **Calendar** button opens a **sliding strip of days** over them (§4.4).
+- **Squares:** like a board's cards, white tiles, several to a row, top to bottom: the **file ID** (grey, with the pink flag when it needs attention, and a copy button on pointing) with the **due date** across from it; the **client's name in Playfair Display**; their **card** (the little card and its name, much smaller); then the **request type in capitals**, in plain words: VIP AT THE AIRPORT, TICKETS, RESTAURANTS, TRANSPORT, DELIVERY…; then the quick tools: the **status** (change it right there), **add a follow-up** (opens a line in the square; *Add* or Enter saves) and **email** the client. A short dash in the status colour sits at the bottom left. Clicking the rest opens the case window (§6). On phones they stack in one column.
 - **Tools** at the top of the list, floating on a shadow, **Calendar first**: *Calendar*, *Opened* (any time, today, last 7 days, last 30 days, over 30 days ago) and *Status*. Cases show open first, then by date.
-- **Reminders and Sticky notes:** under the side menu, each with its count (reminders turn red when one is overdue). On phones they're round buttons beside the tools.
-- **Reminder thread:** press on *Reminders* and pull: a thread (the + blue) follows the pointer from Reminders, sagging a little. Let go on a case (its row, or its card beside an open case; the one under the thread gets a blue ring and a blue number) and a **reminder for that case pops up right there**, already filled in ("Follow up on #G-1036 with Yael", tomorrow at 12:00): *Save* adds it to that case and to your Reminders, *Cancel*, Esc or pressing elsewhere puts it away. A plain click on Reminders still opens them.
+- **All files, Reminders and Sticky notes:** small grey links at the far end of the tools, each with its count (reminders turn red when one is overdue). On phones they sit on a line of their own.
+- **Reminder thread:** press on *Reminders* and pull: a thread (the + blue) follows the pointer from it, sagging a little. Let go on a case (its row, or its card beside an open case; the one under the thread gets a blue ring and a blue number) and a **reminder for that case pops up right there**, already filled in ("Follow up on #G-1036 with Yael", tomorrow at 12:00): *Save* adds it to that case and to your Reminders, *Cancel*, Esc or pressing elsewhere puts it away. A plain click on Reminders still opens them.
 
 ### 4.2 All files
-The whole team's cases, opened from *All files* at the bottom of My tasks' side menu. The profile picture in the rail goes back to My tasks. Its lists use the same rows as My tasks (§5).
+The whole team's cases, opened from *All files* at the end of the dashboard's tools. Home in the rail goes back to the dashboard. Its lists use the same rows as My tasks (§5).
 
 Side menu, in this order:
 
@@ -128,7 +129,7 @@ Side menu, in this order:
 
 - **Look:** each row is a white box floating on a gentle bluish shadow, about 54px tall, 10px apart, with a **short, thin dash in its status colour at the bottom left** (§14); the shadow deepens under the row you point at. Plenty of space between columns; the client and Info get the spare width. Done cases are dimmed.
 - **Narrower windows:** a slimmer side menu and tighter columns. **Phones:** file ID and client (with the card) on top, then Info and the date, then the status and the two buttons.
-- **Clicking anywhere else on the row** opens the case in the case screen (§6), with the list's cases as cards down the left; the My tasks tab, Esc or Back closes it.
+- **Clicking anywhere else on the row** opens the case in the case screen (§6); the My tasks tab, Esc or Back closes it.
 
 **Bars** (Activity): **compact one-line bars**:
 
@@ -146,26 +147,29 @@ Side menu, in this order:
 
 ## 6. The case window
 
-A case opens as a window that fills the screen beside the rail, which stays visible (a phone uses the whole screen); Back or the My tasks tab closes it. **Opened from My tasks or All files it's split:** the list's cases run down the left as cards (file ID and date, client, request type and headline, status), the open one lit up in light blue, and the case fills the right; clicking a card **previews** that case in the italic preview tab (a case already kept as a tab just comes forward), and pointing at a card shows a **+** that keeps it as a tab of its own, so the case you were on stays open and you can jump straight back. A case also has its own page (`app.html#/case/<id>`, the *Open in new tab* button), titled with the file ID and client (`#G-1025 · Tamar Avraham`), with the same layout.
+A case opens as a window that fills the screen beside the rail, which stays visible (a phone uses the whole screen); Back or the Open cases tab closes it. It's laid out in **three columns: the client on the left, the request in the middle, the follow-ups chat on the right** (on narrower windows the client goes under the request; on phones it's one column: the request, the client, then the chat). A case also has its own page (`app.html#/case/<id>`, the *Open in new tab* button), titled with the file ID and client (`#G-1025 · Tamar Avraham`), with the same layout.
 
-- **Top bar:** the **case tabs** (My tasks and the open cases), plus *Back* when opened from a calendar day and *Open in new tab*. New case is the rail's **+**.
-- **Left column, case box**
-  - **File ID** (big chip), **Add reminder**, **File status** (a dropdown) and the **supplier name(s)** from its bookings
-  - The case's reminders: time and text, with a ✓ to mark each done
-  - **General description**: free text
-  - **Date** with its label for the request type (Game date, Show date, Flight, Pickup, Check-in, Reservation…), a countdown, and the alert colour when overdue or green when done
-  - **Location**: country and flag
-  - **What they need**: the headline, such as "5 tickets for Harry Styles", with the request picture, hashtag, label and priority
-  - **Budget**: amount and currency (₪, $, €, £)
-  - Handled by, came in by (phone or email), **created by** and when, **last updated** (who and when: the newest follow-up or logged event)
+- **Top bar:** the **tabs** (Open cases and the open cases), plus *Back* when opened from a calendar day and *Open in new tab*. New case is the rail's **+**.
+- **Middle column, the request**
+  - **File status** (a dropdown, with the **supplier name(s)** from its bookings) on the left, and the **file ID** (big chip) at the **top right**
+  - **Requested dates**: one day (`12.10`) or a range (`12–16.10`, `30.09–02.10` across months), with the time and a countdown; red when overdue
+  - **Headline** in Playfair Display, such as "Oasis concert"
+  - **Description**: free text
+  - Three facts: **how many** (*No. of tickets* for tickets, events and attractions; *Guests*; *Passengers*), **location** (a country with its flag, or free text such as "England / France / Rome") and **budget** (₪, $, €, £)
+  - **What they insist on**, on a light blue strip, such as "Seated area only, up to €800 per ticket"
+  - **#Hashtags**: the request type plus the case's own (`#Tickets #Oasis #Concert`), saved with the case, and the priority when it's high or urgent
+  - **Add reminder**, and the case's reminders (time and text, with a ✓ to mark each done)
+  - Handled by, came in by (phone or email), **created by** and when, **last updated** (who and when)
   - Take this case (when it's in the open pool), and *Assign to* for admins
-  - **Edit case**: changes the headline, date, location, budget and description
-- **Left column, client box**
-  - **Client name** and flag, **gender**, **card type** (the card picture and its name, larger)
-  - **ID** (`C-2001`), with how many open and total cases the client has
-  - **Phone** with **Call**, and **email** with **Send email** (pre-filled subject), always visible
-  - **Secondary contact** (Add/Change): name, phone with Call, email with Send
-  - **Client notes**: preferences, allergies…
+  - **Edit case**: headline, requested from (date and time) and until (an optional last day), description, how many, location (type a country or anything else), budget, what they insist on, and hashtags (`#Oasis #Concert`, or separated by spaces or commas)
+- **Left column, the client**
+  - **Client name** in Playfair Display, with the flag (no "Client name" label over it), and **Edit client**
+  - Each detail in **its own box**: **card type** and **gender**, then **ID number** with the **phone** beside it, then the **email** across, then the **additional phone** and **additional email**. A phone calls and an email opens one about the case (pre-filled subject). Pointing at a box shows a **copy** button, as on file IDs ("Not set" when there's none, with nothing to copy)
+  - **Additional info**: a free-text box, saved when you leave it
+  - **Additional contacts**: other people to reach, each with **name, who they are, phone and email** (for example *Yael · Secretary*, *Dana · Wife*), the phone and email in boxes with copy; *Add contact* adds one and × removes it
+  - **Edit client**: gender, card type, ID number, both phones and both emails
+  - **Client no.** (`C-2001`) with how many open and total cases the client has
+  - **Secondary contact** of this case (Add/Change): who opened it for the client, with phone and email
 - **Right column, follow-ups (§7)** with an **Add new** button.
 
 ---
