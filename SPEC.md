@@ -64,14 +64,13 @@ This spec describes what the product does today and the rules it follows. [Pract
 
 ## 4. Dashboard
 
-**Home** is the main dashboard: no page title or greeting (there's a hidden title for screen readers), just **one tab, Open cases**, then the tools and **your open cases as squares** (see below). The whole team's cases are in *All files*.
+**Home** is the main dashboard: no page title or greeting (there's a hidden title for screen readers), just **one tab, Open cases**, then the side menu, the search and tools, and **your open cases as squares** (see below). The whole team's cases are in *All files*.
 
 ### 4.1 Open cases
-- **No views row:** there is no Needs attention / Urgent / Waiting row; the *Status* tool narrows the list, and the pink flag still marks cases that need attention. A small grey *All files* link (the whole team's cases, with its calendar) sits at the far end of the tools.
-- **List**: your open cases as squares, open first and by date (the *Status* tool can show any status, Done included); a **Calendar** button opens a **sliding strip of days** over them (§4.4).
+- **Side menu**, like All files': **you** at the top (your icon; clicking it lets you change it: a photo, an icon on a colour, or your initials, and your name) with your first name and how many cases are open and new; **Views**: *Calendar view* (opens the month calendar over the cases; clicking it again goes back to the plain view) and **My cases** with how many you're working on; **Needs attention**, each with a small square and its count in its colour: *Urgent* (red), *New cases* (yellow), *Waiting on client* (light blue) and *Waiting on supplier* (orange); **More**: *All files* (the whole team's cases), *Reminders* with a bell (pull a thread from it onto a case) and *Sticky notes* with a note icon. The view showing is light blue with a blue bar and count; picking it again goes back to all open. On phones the menu is one row that scrolls sideways.
+- **Search and tools** over the cases: a **free search** that finds a case by its **file ID**, the client's name or number, or **anything written in the request** (headline, description, what they insist on, location, hashtags, request type), then *Opened* and *Status*.
+- **List**: your open cases as squares, open first and by date (the *Status* tool can show any status, Done included); *Calendar view* in the side menu opens a **month calendar from today on**, with how many cases each day (§4.4).
 - **Squares:** like a board's cards, white tiles, several to a row, top to bottom: the **file ID** (grey, with the pink flag when it needs attention, and a copy button on pointing) with the **due date** across from it; the **client's name in Playfair Display**; their **card** (the little card and its name, much smaller); then the **request type in capitals**, in plain words: VIP AT THE AIRPORT, TICKETS, RESTAURANTS, TRANSPORT, DELIVERY…; then the quick tools: the **status** (change it right there), **add a follow-up** (opens a line in the square; *Add* or Enter saves) and **email** the client. A short dash in the status colour sits at the bottom left. Clicking the rest opens the case window (§6). On phones they stack in one column.
-- **Tools** at the top of the list, floating on a shadow, **Calendar first**: *Calendar*, *Opened* (any time, today, last 7 days, last 30 days, over 30 days ago) and *Status*. Cases show open first, then by date.
-- **All files, Reminders and Sticky notes:** small grey links at the far end of the tools, each with its count (reminders turn red when one is overdue). On phones they sit on a line of their own.
 - **Reminder thread:** press on *Reminders* and pull: a thread (the + blue) follows the pointer from it, sagging a little. Let go on a case (its row, or its card beside an open case; the one under the thread gets a blue ring and a blue number) and a **reminder for that case pops up right there**, already filled in ("Follow up on #G-1036 with Yael", tomorrow at 12:00): *Save* adds it to that case and to your Reminders, *Cancel*, Esc or pressing elsewhere puts it away. A plain click on Reminders still opens them.
 
 ### 4.2 All files
@@ -107,10 +106,11 @@ Side menu, in this order:
   - The cases, grouped by type, with time, client, flag, card type, headline, details, status, priority and who's handling each.
   - Clicking a case opens it, and **Back** returns to the day.
 
-### 4.4 My tasks' calendar strip
-- **Calendar** (in the title row) opens a strip over the list: the month on top with ← → arrows, then **only the days that have cases** in the view (with its filters), in date order: the weekday (or *Today*), the date, and the first two times (`+2` for more). Past days are faded.
-- It opens on today (or the first day after it); the month follows the first day showing as the strip slides.
-- **Picking a day** shows only that day's cases in the list, the day lit up in light blue with its times on blue; picking it again, or *All dates*, shows every day. The open strip and the picked day are in the address, so Back steps back through them.
+### 4.4 Open cases' calendar
+- **Calendar view** (in the side menu) opens a **regular month calendar** over the cases, and clicking it again closes it: the month's name (Instrument Serif) with ← → arrows, the weekdays (Sunday first), then a box for each day.
+- **It starts from today:** this month opens on the week with today in it, and the days that have already gone aren't shown (empty boxes keep the weekdays lined up). Today has a blue outline and the word *Today*. The arrows move a month at a time (the next months show in full) and never go back before this month.
+- **Each day says how many cases** are needed that day ("1 case", "2 cases", on light blue), counting the cases showing (open ones, with the tools' filters).
+- **Picking a day** shows only that day's cases below, the day filled in blue; picking it again, or *All dates*, shows every day. The open calendar and the picked day are part of the address, so Back and a refresh keep them. While it's open, the calendar and the cases scroll together.
 
 ---
 
@@ -147,34 +147,34 @@ Side menu, in this order:
 
 ## 6. The case window
 
-A case opens as a window that fills the screen beside the rail, which stays visible (a phone uses the whole screen); Back or the Open cases tab closes it. It's laid out in **three columns: the client on the left, the request in the middle, the follow-ups chat on the right** (on narrower windows the client goes under the request; on phones it's one column: the request, the client, then the chat). A case also has its own page (`app.html#/case/<id>`, the *Open in new tab* button), titled with the file ID and client (`#G-1025 · Tamar Avraham`), with the same layout.
+A case opens as a window that fills the screen beside the rail, which stays visible (a phone uses the whole screen); Back or the Open cases tab closes it. It's laid out in **two columns: the request, and the client card on its right** (on narrower windows and phones the client goes under the request). The follow-ups chat is no longer in the case window; follow-ups are added from a case's square or row. A case also has its own page (`app.html#/case/<id>`, the *Open in new tab* button), titled with the file ID and client (`#G-1025 · Tamar Avraham`), with the same layout.
 
 - **Top bar:** the **tabs** (Open cases and the open cases), plus *Back* when opened from a calendar day and *Open in new tab*. New case is the rail's **+**.
-- **Middle column, the request**
+- **The request** (left)
   - **File status** (a dropdown, with the **supplier name(s)** from its bookings) on the left, and the **file ID** (big chip) at the **top right**
-  - **Requested dates**: one day (`12.10`) or a range (`12–16.10`, `30.09–02.10` across months), with the time and a countdown; red when overdue
-  - **Headline** in Playfair Display, such as "Oasis concert"
-  - **Description**: free text
-  - Three facts: **how many** (*No. of tickets* for tickets, events and attractions; *Guests*; *Passengers*), **location** (a country with its flag, or free text such as "England / France / Rome") and **budget** (₪, $, €, £)
+  - **The request is written in Hebrew, right to left** (the rest of the app stays in English; Hebrew uses the Heebo font): the **request type in Hebrew** with its line icon (*VIP בשדה* with a plane; הסעה with a car; כרטיסים with a ticket; מסעדה, מלון, מתנות, משלוח…), the case's headline under it in grey, and *עריכה* (edit)
+  - Then **one row** with **מדינה** (the country in Hebrew with its flag, or the place as typed) and **תאריך מבוקש** (12.10.26, or a range such as 12–16.10.26; red when overdue). The service type isn't written again: it's the heading
+  - Then, on their own lines, the **request type's own details**. *VIP בשדה*: **שם נוסע ראשי** (the client's name until another is typed), **טלפון נוסע ראשי** (the client's phone), **מס׳ נוסעים**, **מס׳ מזוודות**, **מס׳ טיסה**, **שעת המראה** and **שעת מפגש מבוקשת**. *הסעה*: **נוסע ראשי**, **טלפון**, **מס׳ נוסעים**, **מזוודות**, **מס׳ טיסה**, **המראה** and **מפגש עם דייל** (the lead passenger and phone come from the client until other ones are typed). Other types show their count (מס׳ כרטיסים, מס׳ סועדים…). Then **תקציב** (budget). Other types can get their own list the same way
+  - **תיאור הפנייה** (description): free text
+  - (Location can be a country or free text such as "England / France / Rome"; budget in ₪, $, € or £.)
   - **What they insist on**, on a light blue strip, such as "Seated area only, up to €800 per ticket"
   - **#Hashtags**: the request type plus the case's own (`#Tickets #Oasis #Concert`), saved with the case, and the priority when it's high or urgent
   - **Add reminder**, and the case's reminders (time and text, with a ✓ to mark each done)
   - Handled by, came in by (phone or email), **created by** and when, **last updated** (who and when)
   - Take this case (when it's in the open pool), and *Assign to* for admins
-  - **Edit case**: headline, requested from (date and time) and until (an optional last day), description, how many, location (type a country or anything else), budget, what they insist on, and hashtags (`#Oasis #Concert`, or separated by spaces or commas)
-- **Left column, the client**
+  - **Edit case**: headline, requested from (date and time) and until (an optional last day), description, how many, the request type's own details, location (type a country or anything else), budget, what they insist on, and hashtags (`#Oasis #Concert`, or separated by spaces or commas)
+- **The client card** (right)
   - **Client name** in Playfair Display, with the flag (no "Client name" label over it), and **Edit client**
-  - Each detail in **its own box**: **card type** and **gender**, then **ID number** with the **phone** beside it, then the **email** across, then the **additional phone** and **additional email**. A phone calls and an email opens one about the case (pre-filled subject). Pointing at a box shows a **copy** button, as on file IDs ("Not set" when there's none, with nothing to copy)
+  - Each detail in **its own box**: **card type** and **gender**, then **ID number** with the **phone** beside it, then the **email** across, then the **additional phone** and **additional email**. A phone calls and an email opens one about the case (pre-filled subject). Pointing at a box shows a small **copy** icon (just the icon, no box) ("Not set" when there's none, with nothing to copy)
   - **Additional info**: a free-text box, saved when you leave it
   - **Additional contacts**: other people to reach, each with **name, who they are, phone and email** (for example *Yael · Secretary*, *Dana · Wife*), the phone and email in boxes with copy; *Add contact* adds one and × removes it
   - **Edit client**: gender, card type, ID number, both phones and both emails
   - **Client no.** (`C-2001`) with how many open and total cases the client has
   - **Secondary contact** of this case (Add/Change): who opened it for the client, with phone and email
-- **Right column, follow-ups (§7)** with an **Add new** button.
 
 ---
 
-## 7. Follow-ups as a chat
+## 7. Follow-ups as a chat (no longer shown in the case window)
 
 - **Timeline:** oldest at the top, newest at the bottom. It opens scrolled to the newest message, with day separators ("Today", "Yesterday", "Tuesday, September 22").
 - **Bubbles:** your follow-ups are blue on the right. Other people's are white on the left, with their name and picture. Every message shows its time.

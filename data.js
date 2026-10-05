@@ -60,6 +60,7 @@ const SAMPLE_CASE_EXTRAS = {
   c18: { location: 'FR', budget: { amount: 900, currency: '€' } },
   c39: { location: 'GB', budget: { amount: 500, currency: '$' } },
   c40: { location: 'IL', budget: { amount: 8000, currency: '₪' } },
+  c47: { location: 'IL', budget: { amount: 1400, currency: '₪' } },
 };
 
 const SAMPLE_GENDERS = { emma: 'female', james: 'male', aiko: 'female', marco: 'male', olivia: 'female', noah: 'male' };
@@ -75,6 +76,7 @@ const SAMPLE_REQUEST_EXTRAS = {
   c17: { quantity: 2, untilDays: 2, requirements: 'A suite with a private spa', tags: ['Spa', 'Weekend'] },
   c14: { quantity: 3, untilDays: 0, requirements: 'Black Mercedes S-Class or similar', tags: ['Chauffeur', 'Monaco'] },
   c4: { quantity: 2, requirements: 'Meet & greet at arrivals', tags: ['Paris'] },
+  c47: { requirements: 'מסלול מהיר בביקורת הגבולות וטרקלין', tags: ['BenGurion', 'Rome'] },
 };
 
 // The client's ID number and a second phone and email (added later).
@@ -97,6 +99,13 @@ const SAMPLE_CLIENT_CONTACTS = {
   marco: [{ name: 'Liat', role: 'Personal assistant', phone: '+972 50 555 0108', email: 'liat.pa@example.com' }],
 };
 
+// A request type's own details (added later), such as the flight and meeting time of an airport VIP service.
+const SAMPLE_TYPE_FIELDS = {
+  c45: { quantity: 2, fields: { bags: 3, flight: 'LY 007', takeoff: '08:30', meetAt: '06:00' } },
+  c47: { quantity: 2, fields: { bags: 4, flight: 'LY 381', takeoff: '11:40', meetAt: '09:00' } },
+  c4: { quantity: 3, fields: { leadName: 'עידן טל', leadPhone: '+97354232222', bags: 2, flight: 'LY342', takeoff: '19:00', meetAt: '17:00' } },
+};
+
 // Sample cases whose request changed: id → [old title, new title, new request type].
 const RETITLED_SAMPLES = {
   c4: ['Suite upgrade for the Tokyo stay', 'Transfer from Paris airport to the hotel', 'Transfers'],
@@ -104,7 +113,7 @@ const RETITLED_SAMPLES = {
 };
 
 // Batches added to the sample data after the first release, with the flag that marks a save as having them.
-const SAMPLE_BATCHES = [['moreSamples', extraSampleRows], ['pastSamples', pastSampleRows], ['supplierSamples', supplierSampleRows]];
+const SAMPLE_BATCHES = [['moreSamples', extraSampleRows], ['pastSamples', pastSampleRows], ['supplierSamples', supplierSampleRows], ['vipSamples', vipSampleRows]];
 
 // Supplier categories, in the Suppliers menu's order. `qty` and `date` name the booking's columns.
 const SUPPLIER_GROUPS = [
@@ -254,6 +263,13 @@ function migrate(data) {
       }
       data.migrated = true;
     }
+    // Cases from before a request type's own details (flight, meeting time…).
+    if (k.fields === undefined) {
+      const extras = (data.demo && SAMPLE_TYPE_FIELDS[k.id]) || {};
+      k.fields = { ...(extras.fields || {}) };
+      if (extras.quantity && !k.quantity) k.quantity = extras.quantity;
+      data.migrated = true;
+    }
   }
   for (const c of data.clients) {
     if (c.gender === undefined) {
@@ -274,6 +290,17 @@ function migrate(data) {
       c.tier = OLD_TIERS[c.tier] || TIERS[0];
       data.migrated = true;
     }
+  }
+  // Sample cases filled in later with their request type's details reach older saves once (only where still empty).
+  if (!data.typeFieldSamples) {
+    for (const k of data.cases) {
+      const extras = data.demo && SAMPLE_TYPE_FIELDS[k.id];
+      if (!extras || Object.keys(k.fields || {}).length) continue;
+      k.fields = { ...extras.fields };
+      if (extras.quantity) k.quantity = extras.quantity;
+    }
+    data.typeFieldSamples = true;
+    data.migrated = true;
   }
   if (!data.suppliers) {
     data.suppliers = DEFAULT_SUPPLIERS.map(s => ({ ...s }));
@@ -368,6 +395,7 @@ function createCase(input, by) {
     quantity: input.quantity || null,
     requirements: (input.requirements || '').trim(),
     tags: input.tags || [],
+    fields: input.fields || {},
     createdAt: new Date().toISOString(),
     createdBy: by,
     assignee: input.assignee || null,
@@ -558,6 +586,15 @@ function seedClock(now) {
 }
 
 // Rows: id, title, client, category, channel, priority, status, assignee, assignedBy, createdBy, hours ago, due, completed hours ago
+// The last requested day of a sample case that runs over several days (YYYY-MM-DD), or null.
+function sampleUntil(id, dueAt) {
+  const days = (SAMPLE_REQUEST_EXTRAS[id] || {}).untilDays;
+  if (!days || !dueAt) return null;
+  const until = new Date(dueAt);
+  until.setDate(until.getDate() + days);
+  return until.toISOString().slice(0, 10);
+}
+
 function sampleCases(rows) {
   const now = Date.now();
   const { iso } = seedClock(now);
@@ -566,6 +603,11 @@ function sampleCases(rows) {
     requester: SAMPLE_REQUESTERS[id] || null,
     location: (SAMPLE_CASE_EXTRAS[id] || {}).location || '',
     budget: (SAMPLE_CASE_EXTRAS[id] || {}).budget || null,
+    quantity: (SAMPLE_TYPE_FIELDS[id] || SAMPLE_REQUEST_EXTRAS[id] || {}).quantity || null,
+    requirements: (SAMPLE_REQUEST_EXTRAS[id] || {}).requirements || '',
+    tags: (SAMPLE_REQUEST_EXTRAS[id] || {}).tags || [],
+    dueUntil: sampleUntil(id, dueAt),
+    fields: { ...((SAMPLE_TYPE_FIELDS[id] || {}).fields || {}) },
     details: '',
     createdAt: iso(now - hoursAgo * HOUR),
     completedAt: doneHoursAgo ? iso(now - doneHoursAgo * HOUR) : null,
@@ -643,6 +685,13 @@ function supplierSampleRows(dayAt) {
     ['c44', 'Festival passes, 3 days', 'olivia', 'Tickets', 'email', 'normal', 'in_progress', 'sofia', 'sofia', 'sofia', 26, dayAt(27, 12)],
     ['c45', 'VIP terminal at Ben Gurion, departure', 'marco', 'Airport VIP', 'phone', 'high', 'in_progress', 'admin', 'admin', 'admin', 20, dayAt(4, 6)],
     ['c46', 'Airport VIP arrival, family of 5', 'aiko', 'Airport VIP', 'email', 'normal', 'done', 'noa', 'daniel', 'daniel', 180, dayAt(-3, 14), 120],
+  ];
+}
+
+// An airport VIP case for Tamar, filled in the way the request page shows it.
+function vipSampleRows(dayAt) {
+  return [
+    ['c47', 'VIP בשדה, טיסה לרומא', 'aiko', 'Airport VIP', 'phone', 'normal', 'in_progress', 'admin', 'admin', 'admin', 6, dayAt(11, 9)],
   ];
 }
 
