@@ -6418,3 +6418,26 @@ html.dark .sq-foot { border-top-color: rgba(255, 255, 255, 0.08); }
 .mc-grid { gap: 8px; }
 .mc-wd { padding: 0 10px 6px; }
 .mc-cell { min-height: 78px; padding: 10px 12px; }
+
+/* The square's top: the file ID (and the pink flag) on the left, the request type on the right; the client box sits
+   on its own under the text, with the follow-up and email buttons on its right. */
+.sq-no { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-label); font-weight: 500; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.sq-no .task-flag { width: auto; margin: 0; }
+.case-square .sq-main { padding-bottom: 10px; }
+.case-square > .sq-client { margin: 0 18px 14px; }
+.sq-client-text { flex: 1; cursor: pointer; }
+.sq-client .sq-icons { display: flex; gap: 6px; margin-left: auto; }
+.sq-client .task-icon { width: 30px; height: 30px; background: var(--surface); }
+.sq-client .task-icon .ico { width: 15px; height: 15px; }
+
+/* No gap between the rail and the page: the page starts right beside it. */
+@media (min-width: 861px) {
+  .shell { grid-template-columns: 82px minmax(0, 1fr); }
+  .content { padding-left: 0; }
+  .sheet-overlay { left: 82px; }
+  .cw-top { padding-left: 0; }
+  .sheet.case-full .cw-split,
+  .sheet.case-full > .cw-body { margin-left: 0; }
+}
+.case-list.case-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+@media (max-width: 860px) { .case-list.case-grid { grid-template-columns: minmax(0, 1fr); } }

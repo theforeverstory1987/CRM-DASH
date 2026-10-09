@@ -774,10 +774,10 @@ function taskRow(kase, key) {
 // The request type as a square's headline, in plainer words where they read better.
 const SQUARE_TYPES = { 'Airport VIP': 'VIP at the airport', Transfers: 'Transport', Restaurant: 'Restaurants' };
 
-// A case as a square (All cases), laid out like a board card: the request type in a chip, with quick follow-up and
-// email buttons across from it; the headline; a line of what the client asked for (the description, or what they
-// insist on); the client in a small inner box (their card, name, the file ID with the pink flag while it needs
-// attention, and the card type); then, under a light line, the status (changeable there) and the date. Clicking
+// A case as a square (All cases), laid out like a board card: the file ID (with the pink flag while it needs attention)
+// and the request type in a chip; the headline; a line of what the client asked for (the description, or what they
+// insist on); the client in a small inner box (their card, name and card type) with quick follow-up and email
+// buttons on its right; then, under a light line, the status (changeable there) and the date. Clicking
 // the middle opens the case.
 function caseSquare(kase, key) {
   const client = findClient(kase.clientId);
@@ -788,23 +788,24 @@ function caseSquare(kase, key) {
   return `
     <div class="case-square st-${kase.status}${isOpen(kase) ? '' : ' is-done'}" data-bar="${kase.id}" data-list-key="${key}" data-thread-case="${kase.id}">
       <div class="sq-head">
+        <span class="sq-no">${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}${no}</span>
         <span class="hashtag sq-kind">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span>
+      </div>
+      <div class="sq-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
+        <span class="sq-title">${esc(kase.title)}</span>
+        ${about ? `<span class="sq-about">${esc(about)}</span>` : ''}
+      </div>
+      <div class="sq-client">
+        <span class="card-type sq-card ${tierClass(client ? client.tier : TIERS[0])}" aria-hidden="true"><i class="card-pic"></i></span>
+        <span class="sq-client-text" data-case="${kase.id}">
+          <b>${esc(client ? client.name : 'Unknown client')}</b>
+          <small>${client ? esc(client.tier) : ''}</small>
+        </span>
         <span class="sq-icons">
           <button type="button" class="task-icon" data-action="toggle-followup" title="Add a follow-up" aria-label="Add a follow-up (${n} so far)">${icon('msgPlus')}${n ? `<span class="task-icon-count">${n}</span>` : ''}</button>
           ${client && client.email
             ? `<a class="task-icon" href="${esc(caseMailto(kase, client.email))}" title="Email ${esc(firstNameOf)}" aria-label="Email ${esc(firstNameOf)}" data-stop>${icon('mail')}</a>`
             : `<span class="task-icon is-off" title="No email for this client" aria-label="No email for this client">${icon('mail')}</span>`}
-        </span>
-      </div>
-      <div class="sq-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
-        <span class="sq-title">${esc(kase.title)}</span>
-        ${about ? `<span class="sq-about">${esc(about)}</span>` : ''}
-        <span class="sq-client">
-          <span class="card-type sq-card ${tierClass(client ? client.tier : TIERS[0])}" aria-hidden="true"><i class="card-pic"></i></span>
-          <span class="sq-client-text">
-            <b>${esc(client ? client.name : 'Unknown client')}</b>
-            <small>${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}${no}${client ? ` · ${esc(client.tier)}` : ''}</small>
-          </span>
         </span>
       </div>
       <div class="sq-foot">
