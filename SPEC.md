@@ -8,7 +8,7 @@ This spec describes what the product does today and the rules it follows. [Pract
 - **Where it runs:** locally (`serve.ps1`), and as a published page: https://claude.ai/artifact/X6p9N9xU3AnTKEJHcpQ6Xy
 - **Code:** https://github.com/theforeverstory1987/CRM-DASH
 - **Interface language:** English. Sample client names are Israeli.
-- **Fonts:** the app uses **Plus Jakarta Sans** (a clean, slightly rounded sans that many of today's top dashboards use); the page and window titles use **Instrument Serif**, an editorial serif. Both are free Google Fonts. (Playfair Display and Inter were used before.)
+- **Fonts: one family for everything, Inter** (the usual choice for modern CRMs and dashboards: made for screens, clear numbers that line up in columns), with **Heebo** for the Hebrew text. **No serif display fonts** (Playfair Display and Instrument Serif are gone). **One scale, used the same way everywhere:** page title 24px semibold · section heading 18px semibold (the calendar's month, window titles, the request's heading) · card title 15px semibold (a square's headline, the client's name, you in the side menu) · body 14px regular · secondary 13px regular in grey (menu items, tabs, a square's description and date) · labels 12px medium (chips, counts) · overlines 11px semibold in spaced capitals (field labels, column heads, weekdays). Hierarchy comes from size and weight first, then colour.
 
 ---
 

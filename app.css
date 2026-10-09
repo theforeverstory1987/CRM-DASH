@@ -6333,3 +6333,88 @@ html.dark .sq-foot { border-top-color: rgba(255, 255, 255, 0.08); }
 .case-square .quick-followup { margin: 0 18px 16px; }
 .case-square .sq-client { justify-content: flex-start; }
 .case-square .sq-title { min-height: 0; color: var(--text); }
+
+/* ---------- Type: one family for everything, Inter (Heebo for Hebrew), on one scale with clear rules.
+   Page title 24/32 semibold · Section heading 18/26 semibold · Card title 15/22 semibold · Body 14/20 regular ·
+   Secondary 13/18 regular, grey · Label 12/16 medium · Overline 11/16 semibold capitals, spaced.
+   No serif display fonts; hierarchy comes from size and weight, then colour. ---------- */
+.app-body {
+  --font: "Inter", "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font);
+  --fs-title: 24px;
+  --fs-section: 18px;
+  --fs-card: 15px;
+  --fs-body: 14px;
+  --fs-secondary: 13px;
+  --fs-label: 12px;
+  --fs-overline: 11px;
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  font-feature-settings: "cv11", "ss01";
+}
+[lang="he"] { font-family: "Heebo", "Inter", sans-serif; }
+
+/* Page titles (Settings, Activity, All files…). */
+.page-title,
+.dash-head .page-title { font-family: var(--font); font-size: var(--fs-title); font-weight: 600; line-height: 32px; letter-spacing: -0.015em; }
+.page-title .soft { font-weight: 600; color: var(--text-faint); }
+
+/* Section headings: the calendar's month, window titles, panel heads, the case's request heading. */
+.mc-month,
+.sheet-title,
+.panel-head h2,
+.cw-cards-head b,
+.cw-he-title { font-family: var(--font); font-size: var(--fs-section); font-weight: 600; line-height: 26px; letter-spacing: -0.01em; }
+.cw-he-title { font-family: "Heebo", var(--font); }
+
+/* Card titles: a square's headline, the client's name, you in the side menu. */
+.case-square .sq-title,
+.sq-main .sq-name,
+.cw-client-title,
+.cw-headline,
+.with-side .dash-me-name { font-family: var(--font); font-size: var(--fs-card); font-weight: 600; line-height: 22px; letter-spacing: -0.005em; }
+.cw-client-title { font-size: var(--fs-section); line-height: 26px; }
+
+/* Body and secondary text. */
+.sq-about,
+.cf-desc,
+.cw-he-sub,
+.with-side .dash-me-sub,
+.sq-client-text small,
+.sq-date { font-size: var(--fs-secondary); line-height: 18px; }
+.dash-item,
+.case-tab,
+.case-tab-open { font-size: var(--fs-secondary); }
+
+/* Labels and overlines. */
+.cw-info-label,
+.cw-label,
+.dash-label,
+.mc-wd,
+.task-head,
+.cw-specs dt,
+.cw-contact dt { font-size: var(--fs-overline); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.hashtag,
+.sq-kind,
+.dash-count,
+.mc-count,
+.tag { font-size: var(--fs-label); font-weight: 500; }
+.mc-num { font-size: var(--fs-body); font-weight: 600; }
+.cw-he-lines dt { font-size: var(--fs-secondary); font-weight: 500; }
+.cw-he-lines dd,
+.cw-info-value { font-size: var(--fs-body); font-weight: 600; }
+
+/* Numbers line up in columns. */
+.mc-num,
+.dash-count,
+.sq-date,
+.sq-client-text small,
+.cw-he-lines dd { font-variant-numeric: tabular-nums; }
+
+/* The calendar has room to breathe. */
+.month-cal { padding: 18px 20px 20px; }
+.mc-head { margin-bottom: 14px; }
+.mc-grid { gap: 8px; }
+.mc-wd { padding: 0 10px 6px; }
+.mc-cell { min-height: 78px; padding: 10px 12px; }
