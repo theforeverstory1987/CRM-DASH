@@ -2215,11 +2215,13 @@ const EMOJIS = [
 
 // Also read by app.html's <head> so dark mode is on before the first paint.
 const THEME_KEY = 'gustavo_theme';
+// The app is dark glass unless you've picked Light in Settings.
+const isDark = member => !(member && member.dark === false);
 
 // Applies the signed-in member's light or dark mode to the whole app (the page itself is always white in light mode).
 function applyTheme() {
   const me = findMember(ME);
-  const dark = Boolean(me && me.dark);
+  const dark = isDark(me);
   document.documentElement.classList.toggle('dark', dark);
   document.querySelectorAll('[data-dark-toggle]').forEach(el => {
     el.innerHTML = icon(dark ? 'sun' : 'moon');
@@ -2294,8 +2296,8 @@ function renderSettings() {
         <div class="setting-row">
           <div><b>Appearance</b><p>Light or dark mode for the whole app.</p></div>
           <div class="pills" role="group" aria-label="Appearance">
-            <button type="button" class="${me.dark ? '' : 'active'}" data-action="light-mode">${icon('sun')}Light</button>
-            <button type="button" class="${me.dark ? 'active' : ''}" data-action="dark-mode">${icon('moon')}Dark</button>
+            <button type="button" class="${isDark(me) ? '' : 'active'}" data-action="light-mode">${icon('sun')}Light</button>
+            <button type="button" class="${isDark(me) ? 'active' : ''}" data-action="dark-mode">${icon('moon')}Dark</button>
           </div>
         </div>
         <div class="setting-row">
@@ -3965,7 +3967,7 @@ document.addEventListener('click', e => {
     case 'open-notes': return openNotesSheet();
     case 'light-mode': return setDark(false);
     case 'dark-mode': return setDark(true);
-    case 'toggle-dark': return setDark(!(findMember(ME) || {}).dark);
+    case 'toggle-dark': return setDark(!isDark(findMember(ME)));
     case 'advanced-search': return openAdvancedSearch();
     case 'add-client': return openAddClientSheet();
     case 'edit-avatar': return openAvatarSheet();

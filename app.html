@@ -9,14 +9,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Heebo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=127">
-<link rel="stylesheet" href="app.css?v=127">
-<script src="auth.js?v=127"></script>
+<link rel="stylesheet" href="styles.css?v=129">
+<link rel="stylesheet" href="app.css?v=129">
+<script src="auth.js?v=129"></script>
 <script>
   // No sign-in step: start a session straight away.
   ensureSession();
-  // Turn dark mode on before the first paint, so there's no white flash.
-  try { if (localStorage.getItem('gustavo_theme') === 'dark') document.documentElement.classList.add('dark'); } catch {}
+  // Dark glass is the look unless Light was picked: set before the first paint, so there's no white flash.
+  try { if (localStorage.getItem('gustavo_theme') !== 'light') document.documentElement.classList.add('dark'); } catch {}
 </script>
 </head>
 <body class="app-body">
@@ -50,8 +50,8 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="tooltip" class="tooltip hidden" role="tooltip"></div>
 
-<script src="data.js?v=127"></script>
-<script src="flags.js?v=127"></script>
-<script src="app.js?v=127"></script>
+<script src="data.js?v=129"></script>
+<script src="flags.js?v=129"></script>
+<script src="app.js?v=129"></script>
 </body>
 </html>
