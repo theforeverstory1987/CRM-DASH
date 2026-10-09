@@ -6278,3 +6278,23 @@ html:not(.dark) .home-tools .control-sm,
 html:not(.dark) .home-search { border: 1px solid rgba(255, 255, 255, 0.9); background-color: rgba(255, 255, 255, 0.66); }
 html:not(.dark) .sheet-overlay:not(.full) .sheet { border: 1px solid var(--glass-line); background: rgba(255, 255, 255, 0.78); -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%); }
 html:not(.dark) .tabbar { border: 1px solid var(--glass-line); background: rgba(255, 255, 255, 0.62); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+
+/* ---------- Open cases, quieter: the side menu is part of the page (no box of its own); squares with a smaller
+   name, a plain date, no status line, and the request type in a chip like the hashtags ---------- */
+.with-side .dash-nav,
+html.dark .with-side .dash-nav,
+html:not(.dark) .with-side .dash-nav { padding: 4px 0; border: 0; border-radius: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.dash.dash-wide.with-side,
+.is-dash .dash.dash-wide.with-side { grid-template-columns: 220px minmax(0, 1fr); gap: 22px; }
+.with-side > .dash-left { padding-right: 18px; border-right: 1px solid rgba(17, 24, 39, 0.08); }
+html.dark .with-side > .dash-left { border-right-color: rgba(255, 255, 255, 0.08); }
+
+.case-square::after { display: none; }
+.sq-main .sq-name { font-size: 17px; }
+.sq-due.overdue { color: var(--text-muted); font-weight: 500; }
+.sq-main .sq-type { margin-top: 10px; font-size: inherit; letter-spacing: 0; text-transform: none; }
+.sq-type .hashtag { font-size: 12px; font-weight: 600; }
+
+@media (max-width: 860px) {
+  .with-side > .dash-left { padding-right: 0; border-right: 0; }
+}

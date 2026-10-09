@@ -20,7 +20,7 @@ const SUPPLIERS_START = 'transfers';
 const state = {
   route: { name: 'home' },
   // `cal`: the calendar's date strip is open; `day`: the day picked on it (YYYY-MM-DD).
-  home: { view: 'all', created: '', status: '', cal: false, day: '', text: '' },
+  home: { view: 'all', cal: false, day: '' },
   // Cases open as tabs at the top, next to Home.
   tabs: [],
   all: { status: 'all', whose: '', type: '', priority: '', date: '', sort: 'due', text: '' },
@@ -509,12 +509,9 @@ function matchesPriority(kase, filter) {
   return kase.priority === filter;
 }
 
-// My tasks' cases before the calendar's day: the side menu's view, narrowed by when they were opened and status.
+// The dashboard's cases before the calendar's day: the side menu's view, open ones only.
 function homeCases() {
-  const f = state.home;
-  // Only open cases, unless the Status tool picks one (Done included).
-  return homeViewCases(f.view).filter(k => matchesCreated(k, f.created) && (f.status ? k.status === f.status : isOpen(k))
-    && matchesText(k, f.text.trim().toLowerCase()));
+  return homeViewCases(state.home.view).filter(isOpen);
 }
 
 function filteredCases(key) {
@@ -595,7 +592,7 @@ function renderList(key) {
   const list = filteredCases(key);
   const countEl = document.getElementById(`${key}Count`);
   if (countEl) countEl.textContent = list.length;
-  const refined = key === 'home' ? Boolean(state.home.created || state.home.status || state.home.text.trim()) : isRefined(key);
+  const refined = key === 'home' ? false : isRefined(key);
   const emptyText = key === 'home' && state.home.cal && state.home.day ? 'No cases on this day.'
     : refined ? 'No cases match these filters.'
       : key === 'home' ? homeView(state.home.view).empty
@@ -796,7 +793,7 @@ function caseSquare(kase, key) {
         </span>
         <span class="sq-name">${esc(client ? client.name : 'Unknown client')}</span>
         ${client ? tierTag(client.tier, 'sq-tier') : ''}
-        <span class="sq-type">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span>
+        <span class="sq-type"><span class="hashtag">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span></span>
       </div>
       <div class="sq-actions">
         <span class="task-status" data-stop>
@@ -1039,25 +1036,12 @@ function dashExtras() {
     </nav>`;
 }
 
-// My tasks' two filters: when the case was opened, and its status.
-const CREATED_FILTERS = [['', 'Opened: any time'], ['today', 'Opened today'], ['week', 'Opened in the last 7 days'], ['month', 'Opened in the last 30 days'], ['older', 'Opened over 30 days ago']];
-const STATUS_OPTIONS = [['', 'Any status'], ...STATUSES.map(s => [s.id, s.label])];
-
-function matchesCreated(kase, filter) {
-  if (!filter) return true;
-  const opened = new Date(kase.createdAt);
-  if (filter === 'today') return opened >= startOfDay(new Date());
-  const days = filter === 'week' ? 7 : 30;
-  const since = new Date(Date.now() - days * DAY);
-  return filter === 'older' ? opened < since : opened >= since;
-}
-
 // Open cases' side menu: you at the top (your icon, which you can change: a colour, an icon or your initials, and
 // your first name), then Views (Calendar view, which a second click closes, and My cases with how many you're working
 // on), Needs attention (Urgent red, New cases yellow, Waiting on client light blue, Waiting on supplier orange) and
 // More (All files; Reminders with a bell, where a thread to a case starts; Sticky notes).
 const HOME_MENU = [
-  ['Needs attention', [['urgent', 'Urgent', 'red'], ['new', 'New cases', 'yellow'], ['waiting_client', 'Waiting on client', 'sky'], ['waiting_provider', 'Waiting on supplier', 'orange']]],
+  ['Needs attention', [['urgent', 'Urgent', 'red'], ['waiting_provider', 'Waiting on supplier', 'orange'], ['waiting_client', 'Waiting on client', 'sky'], ['new', 'New cases', 'yellow']]],
 ];
 
 function homeMenu() {
@@ -1090,7 +1074,7 @@ function homeMenu() {
           ${icon('calendar')}<span class="dash-item-label">Calendar view</span><span class="dash-count">${open}</span>
         </button>
         <button type="button" class="dash-item${f.view === 'all' ? ' active' : ''}" data-view="all"${f.view === 'all' ? ' aria-current="true"' : ''}>
-          ${icon('briefcase')}<span class="dash-item-label">My cases</span><span class="dash-count">${open}</span>
+          ${icon('briefcase')}<span class="dash-item-label">Open cases</span><span class="dash-count">${open}</span>
         </button>
       </div>
       ${HOME_MENU.map(([section, items]) => `
@@ -1107,18 +1091,6 @@ function homeMenu() {
         <button type="button" class="dash-item" data-action="open-notes">${icon('note')}<span class="dash-item-label">Sticky notes</span><span class="dash-count">${c.notes}</span></button>
       </div>
     </aside>`;
-}
-
-// Over the cases: a free search (a file ID, the client, or anything written in the request), when the case was
-// opened, and its status.
-function homeFilters() {
-  const f = state.home;
-  return `
-    <div class="home-filters">
-      <label class="search home-search">${icon('search')}<input type="search" data-ftext="home" placeholder="Search a file ID, client, or anything in the request" aria-label="Search your open cases" value="${esc(f.text)}"></label>
-      ${filterSelect('home', 'created', CREATED_FILTERS, f.created, 'When the case was opened')}
-      ${filterSelect('home', 'status', STATUS_OPTIONS, f.status, 'Status')}
-    </div>`;
 }
 
 // ---------- Open cases' calendar: a month, from today on ----------
@@ -1182,13 +1154,12 @@ function renderHome() {
 
   viewEl.innerHTML = `
     ${caseTabs('', '', { always: true })}
-    <h1 class="visually-hidden">Open cases</h1>
+    <h1 class="visually-hidden">All cases</h1>
     <div class="dash dash-wide with-side">
       <div class="dash-left">${homeMenu()}</div>
       <div class="dash-main">
         <section class="panel">
           <h2 class="visually-hidden">${esc(view.label)}</h2>
-          <div class="home-tools">${homeFilters()}</div>
           ${state.home.cal ? monthCalendar() : ''}
           <div class="case-list case-grid" id="homeList"></div>
         </section>
@@ -3064,7 +3035,7 @@ function caseTabs(activeId = '', actions = '', { always = false, previewId = '' 
   const onHome = !activeId && state.route.name === 'home';
   return `
     <nav class="case-tabs" aria-label="Open cases">
-      <button type="button" class="case-tab home${onHome ? ' active' : ''}" data-action="tab-home"${onHome ? ' aria-current="page"' : ''}>Open cases<span>${myCases().filter(isOpen).length}</span></button>
+      <button type="button" class="case-tab home${onHome ? ' active' : ''}" data-action="tab-home"${onHome ? ' aria-current="page"' : ''}>All cases<span>${myCases().filter(isOpen).length}</span></button>
       ${state.tabs.map(id => caseTab(id, id === activeId)).join('')}
       ${preview ? caseTab(preview, true, true) : ''}
       ${actions ? `<span class="case-tabs-actions">${actions}</span>` : ''}
