@@ -774,39 +774,46 @@ function taskRow(kase, key) {
 // The request type as a square's headline, in plainer words where they read better.
 const SQUARE_TYPES = { 'Airport VIP': 'VIP at the airport', Transfers: 'Transport', Restaurant: 'Restaurants' };
 
-// A case as a square (Open cases): the file ID (and the pink flag) with the due date across from it; the client's name
-// in Playfair Display; their card (the little card and its name, small); then the request type in capitals
-// (VIP AT THE AIRPORT, TICKETS, TRANSPORT…). At the bottom, quick ways to change the status, add a follow-up and
-// email the client. A short dash in the status colour sits at its bottom left. Clicking the rest opens the case.
+// A case as a square (All cases), laid out like a board card: the request type in a chip, with quick follow-up and
+// email buttons across from it; the headline; a line of what the client asked for (the description, or what they
+// insist on); the client in a small inner box (their card, name, the file ID with the pink flag while it needs
+// attention, and the card type); then, under a light line, the status (changeable there) and the date. Clicking
+// the middle opens the case.
 function caseSquare(kase, key) {
   const client = findClient(kase.clientId);
-  const late = isOpen(kase) && kase.dueAt && new Date(kase.dueAt) < new Date();
   const no = `#${caseNo(kase)}`;
   const n = kase.updates.length;
   const firstNameOf = client ? firstName(client.name) : 'the client';
+  const about = kase.details || kase.requirements || '';
   return `
     <div class="case-square st-${kase.status}${isOpen(kase) ? '' : ' is-done'}" data-bar="${kase.id}" data-list-key="${key}" data-thread-case="${kase.id}">
-      <div class="sq-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
-        <span class="sq-top">
-          <span class="task-no">${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}${no}<button type="button" class="task-copy" data-copy="${no}" title="Copy ${no}" aria-label="Copy ${no}">${icon('copy')}</button></span>
-          <span class="sq-due${late ? ' overdue' : ''}">${kase.dueAt ? dotDate(kase.dueAt) : ''}</span>
-        </span>
-        <span class="sq-name">${esc(client ? client.name : 'Unknown client')}</span>
-        ${client ? tierTag(client.tier, 'sq-tier') : ''}
-        <span class="sq-type"><span class="hashtag">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span></span>
-      </div>
-      <div class="sq-actions">
-        <span class="task-status" data-stop>
-          <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
-            ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
-          </select>
-        </span>
+      <div class="sq-head">
+        <span class="hashtag sq-kind">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span>
         <span class="sq-icons">
           <button type="button" class="task-icon" data-action="toggle-followup" title="Add a follow-up" aria-label="Add a follow-up (${n} so far)">${icon('msgPlus')}${n ? `<span class="task-icon-count">${n}</span>` : ''}</button>
           ${client && client.email
             ? `<a class="task-icon" href="${esc(caseMailto(kase, client.email))}" title="Email ${esc(firstNameOf)}" aria-label="Email ${esc(firstNameOf)}" data-stop>${icon('mail')}</a>`
             : `<span class="task-icon is-off" title="No email for this client" aria-label="No email for this client">${icon('mail')}</span>`}
         </span>
+      </div>
+      <div class="sq-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
+        <span class="sq-title">${esc(kase.title)}</span>
+        ${about ? `<span class="sq-about">${esc(about)}</span>` : ''}
+        <span class="sq-client">
+          <span class="card-type sq-card ${tierClass(client ? client.tier : TIERS[0])}" aria-hidden="true"><i class="card-pic"></i></span>
+          <span class="sq-client-text">
+            <b>${esc(client ? client.name : 'Unknown client')}</b>
+            <small>${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}${no}${client ? ` · ${esc(client.tier)}` : ''}</small>
+          </span>
+        </span>
+      </div>
+      <div class="sq-foot">
+        <span class="task-status" data-stop>
+          <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
+            ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
+          </select>
+        </span>
+        <span class="sq-date">${icon('calendar')}${kase.dueAt ? esc(requestedDates(kase)) : 'No date'}</span>
       </div>
       <form class="quick-followup" data-followup-form="${kase.id}" data-stop hidden>
         <input type="text" placeholder="Write a follow-up…" aria-label="New follow-up for ${no}">
@@ -1053,7 +1060,7 @@ function homeMenu() {
   const c = reminderNoteCounts();
   const item = (id, label, tone = '') => {
     const count = homeViewCases(id).filter(isOpen).length;
-    const on = f.view === id;
+    const on = !f.cal && f.view === id;
     return `
       <button type="button" class="dash-item${tone ? ` tone-${tone}` : ''}${count ? ' has-count' : ''}${on ? ' active' : ''}" data-view="${id}"${on ? ' aria-current="true"' : ''}>
         <span class="dash-item-label">${label}</span><span class="dash-count">${count}</span>
@@ -1073,7 +1080,7 @@ function homeMenu() {
         <button type="button" class="dash-item${f.cal ? ' active' : ''}" data-action="toggle-cal" aria-pressed="${f.cal}">
           ${icon('calendar')}<span class="dash-item-label">Calendar view</span><span class="dash-count">${open}</span>
         </button>
-        <button type="button" class="dash-item${f.view === 'all' ? ' active' : ''}" data-view="all"${f.view === 'all' ? ' aria-current="true"' : ''}>
+        <button type="button" class="dash-item${!f.cal && f.view === 'all' ? ' active' : ''}" data-view="all"${!f.cal && f.view === 'all' ? ' aria-current="true"' : ''}>
           ${icon('briefcase')}<span class="dash-item-label">Open cases</span><span class="dash-count">${open}</span>
         </button>
       </div>
@@ -3913,8 +3920,8 @@ document.addEventListener('click', e => {
   if (el.dataset.view) {
     // Picking the view you're on again goes back to all your tasks.
     state.home.view = el.dataset.view === state.home.view ? 'all' : el.dataset.view;
-    // The calendar strip stays open on the new view, with no day picked.
-    return go(homeHash(state.home.view, { cal: state.home.cal }));
+    // Picking a view closes the calendar, so only what you picked is lit in the side menu.
+    return go(homeHash(state.home.view));
   }
   if (el.dataset.fset) {
     const [key, field] = el.dataset.fset.split('.');
@@ -3948,7 +3955,8 @@ document.addEventListener('click', e => {
       Object.assign(state.files, { view: 'calendar', ...FILE_FILTERS_CLEAR });
       return go(filesHash('calendar'));
     case 'cal-today': return scrollCalendarToToday(true);
-    case 'toggle-cal': return go(homeHash(state.home.view, { cal: !state.home.cal }));
+    // Calendar view is one choice in the side menu: opening it shows all your cases on the month; a second click closes it.
+    case 'toggle-cal': return go(homeHash('all', { cal: !state.home.cal }));
     case 'tab-home': {
       // Open cases, with no view picked, keeping the case tabs.
       const target = homeHash('all', { cal: state.home.cal });
