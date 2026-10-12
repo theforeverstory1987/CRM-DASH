@@ -795,19 +795,11 @@ function caseSquare(kase, key) {
         <span class="sq-title">${esc(kase.title)}</span>
       </div>
       <div class="sq-client">
-        <span class="card-type sq-card ${tierClass(client ? client.tier : TIERS[0])}" aria-hidden="true"><i class="card-pic"></i></span>
         <span class="sq-client-text" data-case="${kase.id}">
           <b>${esc(client ? client.name : 'Unknown client')}</b>
-          <small>${client ? esc(client.tier) : ''}</small>
-        </span>
-        <span class="sq-icons">
-          <button type="button" class="task-icon" data-action="toggle-followup" title="Add a follow-up" aria-label="Add a follow-up (${n} so far)">${icon('msgPlus')}${n ? `<span class="task-icon-count">${n}</span>` : ''}</button>
-          ${client && client.email
-            ? `<a class="task-icon" href="${esc(caseMailto(kase, client.email))}" title="Email ${esc(firstNameOf)}" aria-label="Email ${esc(firstNameOf)}" data-stop>${icon('mail')}</a>`
-            : `<span class="task-icon is-off" title="No email for this client" aria-label="No email for this client">${icon('mail')}</span>`}
+          <small><span class="card-type sq-mini ${tierClass(client ? client.tier : TIERS[0])}" aria-hidden="true"><i class="card-pic"></i></span>${client ? esc(client.tier) : ''}</small>
         </span>
       </div>
-      <div class="sq-about-wrap" data-case="${kase.id}">${about ? `<span class="sq-about">${esc(about)}</span>` : ''}</div>
       <div class="sq-foot">
         <span class="task-status" data-stop>
           <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
@@ -815,6 +807,12 @@ function caseSquare(kase, key) {
           </select>
         </span>
         <span class="sq-date">${icon('calendar')}${kase.dueAt ? esc(requestedDates(kase)) : 'No date'}</span>
+        <span class="sq-icons">
+          <button type="button" class="task-icon" data-action="toggle-followup" title="Add a follow-up" aria-label="Add a follow-up (${n} so far)">${icon('msgPlus')}${n ? `<span class="task-icon-count">${n}</span>` : ''}</button>
+          ${client && client.email
+            ? `<a class="task-icon" href="${esc(caseMailto(kase, client.email))}" title="Email ${esc(firstNameOf)}" aria-label="Email ${esc(firstNameOf)}" data-stop>${icon('mail')}</a>`
+            : `<span class="task-icon is-off" title="No email for this client" aria-label="No email for this client">${icon('mail')}</span>`}
+        </span>
       </div>
       <form class="quick-followup" data-followup-form="${kase.id}" data-stop hidden>
         <input type="text" placeholder="Write a follow-up…" aria-label="New follow-up for ${no}">

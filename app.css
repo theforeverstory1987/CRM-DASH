@@ -7171,3 +7171,17 @@ html:not(.dark) .with-side .dash-item:not(.active) .dash-count.alert { backgroun
 @media (min-width: 861px) {
   .content:has(> .case-tabs span.case-tab) > .case-tabs { position: fixed; top: 12px; left: 96px; right: 24px; z-index: 30; }
 }
+
+/* The square: ID and type, the client (a tiny card picture beside the tier), the headline; then status, date and the
+   follow-up and email buttons on the bottom row. No request line, no big card picture. */
+.case-square > .sq-main { flex: 1 1 auto; }
+.sq-client-text small { gap: 6px; }
+.card-type.sq-mini { display: inline-flex; width: 16px; height: 11px; flex-shrink: 0; background: none; box-shadow: none; }
+.card-type.sq-mini .card-pic { width: 16px; height: 11px; }
+.sq-foot { gap: 8px; }
+.sq-foot .sq-date { margin-left: auto; font-size: 12px; gap: 5px; }
+.sq-foot .sq-icons { display: flex; gap: 6px; margin-left: 0; }
+.sq-foot .sq-icons .task-icon { width: 28px; height: 28px; }
+.sq-foot .sq-icons .task-icon .ico { width: 14px; height: 14px; }
+.case-list.case-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.sq-foot .status-select { padding-right: 20px; }
