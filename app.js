@@ -1087,7 +1087,7 @@ function homeMenu() {
       </div>
       ${HOME_MENU.map(([section, items]) => `
         <div class="dash-section">
-          <p class="dash-label">${section}</p>
+          <p class="dash-label" hidden>${section}</p>
           ${items.map(([id, label, tone]) => item(id, label, tone)).join('')}
         </div>`).join('')}
       <div class="dash-section">
