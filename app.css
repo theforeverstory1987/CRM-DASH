@@ -6799,3 +6799,11 @@ html:not(.dark) .task-row { border-radius: 20px; }
   html:not(.dark) .with-side > .dash-left { background: rgba(236, 240, 252, 0.7); }
   html.dark .with-side > .dash-left { background: rgba(255, 255, 255, 0.05); }
 }
+
+/* Your picture and first name sit at the top of the rail (like the reference), not in the side menu. */
+.rail-user { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: var(--text); cursor: pointer; font: inherit; }
+.rail-user .avatar { width: 48px; height: 48px; font-size: 16px; }
+.rail-user-name { max-width: 80px; overflow: hidden; font-size: 15px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.dash-me:has(.dash-me-avatar) { display: none; }
+@media (min-width: 861px) { .rail { gap: 20px; padding-top: 22px; } }
+@media (max-width: 860px) { .rail-user { display: none; } }

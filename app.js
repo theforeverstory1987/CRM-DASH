@@ -971,6 +971,11 @@ function applyRoute() {
 
 function render() {
   const route = state.route;
+  const railUser = document.getElementById("railUser");
+  if (railUser) {
+    const meMember = findMember(ME);
+    railUser.innerHTML = `${memberAvatar(ME)}<span class="rail-user-name">${esc(((meMember && meMember.name) || ME).split(/[\s.]+/)[0])}</span>`;
+  }
   // A case gets the tab's title, so several open case tabs are easy to tell apart.
   const kase = route.name === 'case' ? findCase(route.id) : null;
   const client = kase ? findClient(kase.clientId) : null;
