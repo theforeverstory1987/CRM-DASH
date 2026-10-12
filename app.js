@@ -789,7 +789,6 @@ function caseSquare(kase, key) {
     <div class="case-square st-${kase.status}${isOpen(kase) ? '' : ' is-done'}" data-bar="${kase.id}" data-list-key="${key}" data-thread-case="${kase.id}">
       <div class="sq-head">
         <span class="sq-no">${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}${no}<button type="button" class="task-copy" data-copy="${no}" title="Copy ${no}" aria-label="Copy ${no}">${icon('copy')}</button></span>
-        <span class="hashtag sq-kind">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span>
       </div>
       <div class="sq-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
         <span class="sq-title">${esc(kase.title)}</span>
@@ -798,6 +797,7 @@ function caseSquare(kase, key) {
         <span class="sq-client-text" data-case="${kase.id}">
           <b>${esc(client ? client.name : 'Unknown client')}</b>
           <small><span class="card-type sq-mini ${tierClass(client ? client.tier : TIERS[0])}" aria-hidden="true"><i class="card-pic"></i></span>${client ? esc(client.tier) : ''}</small>
+          <span class="sq-meta"><span class="hashtag sq-kind">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span><span class="sq-date">${icon('calendar')}${kase.dueAt ? esc(requestedDates(kase)) : 'No date'}</span></span>
         </span>
       </div>
       <div class="sq-foot">
@@ -806,7 +806,6 @@ function caseSquare(kase, key) {
             ${STATUSES.map(s => `<option value="${s.id}"${s.id === kase.status ? ' selected' : ''}>${esc(s.short)}</option>`).join('')}
           </select>
         </span>
-        <span class="sq-date">${icon('calendar')}${kase.dueAt ? esc(requestedDates(kase)) : 'No date'}</span>
         <span class="sq-icons">
           <button type="button" class="task-icon" data-action="toggle-followup" title="Add a follow-up" aria-label="Add a follow-up (${n} so far)">${icon('msgPlus')}${n ? `<span class="task-icon-count">${n}</span>` : ''}</button>
           ${client && client.email

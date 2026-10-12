@@ -7306,3 +7306,20 @@ html:not(.dark) .case-square > .sq-client,
 .sq-no .task-copy:hover { background: #0067ff; color: #fff; }
 .sq-no .task-copy .ico { width: 13px; height: 13px; }
 @media (hover: none) { .sq-no .task-copy { opacity: 1; } }
+
+/* Two bigger cards per row; the request type and the date sit under the client's name; the bottom row is the status and the buttons. */
+@media (min-width: 861px) {
+  .case-list.case-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+}
+.sq-client-text { display: flex; flex-direction: column; gap: 2px; }
+.sq-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.sq-meta .sq-kind { font-size: 12px; }
+.sq-meta .sq-date { margin-left: 0; font-size: 12.5px; }
+.sq-foot .sq-icons { margin-left: auto; }
+.sq-title, .sq-main .sq-name { font-size: 16px; }
+.sq-client-text b { font-size: 15px; }
+.sq-client-text small { font-size: 13px; }
+.case-square .sq-head { padding: 14px 18px 0; }
+.case-square > .sq-client { margin-left: 18px; margin-right: 18px; }
+.case-square .sq-main { padding-left: 18px; padding-right: 18px; }
+.sq-foot { margin: 0 18px; padding: 12px 0 14px; }
