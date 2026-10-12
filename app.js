@@ -1081,9 +1081,6 @@ function homeMenu() {
       </div>
       <div class="dash-section">
         <p class="dash-label">Views</p>
-        <button type="button" class="dash-item${f.cal ? ' active' : ''}" data-action="toggle-cal" aria-pressed="${f.cal}">
-          ${icon('calendar')}<span class="dash-item-label">Calendar view</span><span class="dash-count">${open}</span>
-        </button>
         <button type="button" class="dash-item${!f.cal && f.view === 'all' ? ' active' : ''}" data-view="all"${!f.cal && f.view === 'all' ? ' aria-current="true"' : ''}>
           ${icon('briefcase')}<span class="dash-item-label">Open cases</span><span class="dash-count">${open}</span>
         </button>
@@ -1095,6 +1092,9 @@ function homeMenu() {
         </div>`).join('')}
       <div class="dash-section">
         <p class="dash-label">More</p>
+        <button type="button" class="dash-item${f.cal ? ' active' : ''}" data-action="toggle-cal" aria-pressed="${f.cal}">
+          ${icon('calendar')}<span class="dash-item-label">Calendar view</span><span class="dash-count">${open}</span>
+        </button>
         <a class="dash-item" href="#/files">${icon('layers')}<span class="dash-item-label">All files</span><span class="dash-count">${db.cases.length}</span></a>
         <button type="button" class="dash-item" data-action="open-reminders" data-thread title="Click for your reminders, or pull a thread onto a case to set one for it">
           ${icon('bell')}<span class="dash-item-label">Reminders</span><span class="dash-count${c.overdue ? ' alert' : ''}">${c.reminders}</span>
