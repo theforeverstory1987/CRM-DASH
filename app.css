@@ -6646,3 +6646,52 @@ html:not(.dark) .rail-new { color: #0067ff; }
 html:not(.dark) .rail-new:hover { color: #0067ff; }
 html:not(.dark) .rail-home { color: #2b3445; }
 html:not(.dark) .rail-home.active { color: #fff; }
+
+/* Glass, closer to the reference: no white stroke around anything, no shadows on the boxes, smaller cards, and the
+   credit-card picture sits on its own (no white square behind it). */
+html:not(.dark) .app-body {
+  --panel: rgba(255, 255, 255, 0.3);
+  --tile: rgba(255, 255, 255, 0.5);
+  --glass-line: transparent;
+  --glass-shadow: none;
+  --float: none;
+  --float-hover: none;
+}
+html:not(.dark) .dash.dash-wide,
+html:not(.dark) .sheet.case-full .cw-split,
+html:not(.dark) .sheet.case-full > .cw-body,
+html:not(.dark) .with-side > .dash-left,
+html:not(.dark) .case-square,
+html:not(.dark) .task-row,
+html:not(.dark) .cw-box,
+html:not(.dark) .cw-info,
+html:not(.dark) .cw-card,
+html:not(.dark) .rail-btn,
+html:not(.dark) .rail-new { border-color: transparent; box-shadow: none; }
+html:not(.dark) .rail-btn.active { border-color: #0b0d12; box-shadow: none; }
+html:not(.dark) .case-square:hover,
+html:not(.dark) .task-row:hover,
+html:not(.dark) .rail-btn:hover,
+html:not(.dark) .rail-new:hover { box-shadow: none; background: rgba(255, 255, 255, 0.68); }
+html:not(.dark) .rail-btn.active:hover { background: #0b0d12; }
+html:not(.dark) .with-side .dash-item.active { box-shadow: none; }
+html:not(.dark) .sq-card,
+html:not(.dark) .sq-client .task-icon { background: none; box-shadow: none; }
+html:not(.dark) .sq-client .task-icon { background: rgba(255, 255, 255, 0.55); }
+html:not(.dark) .sq-card { width: 30px; height: 22px; }
+html:not(.dark) .sq-card .card-pic { width: 28px; height: 18px; }
+html:not(.dark) .sq-client { background: rgba(255, 255, 255, 0.4); box-shadow: none; }
+
+/* Smaller cards. */
+.case-list.case-grid { grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 14px; }
+.sq-head { padding: 12px 14px 0; }
+.case-square .sq-main { padding-left: 14px; padding-right: 14px; }
+.case-square > .sq-client { margin-left: 14px; margin-right: 14px; padding: 8px 10px; }
+.case-square .sq-about-wrap { padding-left: 14px; padding-right: 14px; }
+.sq-foot { margin: 0 14px; padding: 10px 0 12px; }
+.sq-title,
+.sq-main .sq-name { font-size: 14px; }
+.sq-about { font-size: 12.5px; }
+.sq-client-text b { font-size: 13px; }
+html:not(.dark) .case-square,
+html:not(.dark) .task-row { border-radius: 20px; }
