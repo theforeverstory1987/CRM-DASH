@@ -6992,3 +6992,54 @@ html:not(.dark) .cw-card { border-color: rgba(255, 255, 255, 0.9); background: r
 html:not(.dark) .case-square:hover,
 html:not(.dark) .task-row:hover { background: rgba(255, 255, 255, 0.9); border-color: #fff; }
 html:not(.dark) .sq-client { background: rgba(240, 243, 246, 0.8); }
+
+/* ---------- Mist glass (from the Synthex reference): a vertical backdrop from slate blue at the top to white mint at the
+   bottom, frosted panels, a thin light type, and deep navy for the small accents (counts, the chosen mark, buttons). ---------- */
+html:not(.dark) .app-body {
+  --font: "Urbanist", "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: var(--font);
+  --navy: #1b3347;
+  --text: #16232e;
+  --text-muted: #6d7f8c;
+  --text-faint: #9db0bb;
+  background: linear-gradient(180deg, #9db3c1 0%, #c3d3dc 22%, #e3eef0 55%, #f3f9f8 100%) fixed;
+  font-size: 15px;
+  font-weight: 400;
+}
+html:not(.dark) .sheet.case-full { background: #e6eff1; }
+html:not(.dark) .app-body,
+html:not(.dark) .app-body button,
+html:not(.dark) .app-body input,
+html:not(.dark) .app-body select,
+html:not(.dark) .app-body textarea { font-family: var(--font); }
+@media (min-width: 861px) {
+  html:not(.dark) .shell .rail,
+  html:not(.dark) .with-side > .dash-left { background: rgba(255, 255, 255, 0.28); border-color: rgba(255, 255, 255, 0.55); }
+  html:not(.dark) .with-side > .dash-left { background: radial-gradient(240px 360px at 112% 22%, rgba(120, 170, 200, 0.3), transparent 70%), rgba(255, 255, 255, 0.28); }
+  html:not(.dark) .shell .rail .rail-btn { font-weight: 400; color: #55697a; }
+  html:not(.dark) .shell .rail .rail-btn.active,
+  html:not(.dark) .shell .rail .rail-btn.active:hover { background: rgba(255, 255, 255, 0.7); color: var(--text); font-weight: 600; }
+  html:not(.dark) .shell .rail .rail-btn.active .ico,
+  html:not(.dark) .shell .rail .rail-new { color: var(--navy); }
+  html:not(.dark) .with-side .dash-item { font-weight: 400; color: #4b5f6e; }
+  html:not(.dark) .with-side .dash-item.active { background: rgba(255, 255, 255, 0.7); color: var(--text); font-weight: 600; }
+}
+/* Counts as small navy pills; the chosen mark and key buttons in navy. */
+html:not(.dark) .dash-count,
+html:not(.dark) .with-side .dash-item.has-count[class*="tone-"] .dash-count { min-width: 22px; background: var(--navy); color: #fff; font-weight: 500; }
+html:not(.dark) .dash-count.alert { background: #c4364f; color: #fff; }
+html:not(.dark) .with-side .dash-item.active::before { background: var(--navy); }
+html:not(.dark) .page-title,
+html:not(.dark) .sq-title,
+html:not(.dark) .sq-main .sq-name,
+html:not(.dark) .with-side .dash-me-name { font-weight: 600; }
+html:not(.dark) .case-square,
+html:not(.dark) .task-row,
+html:not(.dark) .cw-box,
+html:not(.dark) .cw-info,
+html:not(.dark) .cw-card { border-color: rgba(255, 255, 255, 0.7); background: rgba(255, 255, 255, 0.5); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+html:not(.dark) .case-square:hover,
+html:not(.dark) .task-row:hover { background: rgba(255, 255, 255, 0.7); }
+html:not(.dark) .sq-client { background: rgba(255, 255, 255, 0.5); }
+html:not(.dark) .hashtag { background: rgba(255, 255, 255, 0.6); color: var(--text-muted); }
+html:not(.dark) .case-square .status-select { background-color: rgba(255, 255, 255, 0.75); border-color: transparent; }
