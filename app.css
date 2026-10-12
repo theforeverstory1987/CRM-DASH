@@ -6702,3 +6702,55 @@ html:not(.dark) .task-row { border-radius: 20px; }
 [lang="he"], .cw-he, .cw-he * { font-family: "Heebo", "Urbanist", sans-serif; }
 .app-body { font-size: 15px; }
 .page-title, .sq-title, .sq-main .sq-name, .with-side .dash-me-name { font-weight: 700; }
+
+/* ---------- The rail and the side menu are one surface (like the Codename reference): a single frosted column with no
+   gap, round buttons on its left and the plain text menu beside them; the cases sit on their own panel to the right. ---------- */
+@media (min-width: 861px) {
+  .app-body { --side: rgba(255, 255, 255, 0.42); }
+  html.dark .app-body { --side: rgba(255, 255, 255, 0.07); }
+  .shell:has(.with-side) .rail {
+    margin: 14px 0 14px 14px;
+    border: 0;
+    border-radius: 30px 0 0 30px;
+    background: var(--side);
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+  }
+  .shell:has(.with-side) .content { padding-top: 14px; padding-bottom: 14px; }
+  .is-dash .dash.dash-wide.with-side,
+  html:not(.dark) .is-dash .dash.dash-wide.with-side {
+    margin: 0;
+    padding: 0;
+    gap: 14px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    grid-template-columns: 236px minmax(0, 1fr);
+  }
+  .with-side > .dash-left,
+  html:not(.dark) .with-side > .dash-left {
+    top: 14px;
+    min-height: calc(100vh - 28px);
+    max-height: calc(100vh - 28px);
+    padding: 22px 14px 18px 4px;
+    border: 0;
+    border-radius: 0 30px 30px 0;
+    background: var(--side);
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+  }
+  .with-side > .dash-main {
+    padding: 20px;
+    border-radius: 34px;
+    background: var(--panel);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    backdrop-filter: blur(26px) saturate(140%);
+  }
+  .with-side .dash-item { font-weight: 600; font-size: 14.5px; }
+  .with-side .dash-me-name { font-weight: 700; }
+}
