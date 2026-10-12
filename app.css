@@ -6754,3 +6754,12 @@ html:not(.dark) .task-row { border-radius: 20px; }
   .with-side .dash-item { font-weight: 600; font-size: 14.5px; }
   .with-side .dash-me-name { font-weight: 700; }
 }
+
+/* No gap between the side menu and the cases: one continuous surface, the cases panel starts right where the menu ends. */
+@media (min-width: 861px) {
+  .is-dash .dash.dash-wide.with-side,
+  html:not(.dark) .is-dash .dash.dash-wide.with-side { gap: 0; }
+  .with-side > .dash-left,
+  html:not(.dark) .with-side > .dash-left { border-radius: 0; padding-right: 18px; }
+  .with-side > .dash-main { border-radius: 0 34px 34px 0; }
+}
