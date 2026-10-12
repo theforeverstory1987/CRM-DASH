@@ -6763,3 +6763,8 @@ html:not(.dark) .task-row { border-radius: 20px; }
   html:not(.dark) .with-side > .dash-left { border-radius: 0; padding-right: 18px; }
   .with-side > .dash-main { border-radius: 0 34px 34px 0; }
 }
+
+/* No panel behind the case squares: they sit straight on the page. */
+@media (min-width: 861px) {
+  .with-side > .dash-main { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 20px 20px 20px 24px; }
+}
