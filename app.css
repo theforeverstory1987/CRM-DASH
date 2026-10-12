@@ -6528,3 +6528,15 @@ html.dark .with-side > .dash-left { border-color: rgba(255, 255, 255, 0.1); back
 html.dark .with-side .dash-item { border-color: rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.07); box-shadow: none; }
 html.dark .with-side .dash-item:hover,
 html.dark .with-side .dash-item.active { background: rgba(255, 255, 255, 0.14); }
+
+/* Side menu items: plain rows on the panel, no white boxes and no shadows; the chosen one gets a simple light tint. */
+.with-side .dash-item,
+html.dark .with-side .dash-item { border: 0; background: none; box-shadow: none; }
+.with-side .dash-item:hover { background: rgba(0, 103, 255, 0.05); box-shadow: none; }
+.with-side .dash-item.active { background: rgba(0, 103, 255, 0.1); box-shadow: none; }
+html.dark .with-side .dash-item:hover { background: rgba(255, 255, 255, 0.07); }
+html.dark .with-side .dash-item.active { background: rgba(255, 255, 255, 0.12); }
+.with-side .dash-section { gap: 2px; }
+html:not(.dark) .with-side .dash-item { border: 0; background: none; box-shadow: none; }
+html:not(.dark) .with-side .dash-item:hover { background: rgba(0, 103, 255, 0.05); box-shadow: none; }
+html:not(.dark) .with-side .dash-item.active { background: rgba(0, 103, 255, 0.1); box-shadow: none; }
