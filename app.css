@@ -7143,3 +7143,15 @@ html:not(.dark) .case-square .status-select { background-color: rgba(255, 255, 2
   html:not(.dark) .with-side > .dash-left { margin-top: 32px; top: 46px; }
   .content:has(> .case-tabs span.case-tab) .with-side > .dash-left { margin-top: 76px; top: 90px; }
 }
+
+/* The side menu: the item you are on is a square-cornered blue bar with white text (and a quiet white count). */
+@media (min-width: 861px) {
+  html:not(.dark) .with-side .dash-item { border-radius: 4px; }
+  html:not(.dark) .with-side .dash-item.active,
+  html:not(.dark) .with-side .dash-item.active:hover { background: #0067ff; color: #fff; box-shadow: none; }
+  html:not(.dark) .with-side .dash-item.active::before { display: none; }
+  html:not(.dark) .with-side .dash-item.active .ico,
+  html:not(.dark) .with-side .dash-item.active .dash-item-label { color: #fff; }
+  html:not(.dark) .with-side .dash-item.active .dash-count,
+  html:not(.dark) .with-side .dash-item.active.has-count[class*="tone-"] .dash-count { background: rgba(255, 255, 255, 0.22); color: #fff; }
+}
