@@ -7155,3 +7155,9 @@ html:not(.dark) .case-square .status-select { background-color: rgba(255, 255, 2
   html:not(.dark) .with-side .dash-item.active .dash-count,
   html:not(.dark) .with-side .dash-item.active.has-count[class*="tone-"] .dash-count { background: rgba(255, 255, 255, 0.22); color: #fff; }
 }
+
+/* No "All cases" tab: only the open cases show as tabs, starting at the left of the page (Home in the rail gets you back). */
+.case-tabs .case-tab.home { display: none; }
+@media (min-width: 861px) {
+  .content:has(> .case-tabs span.case-tab) > .case-tabs { left: 24px; }
+}
