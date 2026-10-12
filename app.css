@@ -6546,3 +6546,9 @@ html:not(.dark) .with-side .dash-item.active { background: rgba(0, 103, 255, 0.1
 .case-tabs:not(:has(span.case-tab)):not(:has(.case-tabs-actions)) { display: none; }
 .with-side .case-list > .empty { display: none; }
 .with-side .dash-me + .dash-section > .dash-label { display: none; }
+
+/* Cards in a row are the same height, and the client box and the status row sit at the bottom of every card, so they line up across the row. */
+.case-list.case-grid { align-items: stretch; }
+.case-square { height: 100%; }
+.case-square .sq-main { flex: 1 1 auto; }
+.case-square > .sq-client { margin-top: auto; }
