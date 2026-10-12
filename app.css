@@ -6807,3 +6807,133 @@ html:not(.dark) .task-row { border-radius: 20px; }
 .dash-me:has(.dash-me-avatar) { display: none; }
 @media (min-width: 861px) { .rail { gap: 20px; padding-top: 22px; } }
 @media (max-width: 860px) { .rail-user { display: none; } }
+
+/* ---------- Clean white (from the Logip reference): a plain white page, no glass; one fixed sidebar with a label beside
+   every icon and a hairline on its right; sections divided by hairlines; soft grey round buttons; Poppins. ---------- */
+html:not(.dark) .app-body {
+  --font: "Poppins", "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: var(--font);
+  --bg-glass: none;
+  --panel: transparent;
+  --tile: #ffffff;
+  --text: #0f1115;
+  --text-muted: #7b8190;
+  --text-faint: #a9aeb9;
+  --line: #eceef2;
+  background: #fff;
+  font-size: 14px;
+}
+html:not(.dark) .sheet.case-full { background: #fff; }
+
+@media (min-width: 861px) {
+  .shell { grid-template-columns: 236px minmax(0, 1fr); }
+  .sheet-overlay { left: 236px; }
+  html:not(.dark) .shell .rail {
+    position: sticky;
+    top: 0;
+    width: auto;
+    height: 100vh;
+    margin: 0;
+    padding: 26px 16px 20px;
+    align-items: stretch;
+    gap: 4px;
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    background: #fff;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  html:not(.dark) .shell .rail .rail-sep { display: none; }
+  html:not(.dark) .shell .rail .rail-bottom { margin-top: auto; gap: 4px; align-items: stretch; }
+  html:not(.dark) .shell .rail .rail-user { flex-direction: row; justify-content: flex-start; gap: 12px; margin-bottom: 18px; padding: 0 6px; }
+  html:not(.dark) .shell .rail .rail-user .avatar { width: 42px; height: 42px; }
+  html:not(.dark) .shell .rail .rail-user-name { font-size: 17px; font-weight: 600; max-width: none; }
+  html:not(.dark) .shell .rail .rail-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    width: auto;
+    height: 46px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #7b8190;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  html:not(.dark) .shell .rail .rail-btn::after,
+  html:not(.dark) .shell .rail .rail-btn::before { display: none; }
+  html:not(.dark) .shell .rail .rail-btn .ico { width: 21px; height: 21px; flex-shrink: 0; }
+  html:not(.dark) .shell .rail .rail-btn:hover { background: #f5f6f8; color: #0f1115; }
+  html:not(.dark) .shell .rail .rail-btn.active,
+  html:not(.dark) .shell .rail .rail-btn.active:hover { background: #f1f4fb; color: #0f1115; font-weight: 600; }
+  html:not(.dark) .shell .rail .rail-btn.active .ico { color: #0067ff; }
+  html:not(.dark) .shell .rail .rail-new { color: #0067ff; }
+  html:not(.dark) .shell .rail .rail-new:hover { color: #0067ff; }
+  .rail-text { white-space: nowrap; }
+  .shell:has(.with-side) .content { padding-top: 0; padding-bottom: 0; }
+
+  /* Everything beside the sidebar is flat white. */
+  html:not(.dark) .is-dash .dash.dash-wide.with-side { gap: 0; grid-template-columns: 210px minmax(0, 1fr); }
+  html:not(.dark) .with-side > .dash-left {
+    top: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+    padding: 28px 14px 20px 16px;
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    background: #fff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  html:not(.dark) .with-side > .dash-main { padding: 28px 28px 28px 28px; border-radius: 0; background: none; }
+}
+html:not(.dark) .dash.dash-wide,
+html:not(.dark) .sheet.case-full .cw-split,
+html:not(.dark) .sheet.case-full > .cw-body { border: 0; border-radius: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+html:not(.dark) .case-square,
+html:not(.dark) .task-row,
+html:not(.dark) .cw-box,
+html:not(.dark) .cw-info,
+html:not(.dark) .cw-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html:not(.dark) .case-square:hover,
+html:not(.dark) .task-row:hover { border-color: #d7dbe4; background: #fff; box-shadow: none; }
+html:not(.dark) .sq-client { background: #f6f7f9; box-shadow: none; }
+html:not(.dark) .hashtag { background: #f3f4f6; color: #7b8190; }
+html:not(.dark) .sq-client .task-icon { background: #fff; box-shadow: none; }
+html:not(.dark) .sq-foot { border-color: var(--line); }
+html:not(.dark) .case-square .status-select { border: 1px solid var(--line); background-color: #fff; }
+html:not(.dark) .with-side .dash-item.active { background: #f1f4fb; box-shadow: none; }
+html:not(.dark) .with-side .dash-item:hover { background: #f5f6f8; }
+html:not(.dark) .with-side .dash-item { font-weight: 500; font-size: 14px; color: #5b6170; }
+html:not(.dark) .with-side .dash-item.active { color: #0f1115; font-weight: 600; }
+html:not(.dark) .dash-count { background: #f3f4f6; }
+html:not(.dark) .case-tab:not(.active) { background: #f5f6f8; box-shadow: none; }
+@media (min-width: 861px) {
+  html:not(.dark) .is-dash .dash.dash-wide.with-side { grid-template-columns: 240px minmax(0, 1fr); }
+  html:not(.dark) .with-side > .dash-left { padding-left: 12px; padding-right: 10px; }
+  html:not(.dark) .with-side .dash-item { padding-left: 10px; padding-right: 8px; gap: 10px; font-size: 13.5px; }
+}
+
+/* With case tabs open, the tabs sit at the top of the cases column (beside the menu), and the menu stays at the very top. */
+@media (min-width: 861px) {
+  .content:has(> .case-tabs):has(.with-side) { position: relative; }
+  .content:has(> .case-tabs) > .case-tabs { position: absolute; top: 12px; left: 252px; right: 24px; z-index: 5; margin: 0; }
+  .content:has(> .case-tabs) .with-side > .dash-main { padding-top: 72px; }
+}
