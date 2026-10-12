@@ -6566,3 +6566,83 @@ html:not(.dark) .with-side .dash-item.active { background: rgba(0, 103, 255, 0.1
 .case-square > .sq-about-wrap { order: 3; padding-top: 6px; }
 .case-square > .sq-foot { order: 4; }
 .case-square > .quick-followup { order: 5; }
+
+/* ---------- Glass studio (from the SugarCRM reference): a soft blue-grey backdrop with light blobs, big frosted panels
+   (translucent white, blurred, a bright rim and an inner highlight), glass tiles, and the rail as a column of round
+   glass buttons with the current page in black. ---------- */
+html:not(.dark) .app-body {
+  --bg-glass: radial-gradient(700px 520px at 12% 8%, rgba(255, 255, 255, 0.75), transparent 65%),
+    radial-gradient(800px 600px at 92% 30%, rgba(170, 190, 235, 0.55), transparent 65%),
+    radial-gradient(900px 620px at 40% 105%, rgba(150, 175, 225, 0.6), transparent 65%),
+    linear-gradient(165deg, #d9dfea 0%, #c5cddd 50%, #b9c4da 100%);
+  --panel: rgba(255, 255, 255, 0.34);
+  --tile: rgba(255, 255, 255, 0.58);
+  --glass-line: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 30px 60px -34px rgba(60, 80, 130, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  --float: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 14px 26px -16px rgba(60, 80, 130, 0.4);
+  --float-hover: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 20px 34px -16px rgba(60, 80, 130, 0.5);
+  --text-muted: #6f7a8c;
+}
+html:not(.dark) .dash.dash-wide,
+html:not(.dark) .sheet.case-full .cw-split,
+html:not(.dark) .sheet.case-full > .cw-body {
+  border: 1px solid var(--glass-line);
+  border-radius: 34px;
+  background: var(--panel);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(26px) saturate(140%);
+  backdrop-filter: blur(26px) saturate(140%);
+}
+html:not(.dark) .with-side > .dash-left {
+  border: 1px solid var(--glass-line);
+  border-radius: 28px;
+  background: var(--panel);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(26px) saturate(140%);
+  backdrop-filter: blur(26px) saturate(140%);
+}
+html:not(.dark) .case-square,
+html:not(.dark) .task-row,
+html:not(.dark) .cw-box,
+html:not(.dark) .cw-info,
+html:not(.dark) .cw-card {
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 24px;
+  background: var(--tile);
+  box-shadow: var(--float);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+html:not(.dark) .case-square:hover,
+html:not(.dark) .task-row:hover { background: rgba(255, 255, 255, 0.72); box-shadow: var(--float-hover); }
+html:not(.dark) .sq-client { border-radius: 16px; background: rgba(255, 255, 255, 0.5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8); }
+html:not(.dark) .sq-card,
+html:not(.dark) .sq-client .task-icon { background: rgba(255, 255, 255, 0.85); box-shadow: 0 6px 12px -6px rgba(60, 80, 130, 0.4); }
+html:not(.dark) .hashtag { background: rgba(255, 255, 255, 0.55); color: var(--text-muted); }
+html:not(.dark) .sq-foot,
+html:not(.dark) .with-side > .dash-left { border-color: rgba(255, 255, 255, 0.7); }
+html:not(.dark) .with-side .dash-item:hover { background: rgba(255, 255, 255, 0.4); }
+html:not(.dark) .with-side .dash-item.active { background: rgba(255, 255, 255, 0.7); box-shadow: var(--float); }
+html:not(.dark) .with-side .dash-item { border-radius: 16px; }
+
+/* The rail: no panel, just round glass buttons in a column; the page you're on is a black circle. */
+html:not(.dark) .rail { border: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+html:not(.dark) .rail-btn,
+html:not(.dark) .rail-new {
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  color: #2b3445;
+  box-shadow: var(--float);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+html:not(.dark) .rail-btn:hover,
+html:not(.dark) .rail-new:hover { background: rgba(255, 255, 255, 0.8); color: #2b3445; box-shadow: var(--float-hover); }
+html:not(.dark) .rail-btn.active { border-color: #0b0d12; background: #0b0d12; color: #fff; box-shadow: 0 12px 22px -10px rgba(0, 0, 0, 0.6); }
+html:not(.dark) .rail-new { color: #0067ff; }
+html:not(.dark) .rail-new:hover { color: #0067ff; }
+html:not(.dark) .rail-home { color: #2b3445; }
+html:not(.dark) .rail-home.active { color: #fff; }
