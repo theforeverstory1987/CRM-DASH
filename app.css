@@ -7099,3 +7099,13 @@ html:not(.dark) .case-square .status-select { background-color: rgba(255, 255, 2
   html:not(.dark) .shell:has(.with-side) .content { padding-left: 0; }
   .content:has(> .case-tabs) > .case-tabs { left: 276px; }
 }
+
+/* The side menu panel: no white stroke, smaller icons, and the chosen item is a plain soft tint (no white box, no shadow). */
+@media (min-width: 861px) {
+  html:not(.dark) .with-side > .dash-left,
+  html:not(.dark) .is-dash .with-side > .dash-left { border: 0; box-shadow: none; }
+  html:not(.dark) .with-side .dash-item .ico { width: 15px; height: 15px; }
+  html:not(.dark) .with-side .dash-item.active,
+  html:not(.dark) .with-side .dash-item.active:hover { background: rgba(27, 51, 71, 0.1); box-shadow: none; }
+  html:not(.dark) .with-side .dash-item:hover { background: rgba(27, 51, 71, 0.06); }
+}
