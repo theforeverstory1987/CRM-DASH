@@ -7161,3 +7161,8 @@ html:not(.dark) .case-square .status-select { background-color: rgba(255, 255, 2
 @media (min-width: 861px) {
   .content:has(> .case-tabs span.case-tab) > .case-tabs { left: 24px; }
 }
+
+/* Counts are quiet unless you are on that item: a light chip with grey text, not a dark pill. */
+html:not(.dark) .with-side .dash-item:not(.active) .dash-count,
+html:not(.dark) .with-side .dash-item:not(.active).has-count[class*="tone-"] .dash-count { background: rgba(27, 51, 71, 0.08); color: #4b5f6e; font-weight: 500; }
+html:not(.dark) .with-side .dash-item:not(.active) .dash-count.alert { background: rgba(196, 54, 79, 0.14); color: #b02a43; }
