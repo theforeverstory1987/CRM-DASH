@@ -7238,3 +7238,52 @@ html:not(.dark) .with-side .dash-item:not(.active) .dash-count.alert { backgroun
   html:not(.dark) .with-side .dash-item.active .dash-count,
   html:not(.dark) .with-side .dash-item.active.has-count[class*="tone-"] .dash-count { background: rgba(27, 51, 71, 0.08); color: #4b5f6e; }
 }
+
+/* ---------- One menu: the rail and the side menu are a single tall panel on a plain light background, split by nothing
+   more than a hairline. The backdrop is a neutral pale grey (no blue). ---------- */
+html:not(.dark) .app-body { background: linear-gradient(180deg, #e8ebee 0%, #f0f2f4 55%, #f5f6f8 100%) fixed; }
+html:not(.dark) .sheet.case-full { background: #eef0f2; }
+@media (min-width: 861px) {
+  .shell { grid-template-columns: 86px minmax(0, 1fr); }
+  .sheet-overlay { left: 86px; }
+  html:not(.dark) .shell .rail {
+    top: 14px;
+    width: 72px;
+    height: calc(100vh - 28px);
+    margin: 14px 0 14px 14px;
+    padding: 18px 0 16px;
+    border: 0;
+    border-radius: 26px 0 0 26px;
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(22px);
+    backdrop-filter: blur(22px);
+  }
+  html:not(.dark) .with-side > .dash-left,
+  html:not(.dark) .is-dash .with-side > .dash-left,
+  .content:has(> .case-tabs span.case-tab) .with-side > .dash-left {
+    top: 14px;
+    margin-top: 0;
+    height: calc(100vh - 28px);
+    min-height: calc(100vh - 28px);
+    max-height: calc(100vh - 28px);
+    border: 0;
+    border-left: 1px solid rgba(40, 60, 80, 0.09);
+    border-radius: 0 26px 26px 0;
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(22px);
+    backdrop-filter: blur(22px);
+  }
+  html:not(.dark) .shell:has(.with-side) .content { padding-top: 14px; padding-bottom: 14px; }
+  html:not(.dark) .is-dash .dash.dash-wide.with-side { grid-template-columns: 220px minmax(0, 1fr); gap: 14px; }
+  html:not(.dark) .with-side > .dash-main { padding-top: 22px; }
+  .content:has(> .case-tabs span.case-tab) .with-side > .dash-main { padding-top: 72px; }
+  /* the bands above the cases start where the cases start, so they never cover the menu */
+  .shell:has(.with-side) .content::before { left: 320px; background: linear-gradient(180deg, #e8ebee 0%, #e8ebee 70%, rgba(232, 235, 238, 0) 100%); }
+  html:not(.dark) .content:has(> .case-tabs span.case-tab) > .case-tabs {
+    left: 320px;
+    background: linear-gradient(180deg, #e8ebee 0%, #e8ebee 72%, rgba(232, 235, 238, 0) 100%);
+    padding-left: 14px;
+  }
+}
