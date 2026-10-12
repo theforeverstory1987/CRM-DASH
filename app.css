@@ -7297,3 +7297,12 @@ html:not(.dark) .sheet.case-full { background: #eef0f2; }
 html:not(.dark) .case-square > .sq-client,
 .case-square > .sq-client { background: none; box-shadow: none; padding: 0; margin: 6px 14px 0; border-radius: 0; }
 .case-square > .sq-main { padding-top: 10px; }
+
+/* The file ID sits in a white box of its own; a copy button appears inside it when you hover over the ID. */
+.sq-no { padding: 3px 4px 3px 9px; border-radius: 8px; background: rgba(255, 255, 255, 0.92); gap: 6px; }
+.sq-no .task-copy { width: 22px; height: 22px; background: rgba(27, 51, 71, 0.07); color: #4b5f6e; opacity: 0; }
+.sq-no:hover .task-copy,
+.sq-no .task-copy:focus-visible { opacity: 1; }
+.sq-no .task-copy:hover { background: #0067ff; color: #fff; }
+.sq-no .task-copy .ico { width: 13px; height: 13px; }
+@media (hover: none) { .sq-no .task-copy { opacity: 1; } }

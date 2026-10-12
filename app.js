@@ -788,7 +788,7 @@ function caseSquare(kase, key) {
   return `
     <div class="case-square st-${kase.status}${isOpen(kase) ? '' : ' is-done'}" data-bar="${kase.id}" data-list-key="${key}" data-thread-case="${kase.id}">
       <div class="sq-head">
-        <span class="sq-no">${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}${no}</span>
+        <span class="sq-no">${needsAttention(kase) ? `<span class="task-flag" title="Needs attention: nothing done yet">${icon('flag')}</span>` : ''}${no}<button type="button" class="task-copy" data-copy="${no}" title="Copy ${no}" aria-label="Copy ${no}">${icon('copy')}</button></span>
         <span class="hashtag sq-kind">${esc(SQUARE_TYPES[kase.category] || kase.category)}</span>
       </div>
       <div class="sq-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
