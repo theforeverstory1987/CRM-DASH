@@ -6933,9 +6933,9 @@ html:not(.dark) .case-tab:not(.active) { background: #f5f6f8; box-shadow: none; 
 
 /* With case tabs open, the tabs sit at the top of the cases column (beside the menu), and the menu stays at the very top. */
 @media (min-width: 861px) {
-  .content:has(> .case-tabs):has(.with-side) { position: relative; }
-  .content:has(> .case-tabs) > .case-tabs { position: absolute; top: 12px; left: 252px; right: 24px; z-index: 5; margin: 0; }
-  .content:has(> .case-tabs) .with-side > .dash-main { padding-top: 72px; }
+  .content:has(> .case-tabs span.case-tab):has(.with-side) { position: relative; }
+  .content:has(> .case-tabs span.case-tab) > .case-tabs { position: absolute; top: 12px; left: 252px; right: 24px; z-index: 5; margin: 0; }
+  .content:has(> .case-tabs span.case-tab) .with-side > .dash-main { padding-top: 72px; }
 }
 
 /* ---------- iPhone glass menu, one to one with the reference's "Report operations" panel: the rail and the side menu are
@@ -7097,7 +7097,7 @@ html:not(.dark) .case-square .status-select { background-color: rgba(255, 255, 2
   html:not(.dark) .is-dash .dash.dash-wide.with-side { gap: 18px; }
   html:not(.dark) .with-side > .dash-main { padding-left: 4px; }
   html:not(.dark) .shell:has(.with-side) .content { padding-left: 0; }
-  .content:has(> .case-tabs) > .case-tabs { left: 276px; }
+  .content:has(> .case-tabs span.case-tab) > .case-tabs { left: 276px; }
 }
 
 /* The side menu panel: no white stroke, smaller icons, and the chosen item is a plain soft tint (no white box, no shadow). */
@@ -7108,4 +7108,38 @@ html:not(.dark) .case-square .status-select { background-color: rgba(255, 255, 2
   html:not(.dark) .with-side .dash-item.active,
   html:not(.dark) .with-side .dash-item.active:hover { background: rgba(27, 51, 71, 0.1); box-shadow: none; }
   html:not(.dark) .with-side .dash-item:hover { background: rgba(27, 51, 71, 0.06); }
+}
+
+/* ---------- The rail like the Inbox/Pitch reference: slim and light, small icons in soft rounded squares (no white
+   circles), the current page a pale tinted square; the second menu starts level with the top of the case tiles. ---------- */
+@media (min-width: 861px) {
+  .shell { grid-template-columns: 72px minmax(0, 1fr); }
+  .sheet-overlay { left: 72px; }
+  html:not(.dark) .shell .rail { width: 72px; gap: 8px; padding: 22px 0 18px; }
+  html:not(.dark) .shell .rail .rail-bottom { gap: 8px; }
+  html:not(.dark) .shell .rail .rail-user { margin-bottom: 14px; }
+  html:not(.dark) .shell .rail .rail-user .avatar { width: 38px; height: 38px; font-size: 13px; }
+  html:not(.dark) .shell .rail .rail-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: transparent;
+    color: #4b5f6e;
+    box-shadow: none;
+  }
+  html:not(.dark) .shell .rail .rail-btn .ico { width: 20px; height: 20px; }
+  html:not(.dark) .shell .rail .rail-btn:hover { background: rgba(27, 51, 71, 0.07); color: #0b0d12; }
+  html:not(.dark) .shell .rail .rail-btn.active,
+  html:not(.dark) .shell .rail .rail-btn.active:hover { background: rgba(0, 103, 255, 0.14); color: #0067ff; box-shadow: none; }
+  html:not(.dark) .shell .rail .rail-btn.active .ico { color: #0067ff; }
+  html:not(.dark) .shell .rail .rail-new { color: #0067ff; }
+  .content:has(> .case-tabs span.case-tab) > .case-tabs { left: 252px; }
+  /* the second menu sits level with the cards: with tabs open it starts under them */
+  html:not(.dark) .with-side > .dash-left { align-self: start; top: 14px; }
+  .content:has(> .case-tabs span.case-tab) .with-side > .dash-left { margin-top: 76px; top: 90px; }
+  html:not(.dark) .is-dash .dash.dash-wide.with-side { grid-template-columns: 220px minmax(0, 1fr); gap: 14px; }
+}
+@media (min-width: 861px) {
+  html:not(.dark) .with-side > .dash-left { margin-top: 32px; top: 46px; }
+  .content:has(> .case-tabs span.case-tab) .with-side > .dash-left { margin-top: 76px; top: 90px; }
 }
