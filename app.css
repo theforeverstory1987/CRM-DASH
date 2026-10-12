@@ -7185,3 +7185,20 @@ html:not(.dark) .with-side .dash-item:not(.active) .dash-count.alert { backgroun
 .sq-foot .sq-icons .task-icon .ico { width: 14px; height: 14px; }
 .case-list.case-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 .sq-foot .status-select { padding-right: 20px; }
+
+/* The tab strip is a solid band across the top: the cases scroll underneath it and never show through or overlap the tabs. */
+@media (min-width: 861px) {
+  html:not(.dark) .content:has(> .case-tabs span.case-tab) > .case-tabs {
+    top: 0;
+    left: 72px;
+    right: 0;
+    height: 64px;
+    padding: 12px 24px 0;
+    align-items: flex-start;
+    gap: 8px;
+    background: linear-gradient(180deg, #9db3c1 0%, #9db3c1 72%, rgba(157, 179, 193, 0) 100%);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  html.dark .content:has(> .case-tabs span.case-tab) > .case-tabs { top: 0; left: 72px; right: 0; height: 64px; padding: 12px 24px 0; align-items: flex-start; gap: 8px; background: linear-gradient(180deg, #14110f 0%, #14110f 72%, transparent 100%); }
+}
