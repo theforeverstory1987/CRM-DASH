@@ -6558,3 +6558,11 @@ html:not(.dark) .with-side .dash-item.active { background: rgba(0, 103, 255, 0.1
 .case-square > .sq-client { margin: 8px 18px 0; }
 .case-square .sq-about-wrap { flex: 1 1 auto; padding: 10px 18px 12px; cursor: pointer; }
 .case-square .sq-about-wrap:empty { padding: 0; }
+
+/* Square order: ID and type, then the client and card, then the headline, the request line, status and date. */
+.case-square > .sq-head { order: 0; }
+.case-square > .sq-client { order: 1; margin: 10px 18px 0; }
+.case-square > .sq-main { order: 2; padding-top: 12px; }
+.case-square > .sq-about-wrap { order: 3; padding-top: 6px; }
+.case-square > .sq-foot { order: 4; }
+.case-square > .quick-followup { order: 5; }
