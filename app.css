@@ -6768,3 +6768,34 @@ html:not(.dark) .task-row { border-radius: 20px; }
 @media (min-width: 861px) {
   .with-side > .dash-main { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 20px 20px 20px 24px; }
 }
+
+/* ---------- A roomier rail (from the reference): a wider column of larger round buttons with generous spacing, white
+   circles with grey icons, the current page a pale blue circle with a blue icon. It reads as its own column, not
+   squeezed against the menu beside it. ---------- */
+@media (min-width: 861px) {
+  .shell { grid-template-columns: 102px minmax(0, 1fr); }
+  .sheet-overlay { left: 102px; }
+  .rail { width: 88px; gap: 22px; padding: 28px 0 22px; }
+  .rail-bottom { gap: 22px; }
+  .rail-btn,
+  .rail-new,
+  html:not(.dark) .rail-btn,
+  html:not(.dark) .rail-new { width: 52px; height: 52px; }
+  .rail-btn .ico { width: 24px; height: 24px; }
+  .rail-new .ico { width: 24px; height: 24px; }
+  html:not(.dark) .rail-btn,
+  html:not(.dark) .rail-new { border-color: transparent; background: #fff; color: #6b7690; }
+  html:not(.dark) .rail-btn:hover,
+  html:not(.dark) .rail-new:hover { background: #fff; color: #0067ff; }
+  html:not(.dark) .rail-btn.active,
+  html:not(.dark) .rail-btn.active:hover { border-color: transparent; background: #c9dbfc; color: #0a5cf0; }
+  html:not(.dark) .rail-new { color: #0067ff; }
+  html:not(.dark) .rail-home { color: #6b7690; }
+  html:not(.dark) .rail-home.active { color: #0a5cf0; }
+  html:not(.dark) .app-body { --side: rgba(255, 255, 255, 0.55); }
+  .shell:has(.with-side) .rail { background: rgba(255, 255, 255, 0.7); }
+  html.dark .shell:has(.with-side) .rail { background: rgba(255, 255, 255, 0.1); }
+  .with-side > .dash-left,
+  html:not(.dark) .with-side > .dash-left { background: rgba(236, 240, 252, 0.7); }
+  html.dark .with-side > .dash-left { background: rgba(255, 255, 255, 0.05); }
+}
