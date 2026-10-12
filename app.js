@@ -3794,7 +3794,7 @@ function takeCase(id) {
 
 function signOut() {
   endSession();
-  window.location.replace('index.html');
+  window.location.replace('index.html#signin');
 }
 
 async function copyId(id) {
