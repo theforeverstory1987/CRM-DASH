@@ -6695,3 +6695,10 @@ html:not(.dark) .sq-client { background: rgba(255, 255, 255, 0.4); box-shadow: n
 .sq-client-text b { font-size: 13px; }
 html:not(.dark) .case-square,
 html:not(.dark) .task-row { border-radius: 20px; }
+
+/* Fonts from the reference: Urbanist, a soft geometric sans (light and airy in body, bold in titles); Heebo stays for Hebrew. */
+.app-body { --font: "Urbanist", "Heebo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --font-display: var(--font); font-family: var(--font); font-feature-settings: normal; }
+.app-body button, .app-body input, .app-body select, .app-body textarea { font-family: var(--font); }
+[lang="he"], .cw-he, .cw-he * { font-family: "Heebo", "Urbanist", sans-serif; }
+.app-body { font-size: 15px; }
+.page-title, .sq-title, .sq-main .sq-name, .with-side .dash-me-name { font-weight: 700; }
