@@ -6540,3 +6540,9 @@ html.dark .with-side .dash-item.active { background: rgba(255, 255, 255, 0.12); 
 html:not(.dark) .with-side .dash-item { border: 0; background: none; box-shadow: none; }
 html:not(.dark) .with-side .dash-item:hover { background: rgba(0, 103, 255, 0.05); box-shadow: none; }
 html:not(.dark) .with-side .dash-item.active { background: rgba(0, 103, 255, 0.1); box-shadow: none; }
+
+/* Home with nothing else open: no "All cases" tab strip, so the side menu rises to the top; no "No cases…" message;
+   no Views heading, so Calendar view sits right under you. */
+.case-tabs:not(:has(span.case-tab)):not(:has(.case-tabs-actions)) { display: none; }
+.with-side .case-list > .empty { display: none; }
+.with-side .dash-me + .dash-section > .dash-label { display: none; }
