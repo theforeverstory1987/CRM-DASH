@@ -793,7 +793,6 @@ function caseSquare(kase, key) {
       </div>
       <div class="sq-main" role="button" tabindex="0" data-case="${kase.id}" aria-label="Open case ${no}">
         <span class="sq-title">${esc(kase.title)}</span>
-        ${about ? `<span class="sq-about">${esc(about)}</span>` : ''}
       </div>
       <div class="sq-client">
         <span class="card-type sq-card ${tierClass(client ? client.tier : TIERS[0])}" aria-hidden="true"><i class="card-pic"></i></span>
@@ -808,6 +807,7 @@ function caseSquare(kase, key) {
             : `<span class="task-icon is-off" title="No email for this client" aria-label="No email for this client">${icon('mail')}</span>`}
         </span>
       </div>
+      <div class="sq-about-wrap" data-case="${kase.id}">${about ? `<span class="sq-about">${esc(about)}</span>` : ''}</div>
       <div class="sq-foot">
         <span class="task-status" data-stop>
           <select class="status-select st-${kase.status}" data-status-for="${kase.id}" aria-label="Change status">
