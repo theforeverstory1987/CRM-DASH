@@ -7218,3 +7218,13 @@ html:not(.dark) .with-side .dash-item:not(.active) .dash-count.alert { backgroun
   }
   html.dark .shell:has(.with-side) .content::before { background: linear-gradient(180deg, #14110f 0%, #14110f 70%, transparent 100%); }
 }
+
+/* The chosen item: a soft, low-opacity blue bar (square corners) with deep-blue text, not a strong solid blue. */
+@media (min-width: 861px) {
+  html:not(.dark) .with-side .dash-item.active,
+  html:not(.dark) .with-side .dash-item.active:hover { background: rgba(0, 103, 255, 0.14); color: #0a3f9e; box-shadow: none; }
+  html:not(.dark) .with-side .dash-item.active .ico { color: #0067ff; }
+  html:not(.dark) .with-side .dash-item.active .dash-item-label { color: #0a3f9e; }
+  html:not(.dark) .with-side .dash-item.active .dash-count,
+  html:not(.dark) .with-side .dash-item.active.has-count[class*="tone-"] .dash-count { background: rgba(0, 103, 255, 0.16); color: #0a3f9e; }
+}
