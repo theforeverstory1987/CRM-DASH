@@ -6496,3 +6496,35 @@ html:not(.dark) .sq-main .sq-name,
 html:not(.dark) .with-side .dash-me-name { font-weight: 500; }
 html:not(.dark) .hashtag { background: rgba(60, 80, 100, 0.06); color: var(--text-muted); }
 html:not(.dark) .with-side .dash-item.active { background: #fff; box-shadow: var(--float); }
+
+/* ---------- The side menu as a soft floating panel, like "Report operations" in the reference: a frosted card with a
+   faint blue haze at its edge, and every item a small raised row of its own ---------- */
+.dash.dash-wide.with-side,
+.is-dash .dash.dash-wide.with-side { grid-template-columns: 250px minmax(0, 1fr); gap: 20px; }
+.with-side > .dash-left {
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  background: radial-gradient(260px 340px at 108% 18%, rgba(110, 160, 255, 0.34), transparent 70%), rgba(255, 255, 255, 0.55);
+  box-shadow: 0 22px 44px -26px rgba(60, 80, 100, 0.35), inset 0 1px 0 #fff;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+html.dark .with-side > .dash-left { border-color: rgba(255, 255, 255, 0.1); background: radial-gradient(260px 340px at 108% 18%, rgba(80, 130, 255, 0.28), transparent 70%), rgba(255, 255, 255, 0.05); box-shadow: 0 22px 44px -26px rgba(0, 0, 0, 0.6); }
+.with-side .dash-nav { gap: 6px; }
+.with-side .dash-section { gap: 8px; }
+.with-side .dash-label { margin: 10px 4px 2px; color: var(--text-faint); }
+.with-side .dash-me { margin-bottom: 4px; padding: 4px 4px 8px; }
+.with-side .dash-item {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 6px 14px -9px rgba(60, 80, 100, 0.3), inset 0 1px 0 #fff;
+}
+.with-side .dash-item:hover { background: #fff; }
+.with-side .dash-item.active { background: #fff; box-shadow: 0 10px 20px -10px rgba(0, 103, 255, 0.35), inset 0 1px 0 #fff; }
+html.dark .with-side .dash-item { border-color: rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.07); box-shadow: none; }
+html.dark .with-side .dash-item:hover,
+html.dark .with-side .dash-item.active { background: rgba(255, 255, 255, 0.14); }
