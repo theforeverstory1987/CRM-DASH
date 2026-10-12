@@ -7202,3 +7202,19 @@ html:not(.dark) .with-side .dash-item:not(.active) .dash-count.alert { backgroun
   }
   html.dark .content:has(> .case-tabs span.case-tab) > .case-tabs { top: 0; left: 72px; right: 0; height: 64px; padding: 12px 24px 0; align-items: flex-start; gap: 8px; background: linear-gradient(180deg, #14110f 0%, #14110f 72%, transparent 100%); }
 }
+
+/* Cards never scroll up to the very top edge: a solid band holds the top of the page (the tab strip is taller when tabs are open). */
+@media (min-width: 861px) {
+  .shell:has(.with-side) .content::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 72px;
+    right: 0;
+    height: 38px;
+    z-index: 20;
+    pointer-events: none;
+    background: linear-gradient(180deg, #9db3c1 0%, #9db3c1 70%, rgba(157, 179, 193, 0) 100%);
+  }
+  html.dark .shell:has(.with-side) .content::before { background: linear-gradient(180deg, #14110f 0%, #14110f 70%, transparent 100%); }
+}
