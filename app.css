@@ -7228,3 +7228,13 @@ html:not(.dark) .with-side .dash-item:not(.active) .dash-count.alert { backgroun
   html:not(.dark) .with-side .dash-item.active .dash-count,
   html:not(.dark) .with-side .dash-item.active.has-count[class*="tone-"] .dash-count { background: rgba(0, 103, 255, 0.16); color: #0a3f9e; }
 }
+
+/* The chosen item: a plain white bar (square corners), dark text, no blue. */
+@media (min-width: 861px) {
+  html:not(.dark) .with-side .dash-item.active,
+  html:not(.dark) .with-side .dash-item.active:hover { background: rgba(255, 255, 255, 0.85); color: var(--text); box-shadow: none; }
+  html:not(.dark) .with-side .dash-item.active .ico { color: #4b5f6e; }
+  html:not(.dark) .with-side .dash-item.active .dash-item-label { color: var(--text); font-weight: 600; }
+  html:not(.dark) .with-side .dash-item.active .dash-count,
+  html:not(.dark) .with-side .dash-item.active.has-count[class*="tone-"] .dash-count { background: rgba(27, 51, 71, 0.08); color: #4b5f6e; }
+}
