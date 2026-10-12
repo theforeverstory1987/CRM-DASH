@@ -6937,3 +6937,58 @@ html:not(.dark) .case-tab:not(.active) { background: #f5f6f8; box-shadow: none; 
   .content:has(> .case-tabs) > .case-tabs { position: absolute; top: 12px; left: 252px; right: 24px; z-index: 5; margin: 0; }
   .content:has(> .case-tabs) .with-side > .dash-main { padding-top: 72px; }
 }
+
+/* ---------- iPhone glass menu, one to one with the reference's "Report operations" panel: the rail and the side menu are
+   one floating frosted panel on a pale cool backdrop, with a faint blue glow along its right edge; the chosen item is a
+   soft raised white pill. ---------- */
+html:not(.dark) .app-body {
+  background: radial-gradient(900px 600px at 30% 40%, rgba(120, 165, 255, 0.14), transparent 65%),
+    linear-gradient(170deg, #f5f7f8 0%, #eceff1 55%, #e6ebee 100%) fixed;
+}
+html:not(.dark) .sheet.case-full { background: #f1f4f6; }
+@media (min-width: 861px) {
+  html:not(.dark) .shell .rail {
+    top: 14px;
+    height: calc(100vh - 28px);
+    margin: 14px 0 14px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-right: 0;
+    border-radius: 30px 0 0 30px;
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 1px 0 #fff, 0 26px 50px -30px rgba(70, 90, 110, 0.4);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+  }
+  .shell { grid-template-columns: 250px minmax(0, 1fr); }
+  .sheet-overlay { left: 250px; }
+  html:not(.dark) .shell:has(.with-side) .content { padding-top: 14px; padding-bottom: 14px; }
+  html:not(.dark) .with-side > .dash-left {
+    top: 14px;
+    min-height: calc(100vh - 28px);
+    max-height: calc(100vh - 28px);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-left: 0;
+    border-radius: 0 30px 30px 0;
+    background: radial-gradient(240px 360px at 112% 22%, rgba(95, 150, 255, 0.4), transparent 70%), rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 1px 0 #fff, 0 26px 50px -30px rgba(70, 90, 110, 0.4);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+  }
+  html:not(.dark) .with-side > .dash-main { padding-left: 24px; }
+  html:not(.dark) .shell .rail .rail-btn.active,
+  html:not(.dark) .shell .rail .rail-btn.active:hover,
+  html:not(.dark) .with-side .dash-item.active {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 16px -10px rgba(70, 90, 110, 0.5), inset 0 1px 0 #fff;
+  }
+  html:not(.dark) .shell .rail .rail-btn:hover,
+  html:not(.dark) .with-side .dash-item:hover { background: rgba(255, 255, 255, 0.55); }
+}
+html:not(.dark) .case-square,
+html:not(.dark) .task-row,
+html:not(.dark) .cw-box,
+html:not(.dark) .cw-info,
+html:not(.dark) .cw-card { border-color: rgba(255, 255, 255, 0.9); background: rgba(255, 255, 255, 0.72); }
+html:not(.dark) .case-square:hover,
+html:not(.dark) .task-row:hover { background: rgba(255, 255, 255, 0.9); border-color: #fff; }
+html:not(.dark) .sq-client { background: rgba(240, 243, 246, 0.8); }
