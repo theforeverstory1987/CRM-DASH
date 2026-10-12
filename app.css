@@ -7292,3 +7292,8 @@ html:not(.dark) .sheet.case-full { background: #eef0f2; }
   html:not(.dark) .shell:has(.with-side) .content::before { height: 14px; }
 }
 @media (min-width: 861px) { html:not(.dark) .with-side .case-list.case-grid { margin-top: -4px; } }
+
+/* The client line has no box of its own: name and tier sit plainly under the file ID. */
+html:not(.dark) .case-square > .sq-client,
+.case-square > .sq-client { background: none; box-shadow: none; padding: 0; margin: 6px 14px 0; border-radius: 0; }
+.case-square > .sq-main { padding-top: 10px; }
