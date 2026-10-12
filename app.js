@@ -2194,8 +2194,8 @@ const EMOJIS = [
 
 // Also read by app.html's <head> so dark mode is on before the first paint.
 const THEME_KEY = 'gustavo_theme';
-// The app is dark glass unless you've picked Light in Settings.
-const isDark = member => !(member && member.dark === false);
+// The app is light unless you have picked Dark in Settings.
+const isDark = member => !!(member && member.dark === true);
 
 // Applies the signed-in member's light or dark mode to the whole app (the page itself is always white in light mode).
 function applyTheme() {
